@@ -1,10 +1,9 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CATEGORIES, UNITS, ZONE_ORDER, ZONES } from '../constants/domain';
 import { COLORS } from '../theme/colors';
 import type { Category, ItemInput, StorageZone, Unit } from '../types';
+import { DatePickerField } from './DatePickerField';
 import { PrimaryButton } from './PrimaryButton';
 import { TextField } from './TextField';
 
@@ -24,7 +23,6 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   const [quantity, setQuantity] = useState(String(initial?.quantity ?? 1));
   const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'PZ');
   const [expirationDate, setExpirationDate] = useState<string | null>(initial?.expirationDate ?? null);
-  const [showPicker, setShowPicker] = useState(false);
 
   const canSubmit = name.trim().length > 0;
 
@@ -113,33 +111,7 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
 
       <View style={styles.field}>
         <Text style={styles.label}>Scadenza (opzionale)</Text>
-        <Pressable style={styles.dateButton} onPress={() => setShowPicker(true)}>
-          <Ionicons name="calendar-outline" size={16} color={COLORS.ink} />
-          <Text style={styles.dateButtonText}>{expirationDate ?? 'Nessuna scadenza'}</Text>
-        </Pressable>
-        {expirationDate ? (
-          <Pressable onPress={() => setExpirationDate(null)}>
-            <Text style={styles.clearDate}>Rimuovi scadenza</Text>
-          </Pressable>
-        ) : null}
-        {showPicker ? (
-          <DateTimePicker
-            value={expirationDate ? new Date(`${expirationDate}T00:00:00`) : new Date()}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'inline' : 'default'}
-            onChange={(event, date) => {
-              setShowPicker(Platform.OS === 'ios');
-              if (event.type === 'dismissed') {
-                setShowPicker(false);
-                return;
-              }
-              if (date) {
-                setExpirationDate(date.toISOString().slice(0, 10));
-              }
-              if (Platform.OS === 'android') setShowPicker(false);
-            }}
-          />
-        ) : null}
+        <DatePickerField value={expirationDate} onChange={setExpirationDate} />
       </View>
 
       <View style={styles.actions}>
@@ -201,18 +173,5 @@ const styles = StyleSheet.create({
   },
   unitChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
   unitChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
-  dateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    backgroundColor: COLORS.white,
-  },
-  dateButtonText: { fontSize: 14, color: COLORS.ink },
-  clearDate: { fontSize: 12, color: COLORS.danger, marginTop: 6, fontWeight: '600' },
   actions: { flexDirection: 'row', gap: 12, marginTop: 8 },
 });

@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import * as SecureStore from 'expo-secure-store';
+import { secureStorage } from './secureStorage';
 import type { ApiErrorBody } from '../types';
 
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080';
@@ -22,18 +22,18 @@ apiClient.interceptors.request.use((config) => {
 });
 
 export async function loadPersistedToken(): Promise<string | null> {
-  const token = await SecureStore.getItemAsync(TOKEN_KEY);
+  const token = await secureStorage.getItemAsync(TOKEN_KEY);
   setAuthToken(token);
   return token;
 }
 
 export async function persistToken(token: string) {
-  await SecureStore.setItemAsync(TOKEN_KEY, token);
+  await secureStorage.setItemAsync(TOKEN_KEY, token);
   setAuthToken(token);
 }
 
 export async function clearPersistedToken() {
-  await SecureStore.deleteItemAsync(TOKEN_KEY);
+  await secureStorage.deleteItemAsync(TOKEN_KEY);
   setAuthToken(null);
 }
 

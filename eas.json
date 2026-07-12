@@ -10,7 +10,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://192.168.0.105:8080"
+        "EXPO_PUBLIC_API_URL": "https://logistica-domestica-backend.onrender.com"
       }
     },
     "preview": {
@@ -19,7 +19,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://192.168.0.105:8080"
+        "EXPO_PUBLIC_API_URL": "https://logistica-domestica-backend.onrender.com"
       }
     },
     "production": {

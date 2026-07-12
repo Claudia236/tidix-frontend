@@ -24,11 +24,16 @@ Il design (colori, zone, categorie, logica di scadenza) riprende il prototipo Re
 cp .env.example .env
 ```
 
-Imposta `EXPO_PUBLIC_API_URL` con l'indirizzo del backend:
+Imposta `EXPO_PUBLIC_API_URL` con l'indirizzo del backend. Il backend è deployato su Render, quindi normalmente basta:
 
+```
+EXPO_PUBLIC_API_URL=https://logistica-domestica-backend.onrender.com
+```
+
+Se invece stai facendo girare il backend in locale (sviluppo):
 - Simulatore iOS / browser sullo stesso PC: `http://localhost:8080`
 - Emulatore Android: `http://10.0.2.2:8080`
-- Telefono fisico in Expo Go o dispositivo Android reale: usa l'IP della macchina in rete locale, es. `http://192.168.1.10:8080`, oppure l'URL pubblico del backend se è deployato
+- Telefono fisico in Expo Go o dispositivo Android reale: usa l'IP della macchina in rete locale, es. `http://192.168.1.10:8080` (deve essere sulla stessa Wi-Fi)
 
 ## Avvio rapido (Expo Go)
 
@@ -81,7 +86,7 @@ npx expo prebuild --platform android --clean
 
 Non serve necessariamente Android Studio per ottenere un `.apk`: il modo più semplice è **EAS Build**, il servizio cloud gratuito di Expo (`eas.json` in questo repo è già configurato con un profilo `preview` che produce un `.apk` invece dell'`.aab` per lo store).
 
-⚠️ **Importante**: a differenza di `npm start`/`npm run web`, la build EAS gira sui server di Expo e non vede il tuo file `.env` locale (è escluso da git di proposito). L'indirizzo del backend va quindi impostato direttamente in `eas.json`, nel campo `build.preview.env.EXPO_PUBLIC_API_URL` — prima di lanciare la build, sostituisci il valore con l'IP reale del PC dove gira il backend (su Windows: `ipconfig`, cerca "Indirizzo IPv4" della scheda Wi-Fi). Il telefono deve essere sulla **stessa rete Wi-Fi** del PC, e il backend deve essere in esecuzione quando usi l'app.
+⚠️ **Importante**: a differenza di `npm start`/`npm run web`, la build EAS gira sui server di Expo e non vede il tuo file `.env` locale (è escluso da git di proposito). L'indirizzo del backend va quindi impostato direttamente in `eas.json`, nel campo `build.preview.env.EXPO_PUBLIC_API_URL` — è già impostato sull'URL pubblico del backend (`https://logistica-domestica-backend.onrender.com`), che funziona da qualunque rete. Se invece vuoi puntare a un backend in esecuzione sul tuo PC (sviluppo), sostituiscilo con l'IP locale della macchina (`ipconfig` su Windows) — in quel caso il telefono deve essere sulla stessa Wi-Fi del PC.
 
 ```bash
 npm install -g eas-cli

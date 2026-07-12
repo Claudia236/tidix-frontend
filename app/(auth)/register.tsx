@@ -2,6 +2,7 @@ import { Link } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { getErrorMessage } from '../../src/api/client';
+import { PasswordField } from '../../src/components/PasswordField';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { TextField } from '../../src/components/TextField';
 import { useAuth } from '../../src/context/AuthContext';
@@ -44,10 +45,9 @@ export default function RegisterScreen() {
             value={email}
             onChangeText={setEmail}
           />
-          <TextField
+          <PasswordField
             label="Password"
             placeholder="Almeno 8 caratteri"
-            secureTextEntry
             value={password}
             onChangeText={setPassword}
           />

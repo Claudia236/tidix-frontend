@@ -2,6 +2,7 @@ import { Link } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { getErrorMessage } from '../../src/api/client';
+import { PasswordField } from '../../src/components/PasswordField';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { TextField } from '../../src/components/TextField';
 import { useAuth } from '../../src/context/AuthContext';
@@ -42,13 +43,15 @@ export default function LoginScreen() {
             value={email}
             onChangeText={setEmail}
           />
-          <TextField
+          <PasswordField
             label="Password"
             placeholder="••••••••"
-            secureTextEntry
             value={password}
             onChangeText={setPassword}
           />
+          <Link href="/(auth)/forgot-password" style={styles.forgotLink}>
+            Password dimenticata?
+          </Link>
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <PrimaryButton label="Accedi" onPress={handleSubmit} loading={submitting} disabled={!email || !password} />
         </View>
@@ -69,4 +72,5 @@ const styles = StyleSheet.create({
   form: { gap: 16 },
   error: { color: COLORS.danger, fontSize: 13 },
   link: { textAlign: 'center', color: COLORS.brand, fontWeight: '600', marginTop: 8 },
+  forgotLink: { textAlign: 'right', color: COLORS.inkSoft, fontSize: 12, fontWeight: '600', marginTop: -8 },
 });

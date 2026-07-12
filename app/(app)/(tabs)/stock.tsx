@@ -37,7 +37,7 @@ export default function StockScreen() {
   });
 
   const adjustMutation = useMutation({
-    mutationFn: ({ id, delta }: { id: string; delta: number }) => itemsApi.adjustQuantity(id, delta),
+    mutationFn: ({ id, delta }: { id: string; delta: number }) => itemsApi.adjustQuantity(id, { delta }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
   });
 

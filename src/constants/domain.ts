@@ -18,6 +18,7 @@ export const CATEGORIES: { key: Category; label: string; short: string; emoji: s
   { key: 'CONSERVE', label: 'Conserve', short: 'Conserve', emoji: '🥫' },
   { key: 'CONDIMENTI', label: 'Condimenti', short: 'Condimenti', emoji: '🧂' },
   { key: 'BEVANDE', label: 'Bevande', short: 'Bevande', emoji: '🧃' },
+  { key: 'PIATTI_PRONTI', label: 'Piatti pronti / Avanzi', short: 'Piatti pronti', emoji: '🍱' },
   { key: 'DOLCI', label: 'Dolci e snack', short: 'Dolci/Snack', emoji: '🍪' },
   { key: 'PULIZIA', label: 'Pulizia e igiene', short: 'Pulizia', emoji: '🧴' },
   { key: 'ALTRO', label: 'Altro', short: 'Altro', emoji: '📌' },

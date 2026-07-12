@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { Item, ItemInput, StorageZone, ZoneSummary } from '../types';
+import type { AdjustQuantityInput, Item, ItemInput, StorageZone, ZoneSummary } from '../types';
 
 export const itemsApi = {
   list: (params?: { zone?: StorageZone; search?: string }) =>
@@ -13,8 +13,8 @@ export const itemsApi = {
 
   remove: (id: string) => apiClient.delete(`/api/items/${id}`).then(() => undefined),
 
-  adjustQuantity: (id: string, delta: number) =>
-    apiClient.patch<Item>(`/api/items/${id}/quantity`, { delta }).then((r) => r.data),
+  adjustQuantity: (id: string, input: AdjustQuantityInput) =>
+    apiClient.patch<Item>(`/api/items/${id}/quantity`, input).then((r) => r.data),
 
   expiring: (days = 3) => apiClient.get<Item[]>('/api/items/expiring', { params: { days } }).then((r) => r.data),
 

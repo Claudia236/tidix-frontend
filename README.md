@@ -104,17 +104,17 @@ In alternativa, con Android Studio già aperto sul progetto (vedi sopra): menu *
 
 ```
 app/
-  (auth)/            login e registrazione
-  (household-setup)/ crea o unisciti a una famiglia (dopo la registrazione)
+  (auth)/              login, registrazione, password dimenticata
+  (household-setup)/   crea o unisciti a una famiglia (dopo la registrazione)
   (app)/
-    (tabs)/           Panoramica · Scorte · Lista Spesa
-    item/[id].tsx     modifica/elimina prodotto (modale)
-    item/new.tsx       nuovo prodotto (modale)
-    household.tsx      dettagli famiglia, codice invito, membri
+    (tabs)/             Panoramica · Scorte · Lista Spesa
+    item/[id].tsx       modifica/elimina prodotto (modale)
+    item/new.tsx         nuovo prodotto (modale)
+    household.tsx        dettagli famiglia, codice invito, membri
 src/
-  api/        client axios + funzioni per auth, famiglia, prodotti
+  api/        client axios + funzioni per auth, famiglia, prodotti, lista spesa
   context/    AuthContext (sessione, token, utente corrente)
-  components/ componenti UI riutilizzabili
+  components/ componenti UI riutilizzabili (incl. PasswordField, RestockDialog)
   constants/  zone, categorie, unità di misura
   theme/      palette colori
   utils/      logica di calcolo scadenze
@@ -122,8 +122,8 @@ src/
 
 ## Flusso applicativo
 
-1. **Registrazione/Login** — ogni persona ha il proprio account.
+1. **Registrazione/Login** — ogni persona ha il proprio account. Dalla schermata di login si può anche recuperare la password (codice a 6 cifre via email, valido 15 minuti).
 2. **Famiglia** — al primo accesso l'utente crea una famiglia (ottiene un codice invito da condividere) oppure si unisce a una famiglia esistente inserendo il codice di un familiare. Tutti i membri della stessa famiglia vedono lo stesso inventario.
-3. **Inventario** — tab "Scorte": elenco prodotti filtrabile per zona (Frigo/Freezer/Dispensa/Sgabuzzino) e per nome, con +/- rapido sulla quantità.
+3. **Inventario** — tab "Scorte": elenco prodotti in stock (quantità > 0) filtrabile per zona (Frigo/Freezer/Dispensa/Sgabuzzino, categoria "Piatti pronti/Avanzi" inclusa) e per nome, con +/- rapido sulla quantità.
 4. **Panoramica** — conteggio prodotti per zona, avvisi su prodotti scaduti o in scadenza nei prossimi giorni.
-5. **Lista della spesa** — generata automaticamente dai prodotti con quantità a zero; toccando la spunta si segna come "ricomprato" (torna a quantità 1).
+5. **Lista della spesa** — combina due cose, entrambe indipendenti dalle scorte finché non "ricomprate": i prodotti d'inventario finiti (quantità a zero) e promemoria liberi aggiunti a mano (es. "detersivo"), che non creano un prodotto nelle scorte. Toccando la spunta su un prodotto finito si apre un prompt per confermare se la scadenza è la stessa di prima o è cambiata, prima di farlo tornare tra le scorte disponibili; toccando la spunta su un promemoria libero, lo si rimuove semplicemente.

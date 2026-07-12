@@ -8,6 +8,7 @@ export type Category =
   | 'CONSERVE'
   | 'CONDIMENTI'
   | 'BEVANDE'
+  | 'PIATTI_PRONTI'
   | 'DOLCI'
   | 'PULIZIA'
   | 'ALTRO';
@@ -61,6 +62,19 @@ export interface ItemInput {
   quantity: number;
   unit: Unit;
   expirationDate: string | null;
+}
+
+export interface AdjustQuantityInput {
+  delta: number;
+  expirationDate?: string | null;
+  clearExpirationDate?: boolean;
+}
+
+export interface ShoppingNote {
+  id: string;
+  text: string;
+  addedByUserId: string;
+  createdAt: string;
 }
 
 export interface ZoneSummary {

@@ -77,6 +77,20 @@ npx expo prebuild --platform android --clean
 
 (questo sovrascrive `android/` con la configurazione aggiornata).
 
+## Generare un file .apk da installare sul telefono
+
+Non serve necessariamente Android Studio per ottenere un `.apk`: il modo più semplice è **EAS Build**, il servizio cloud gratuito di Expo (`eas.json` in questo repo è già configurato con un profilo `preview` che produce un `.apk` invece dell'`.aab` per lo store).
+
+```bash
+npm install -g eas-cli
+eas login          # crea gratis un account su expo.dev se non ce l'hai
+eas build --platform android --profile preview
+```
+
+Dopo qualche minuto ottieni un link per scaricare il `.apk` (o un QR code da inquadrare col telefono per installarlo direttamente). Non serve Android Studio né un SDK installato in locale: la build gira sui server di Expo.
+
+In alternativa, con Android Studio già aperto sul progetto (vedi sopra): menu **Build → Build Bundle(s) / APK(s) → Build APK(s)**. Il file finito è in `android/app/build/outputs/apk/debug/app-debug.apk`.
+
 ## Struttura
 
 ```

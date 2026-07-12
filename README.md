@@ -81,6 +81,8 @@ npx expo prebuild --platform android --clean
 
 Non serve necessariamente Android Studio per ottenere un `.apk`: il modo più semplice è **EAS Build**, il servizio cloud gratuito di Expo (`eas.json` in questo repo è già configurato con un profilo `preview` che produce un `.apk` invece dell'`.aab` per lo store).
 
+⚠️ **Importante**: a differenza di `npm start`/`npm run web`, la build EAS gira sui server di Expo e non vede il tuo file `.env` locale (è escluso da git di proposito). L'indirizzo del backend va quindi impostato direttamente in `eas.json`, nel campo `build.preview.env.EXPO_PUBLIC_API_URL` — prima di lanciare la build, sostituisci il valore con l'IP reale del PC dove gira il backend (su Windows: `ipconfig`, cerca "Indirizzo IPv4" della scheda Wi-Fi). Il telefono deve essere sulla **stessa rete Wi-Fi** del PC, e il backend deve essere in esecuzione quando usi l'app.
+
 ```bash
 npm install -g eas-cli
 eas login          # crea gratis un account su expo.dev se non ce l'hai
@@ -88,6 +90,8 @@ eas build --platform android --profile preview
 ```
 
 Dopo qualche minuto ottieni un link per scaricare il `.apk` (o un QR code da inquadrare col telefono per installarlo direttamente). Non serve Android Studio né un SDK installato in locale: la build gira sui server di Expo.
+
+Per un uso quotidiano (non solo test), conviene mettere il backend su un hosting pubblico (Render, Railway, Fly.io hanno piani gratuiti) invece che sul tuo PC: così l'app funziona da qualunque rete, non solo da casa.
 
 In alternativa, con Android Studio già aperto sul progetto (vedi sopra): menu **Build → Build Bundle(s) / APK(s) → Build APK(s)**. Il file finito è in `android/app/build/outputs/apk/debug/app-debug.apk`.
 

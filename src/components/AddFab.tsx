@@ -8,7 +8,7 @@ export function AddFab() {
   const router = useRouter();
   return (
     <Pressable style={styles.fab} onPress={() => router.push('/(app)/item/new')}>
-      <Ionicons name="add" size={26} color={COLORS.white} />
+      <Ionicons name="add" size={22} color={COLORS.white} />
     </Pressable>
   );
 }
@@ -17,17 +17,17 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: 20,
-    bottom: 96,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    bottom: 88,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     backgroundColor: COLORS.brand,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
 });

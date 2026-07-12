@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { itemsApi } from '../../../src/api/items';
 import { EmptyState } from '../../../src/components/EmptyState';
@@ -10,6 +10,7 @@ import { ItemCard } from '../../../src/components/ItemCard';
 import { SectionTitle } from '../../../src/components/SectionTitle';
 import { ZONE_ORDER, ZONES } from '../../../src/constants/domain';
 import { COLORS } from '../../../src/theme/colors';
+import { webCentered } from '../../../src/theme/responsive';
 import type { StorageZone } from '../../../src/types';
 
 const FILTERS: { key: StorageZone | 'TUTTI'; label: string; emoji: string }[] = [
@@ -58,25 +59,26 @@ export default function StockScreen() {
           />
         </View>
 
-        <FlatList
+        <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={FILTERS}
-          keyExtractor={(f) => f.key}
+          style={styles.filtersScroll}
           contentContainerStyle={styles.filters}
-          renderItem={({ item: f }) => {
+        >
+          {FILTERS.map((f) => {
             const active = filterZone === f.key;
             return (
               <Pressable
+                key={f.key}
                 onPress={() => setFilterZone(f.key)}
                 style={[styles.filterChip, active && styles.filterChipActive]}
               >
-                <Text>{f.emoji}</Text>
+                <Text style={styles.filterChipEmoji}>{f.emoji}</Text>
                 <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>{f.label}</Text>
               </Pressable>
             );
-          }}
-        />
+          })}
+        </ScrollView>
 
         <FlatList
           data={items}
@@ -104,7 +106,7 @@ export default function StockScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: COLORS.bg },
-  container: { flex: 1, paddingHorizontal: 20, paddingTop: 20, gap: 12 },
+  container: { flex: 1, paddingHorizontal: 20, paddingTop: 20, gap: 12, ...webCentered },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -112,25 +114,27 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderWidth: 1,
     borderColor: COLORS.line,
-    borderRadius: 12,
+    borderRadius: 10,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 8,
   },
-  searchInput: { flex: 1, fontSize: 14, color: COLORS.ink },
-  filters: { gap: 8, paddingBottom: 4 },
+  searchInput: { flex: 1, fontSize: 13, color: COLORS.ink },
+  filtersScroll: { flexGrow: 0 },
+  filters: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingBottom: 4 },
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
     borderWidth: 1,
     borderColor: COLORS.line,
     backgroundColor: COLORS.white,
     borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
   filterChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
-  filterChipText: { fontSize: 13, fontWeight: '600', color: COLORS.ink },
+  filterChipEmoji: { fontSize: 12, lineHeight: 15 },
+  filterChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
   filterChipTextActive: { color: COLORS.white },
   list: { paddingBottom: 120, paddingTop: 4 },
 });

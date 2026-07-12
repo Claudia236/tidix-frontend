@@ -5,6 +5,7 @@ import { householdApi } from '../../src/api/household';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { useAuth } from '../../src/context/AuthContext';
 import { COLORS } from '../../src/theme/colors';
+import { webCentered } from '../../src/theme/responsive';
 
 export default function HouseholdScreen() {
   const { user, logout } = useAuth();
@@ -58,7 +59,7 @@ export default function HouseholdScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
-  content: { padding: 20, gap: 16, paddingBottom: 48 },
+  content: { padding: 20, gap: 16, paddingBottom: 48, ...webCentered },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.bg },
   name: { fontSize: 20, fontWeight: '800', color: COLORS.ink },
   card: {

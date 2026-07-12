@@ -23,7 +23,7 @@ export function AlertBanner({ tone, title, items, onItemPress }: Props) {
         <Ionicons name="warning-outline" size={16} color={color} />
         <Text style={[styles.title, { color }]}>{title}</Text>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsScroll} contentContainerStyle={styles.chips}>
         {shown.map((item) => (
           <Pressable key={item.id} onPress={() => onItemPress(item)} style={styles.chip}>
             <Text style={[styles.chipText, { color }]}>{item.name}</Text>
@@ -39,7 +39,8 @@ const styles = StyleSheet.create({
   container: { borderRadius: 14, padding: 12, marginBottom: 8 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   title: { fontSize: 13, fontWeight: '700' },
-  chips: { gap: 6 },
+  chipsScroll: { flexGrow: 0 },
+  chips: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   chip: { backgroundColor: COLORS.white, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
   chipText: { fontSize: 12, fontWeight: '600' },
 });

@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { AddFab } from '../../../src/components/AddFab';
 import { itemsApi } from '../../../src/api/items';
 import { COLORS } from '../../../src/theme/colors';
+import { webCentered } from '../../../src/theme/responsive';
 
 export default function TabsLayout() {
   const { data: shoppingList } = useQuery({
@@ -15,39 +16,41 @@ export default function TabsLayout() {
   const shoppingCount = shoppingList?.length ?? 0;
 
   return (
-    <View style={{ flex: 1 }}>
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: COLORS.brand,
-          tabBarInactiveTintColor: COLORS.inkSoft,
-          tabBarStyle: { borderTopColor: COLORS.line },
-        }}
-      >
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'Panoramica',
-            tabBarIcon: ({ color, size }) => <Ionicons name="grid-outline" color={color} size={size} />,
+    <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
+      <View style={[{ flex: 1 }, webCentered]}>
+        <Tabs
+          screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: COLORS.brand,
+            tabBarInactiveTintColor: COLORS.inkSoft,
+            tabBarStyle: { borderTopColor: COLORS.line },
           }}
-        />
-        <Tabs.Screen
-          name="stock"
-          options={{
-            title: 'Scorte',
-            tabBarIcon: ({ color, size }) => <Ionicons name="cube-outline" color={color} size={size} />,
-          }}
-        />
-        <Tabs.Screen
-          name="shopping"
-          options={{
-            title: 'Lista Spesa',
-            tabBarIcon: ({ color, size }) => <Ionicons name="cart-outline" color={color} size={size} />,
-            tabBarBadge: shoppingCount > 0 ? shoppingCount : undefined,
-          }}
-        />
-      </Tabs>
-      <AddFab />
+        >
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: 'Panoramica',
+              tabBarIcon: ({ color, size }) => <Ionicons name="grid-outline" color={color} size={size} />,
+            }}
+          />
+          <Tabs.Screen
+            name="stock"
+            options={{
+              title: 'Scorte',
+              tabBarIcon: ({ color, size }) => <Ionicons name="cube-outline" color={color} size={size} />,
+            }}
+          />
+          <Tabs.Screen
+            name="shopping"
+            options={{
+              title: 'Lista Spesa',
+              tabBarIcon: ({ color, size }) => <Ionicons name="cart-outline" color={color} size={size} />,
+              tabBarBadge: shoppingCount > 0 ? shoppingCount : undefined,
+            }}
+          />
+        </Tabs>
+        <AddFab />
+      </View>
     </View>
   );
 }

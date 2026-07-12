@@ -8,6 +8,7 @@ import { categoryInfo, ZONES } from '../../../src/constants/domain';
 import { EmptyState } from '../../../src/components/EmptyState';
 import { SectionTitle } from '../../../src/components/SectionTitle';
 import { COLORS } from '../../../src/theme/colors';
+import { webCentered } from '../../../src/theme/responsive';
 import type { Item } from '../../../src/types';
 
 export default function ShoppingScreen() {
@@ -70,7 +71,7 @@ export default function ShoppingScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: COLORS.bg },
-  container: { flex: 1, paddingHorizontal: 20, paddingTop: 20, gap: 12 },
+  container: { flex: 1, paddingHorizontal: 20, paddingTop: 20, gap: 12, ...webCentered },
   list: { paddingBottom: 120 },
   row: {
     flexDirection: 'row',

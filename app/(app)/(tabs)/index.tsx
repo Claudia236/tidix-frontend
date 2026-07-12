@@ -11,6 +11,7 @@ import { SectionTitle } from '../../../src/components/SectionTitle';
 import { ZoneCard } from '../../../src/components/ZoneCard';
 import { ZONE_ORDER } from '../../../src/constants/domain';
 import { COLORS } from '../../../src/theme/colors';
+import { webCentered } from '../../../src/theme/responsive';
 import type { StorageZone } from '../../../src/types';
 
 export default function OverviewScreen() {
@@ -132,7 +133,7 @@ export default function OverviewScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: COLORS.bg },
-  container: { padding: 20, gap: 16, paddingBottom: 120 },
+  container: { padding: 20, gap: 16, paddingBottom: 120, ...webCentered },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '800', color: COLORS.ink },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },

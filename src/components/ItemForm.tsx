@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CATEGORIES, UNITS, ZONE_ORDER, ZONES } from '../constants/domain';
 import { COLORS } from '../theme/colors';
+import { webCentered } from '../theme/responsive';
 import type { Category, ItemInput, StorageZone, Unit } from '../types';
 import { DatePickerField } from './DatePickerField';
 import { PrimaryButton } from './PrimaryButton';
@@ -64,7 +65,12 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
 
       <View style={styles.field}>
         <Text style={styles.label}>Categoria</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoryScroll}
+          contentContainerStyle={styles.categoryRow}
+        >
           {CATEGORIES.map((cat) => {
             const active = category === cat.key;
             return (
@@ -125,7 +131,7 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, gap: 20, paddingBottom: 40 },
+  container: { padding: 20, gap: 20, paddingBottom: 40, ...webCentered },
   field: { gap: 8 },
   label: {
     fontSize: 12,
@@ -147,7 +153,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   chipText: { fontWeight: '600', fontSize: 13 },
-  categoryRow: { gap: 8, paddingVertical: 2 },
+  categoryScroll: { flexGrow: 0 },
+  categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 2 },
   categoryChip: {
     alignItems: 'center',
     gap: 4,

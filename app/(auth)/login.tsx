@@ -6,6 +6,7 @@ import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { TextField } from '../../src/components/TextField';
 import { useAuth } from '../../src/context/AuthContext';
 import { COLORS } from '../../src/theme/colors';
+import { webCentered } from '../../src/theme/responsive';
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -62,7 +63,7 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: COLORS.bg },
-  container: { flexGrow: 1, justifyContent: 'center', padding: 24, gap: 24 },
+  container: { flexGrow: 1, justifyContent: 'center', padding: 24, gap: 24, ...webCentered },
   logo: { fontSize: 24, fontWeight: '800', color: COLORS.ink, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 0.5 },
   subtitle: { fontSize: 14, color: COLORS.inkSoft, textAlign: 'center' },
   form: { gap: 16 },

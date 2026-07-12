@@ -36,15 +36,15 @@ export function PrimaryButton({ label, onPress, disabled, loading, variant = 'pr
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 18,
+    borderRadius: 10,
+    paddingVertical: 11,
+    paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
   },
   label: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
   },
 });

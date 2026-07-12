@@ -6,6 +6,7 @@ import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { TextField } from '../../src/components/TextField';
 import { useAuth } from '../../src/context/AuthContext';
 import { COLORS } from '../../src/theme/colors';
+import { webCentered } from '../../src/theme/responsive';
 
 type Mode = 'choose' | 'create' | 'join';
 
@@ -98,7 +99,7 @@ export default function HouseholdSetupScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: COLORS.bg },
-  container: { flexGrow: 1, justifyContent: 'center', padding: 24, gap: 20 },
+  container: { flexGrow: 1, justifyContent: 'center', padding: 24, gap: 20, ...webCentered },
   title: { fontSize: 22, fontWeight: '800', color: COLORS.ink, textAlign: 'center' },
   subtitle: { fontSize: 14, color: COLORS.inkSoft, textAlign: 'center' },
   choices: { gap: 12, marginTop: 8 },

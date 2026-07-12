@@ -1,0 +1,16 @@
+export const COLORS = {
+  bg: '#EDEFE9',
+  card: '#FFFFFF',
+  ink: '#26332C',
+  inkSoft: '#5B695F',
+  brand: '#3F6B52',
+  warn: '#C4571F',
+  warnBg: '#FBEADC',
+  danger: '#A33B2B',
+  dangerBg: '#F6E2DE',
+  gold: '#B98A2E',
+  goldBg: '#F5EAD3',
+  okBg: '#E4E7DF',
+  line: '#DCDFD6',
+  white: '#FFFFFF',
+};

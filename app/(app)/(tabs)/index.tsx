@@ -9,10 +9,8 @@ import { AlertBanner } from '../../../src/components/AlertBanner';
 import { EmptyState } from '../../../src/components/EmptyState';
 import { SectionTitle } from '../../../src/components/SectionTitle';
 import { ZoneCard } from '../../../src/components/ZoneCard';
-import { ZONE_ORDER } from '../../../src/constants/domain';
 import { COLORS } from '../../../src/theme/colors';
 import { webCentered } from '../../../src/theme/responsive';
-import type { StorageZone } from '../../../src/types';
 
 export default function OverviewScreen() {
   const router = useRouter();
@@ -21,11 +19,6 @@ export default function OverviewScreen() {
   const expiredQuery = useQuery({ queryKey: ['items', 'expired'], queryFn: itemsApi.expired });
   const expiringQuery = useQuery({ queryKey: ['items', 'expiring', 3], queryFn: () => itemsApi.expiring(3) });
   const shoppingQuery = useQuery({ queryKey: ['items', 'shopping-list'], queryFn: itemsApi.shoppingList });
-
-  const summaryByZone = useMemo(() => {
-    const map = new Map(summaryQuery.data?.map((s) => [s.zone, s]) ?? []);
-    return map;
-  }, [summaryQuery.data]);
 
   const totalCount = useMemo(
     () => (summaryQuery.data ?? []).reduce((sum, z) => sum + z.count, 0),
@@ -44,8 +37,8 @@ export default function OverviewScreen() {
     shoppingQuery.refetch();
   }
 
-  function goToZone(zone: StorageZone) {
-    router.push({ pathname: '/(app)/(tabs)/stock', params: { zone } });
+  function goToZone(storageLocationId: string) {
+    router.push({ pathname: '/(app)/(tabs)/stock', params: { storageLocationId } });
   }
 
   const expiredItems = expiredQuery.data ?? [];
@@ -107,8 +100,12 @@ export default function OverviewScreen() {
             <View style={styles.zonesSection}>
               <SectionTitle small>Le zone</SectionTitle>
               <View style={styles.zonesGrid}>
-                {ZONE_ORDER.map((zone) => (
-                  <ZoneCard key={zone} zone={zone} summary={summaryByZone.get(zone)} onPress={() => goToZone(zone)} />
+                {(summaryQuery.data ?? []).map((summary) => (
+                  <ZoneCard
+                    key={summary.storageLocationId}
+                    summary={summary}
+                    onPress={() => goToZone(summary.storageLocationId)}
+                  />
                 ))}
               </View>
             </View>

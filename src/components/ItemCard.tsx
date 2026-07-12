@@ -1,22 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { categoryInfo, EXPIRY_STATUS_COLORS, ZONES } from '../constants/domain';
+import { categoryInfo, EXPIRY_STATUS_COLORS, locationCode, locationColor } from '../constants/domain';
 import { COLORS } from '../theme/colors';
-import type { Item } from '../types';
+import type { Item, StorageLocation } from '../types';
 import { getExpiryInfo } from '../utils/expiry';
 
 interface Props {
   item: Item;
+  location: StorageLocation | undefined;
   onAdjust: (delta: number) => void;
   onPress: () => void;
 }
 
-export function ItemCard({ item, onAdjust, onPress }: Props) {
-  const zone = ZONES[item.zone];
+export function ItemCard({ item, location, onAdjust, onPress }: Props) {
   const category = categoryInfo(item.category);
   const needsBuying = item.quantity <= 0;
   const expiry = !needsBuying ? getExpiryInfo(item.expirationDate) : null;
+  const { color: locationFg, bg: locationBg } = locationColor(item.storageLocationId);
 
   let stripeColor: string = COLORS.line;
   let noteText: string | null = null;
@@ -41,9 +42,11 @@ export function ItemCard({ item, onAdjust, onPress }: Props) {
           <View style={styles.info}>
             <View style={styles.nameRow}>
               <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
-              <View style={[styles.zoneBadge, { backgroundColor: zone.bg }]}>
-                <Text style={[styles.zoneBadgeText, { color: zone.color }]}>{zone.code}</Text>
-              </View>
+              {location ? (
+                <View style={[styles.zoneBadge, { backgroundColor: locationBg }]}>
+                  <Text style={[styles.zoneBadgeText, { color: locationFg }]}>{locationCode(location.name)}</Text>
+                </View>
+              ) : null}
             </View>
             {noteText ? <Text style={[styles.note, { color: noteColor }]}>{noteText}</Text> : null}
           </View>

@@ -1,8 +1,8 @@
 import { apiClient } from './client';
-import type { AdjustQuantityInput, Item, ItemInput, StorageZone, ZoneSummary } from '../types';
+import type { AdjustQuantityInput, Item, ItemInput, ZoneSummary } from '../types';
 
 export const itemsApi = {
-  list: (params?: { zone?: StorageZone; search?: string }) =>
+  list: (params?: { storageLocationId?: string; search?: string }) =>
     apiClient.get<Item[]>('/api/items', { params }).then((r) => r.data),
 
   get: (id: string) => apiClient.get<Item>(`/api/items/${id}`).then((r) => r.data),

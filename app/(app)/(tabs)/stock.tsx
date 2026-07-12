@@ -1,45 +1,64 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { itemsApi } from '../../../src/api/items';
 import { EmptyState } from '../../../src/components/EmptyState';
 import { ItemCard } from '../../../src/components/ItemCard';
+import { RestockDialog } from '../../../src/components/RestockDialog';
 import { SectionTitle } from '../../../src/components/SectionTitle';
-import { ZONE_ORDER, ZONES } from '../../../src/constants/domain';
+import { useStorageLocations } from '../../../src/hooks/useStorageLocations';
 import { COLORS } from '../../../src/theme/colors';
 import { webCentered } from '../../../src/theme/responsive';
-import type { StorageZone } from '../../../src/types';
-
-const FILTERS: { key: StorageZone | 'TUTTI'; label: string; emoji: string }[] = [
-  { key: 'TUTTI', label: 'Tutti', emoji: '📋' },
-  ...ZONE_ORDER.map((z) => ({ key: z, label: ZONES[z].label, emoji: ZONES[z].emoji })),
-];
+import type { Item } from '../../../src/types';
 
 export default function StockScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const params = useLocalSearchParams<{ zone?: string }>();
-  const [filterZone, setFilterZone] = useState<StorageZone | 'TUTTI'>('TUTTI');
+  const params = useLocalSearchParams<{ storageLocationId?: string }>();
+  const { locations, byId } = useStorageLocations();
+  const [filterLocationId, setFilterLocationId] = useState<string>('TUTTI');
   const [search, setSearch] = useState('');
+  const [restockTarget, setRestockTarget] = useState<Item | null>(null);
+
+  const filters = useMemo(
+    () => [{ key: 'TUTTI', label: 'Tutti', emoji: '📋' }, ...locations.map((l) => ({ key: l.id, label: l.name, emoji: l.emoji }))],
+    [locations]
+  );
 
   useEffect(() => {
-    if (params.zone && ZONE_ORDER.includes(params.zone as StorageZone)) {
-      setFilterZone(params.zone as StorageZone);
+    if (params.storageLocationId) {
+      setFilterLocationId(params.storageLocationId);
     }
-  }, [params.zone]);
+  }, [params.storageLocationId]);
 
   const itemsQuery = useQuery({
-    queryKey: ['items', 'list', filterZone, search],
-    queryFn: () => itemsApi.list({ zone: filterZone === 'TUTTI' ? undefined : filterZone, search: search || undefined }),
+    queryKey: ['items', 'list', filterLocationId, search],
+    queryFn: () =>
+      itemsApi.list({
+        storageLocationId: filterLocationId === 'TUTTI' ? undefined : filterLocationId,
+        search: search || undefined,
+      }),
   });
 
   const adjustMutation = useMutation({
-    mutationFn: ({ id, delta }: { id: string; delta: number }) => itemsApi.adjustQuantity(id, { delta }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
+    mutationFn: ({ id, delta, expirationDate, clearExpirationDate }: { id: string; delta: number; expirationDate?: string | null; clearExpirationDate?: boolean }) =>
+      itemsApi.adjustQuantity(id, { delta, expirationDate: expirationDate ?? undefined, clearExpirationDate }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+      setRestockTarget(null);
+    },
   });
+
+  function handleAdjust(item: Item, delta: number) {
+    if (delta > 0) {
+      setRestockTarget(item);
+      return;
+    }
+    adjustMutation.mutate({ id: item.id, delta });
+  }
 
   const items = itemsQuery.data ?? [];
 
@@ -65,12 +84,12 @@ export default function StockScreen() {
           style={styles.filtersScroll}
           contentContainerStyle={styles.filters}
         >
-          {FILTERS.map((f) => {
-            const active = filterZone === f.key;
+          {filters.map((f) => {
+            const active = filterLocationId === f.key;
             return (
               <Pressable
                 key={f.key}
-                onPress={() => setFilterZone(f.key)}
+                onPress={() => setFilterLocationId(f.key)}
                 style={[styles.filterChip, active && styles.filterChipActive]}
               >
                 <Text style={styles.filterChipEmoji}>{f.emoji}</Text>
@@ -94,12 +113,24 @@ export default function StockScreen() {
           renderItem={({ item }) => (
             <ItemCard
               item={item}
-              onAdjust={(delta) => adjustMutation.mutate({ id: item.id, delta })}
+              location={byId.get(item.storageLocationId)}
+              onAdjust={(delta) => handleAdjust(item, delta)}
               onPress={() => router.push({ pathname: '/(app)/item/[id]', params: { id: item.id } })}
             />
           )}
         />
       </View>
+
+      <RestockDialog
+        visible={restockTarget !== null}
+        itemName={restockTarget?.name ?? ''}
+        currentExpirationDate={restockTarget?.expirationDate ?? null}
+        onCancel={() => setRestockTarget(null)}
+        onConfirm={({ expirationDate, clearExpirationDate }) => {
+          if (!restockTarget) return;
+          adjustMutation.mutate({ id: restockTarget.id, delta: 1, expirationDate, clearExpirationDate });
+        }}
+      />
     </SafeAreaView>
   );
 }

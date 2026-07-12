@@ -1,9 +1,13 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { CATEGORIES, UNITS, ZONE_ORDER, ZONES } from '../constants/domain';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { storageLocationsApi } from '../api/storageLocations';
+import { CATEGORIES, locationColor, UNITS } from '../constants/domain';
+import { useStorageLocations } from '../hooks/useStorageLocations';
 import { COLORS } from '../theme/colors';
 import { webCentered } from '../theme/responsive';
-import type { Category, ItemInput, StorageZone, Unit } from '../types';
+import type { Category, ItemInput, Unit } from '../types';
 import { DatePickerField } from './DatePickerField';
 import { PrimaryButton } from './PrimaryButton';
 import { TextField } from './TextField';
@@ -18,25 +22,48 @@ interface Props {
 }
 
 export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete, deleting }: Props) {
+  const queryClient = useQueryClient();
+  const { locations } = useStorageLocations();
+
   const [name, setName] = useState(initial?.name ?? '');
-  const [zone, setZone] = useState<StorageZone>(initial?.zone ?? 'FRIGO');
+  const [storageLocationId, setStorageLocationId] = useState<string>(initial?.storageLocationId ?? '');
   const [category, setCategory] = useState<Category>(initial?.category ?? 'ALTRO');
   const [quantity, setQuantity] = useState(String(initial?.quantity ?? 1));
   const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'PZ');
   const [expirationDate, setExpirationDate] = useState<string | null>(initial?.expirationDate ?? null);
+  const [addingLocation, setAddingLocation] = useState(false);
+  const [newLocationName, setNewLocationName] = useState('');
 
-  const canSubmit = name.trim().length > 0;
+  const effectiveLocationId = storageLocationId || locations[0]?.id || '';
+
+  const createLocationMutation = useMutation({
+    mutationFn: (name2: string) => storageLocationsApi.create({ name: name2 }),
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ['storage-locations'] });
+      setStorageLocationId(created.id);
+      setNewLocationName('');
+      setAddingLocation(false);
+    },
+  });
+
+  const canSubmit = name.trim().length > 0 && !!effectiveLocationId;
 
   function handleSubmit() {
     if (!canSubmit) return;
     onSubmit({
       name: name.trim(),
-      zone,
+      storageLocationId: effectiveLocationId,
       category,
       quantity: Math.max(0, Number(quantity.replace(',', '.')) || 0),
       unit,
       expirationDate,
     });
+  }
+
+  function handleCreateLocation() {
+    const trimmed = newLocationName.trim();
+    if (!trimmed) return;
+    createLocationMutation.mutate(trimmed);
   }
 
   return (
@@ -46,21 +73,45 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
       <View style={styles.field}>
         <Text style={styles.label}>Dove si trova</Text>
         <View style={styles.grid}>
-          {ZONE_ORDER.map((key) => {
-            const info = ZONES[key];
-            const active = zone === key;
+          {locations.map((location) => {
+            const active = effectiveLocationId === location.id;
+            const { color } = locationColor(location.id);
             return (
               <Pressable
-                key={key}
-                onPress={() => setZone(key)}
-                style={[styles.zoneChip, { borderColor: active ? info.color : COLORS.line, backgroundColor: active ? info.color : COLORS.white }]}
+                key={location.id}
+                onPress={() => setStorageLocationId(location.id)}
+                style={[styles.zoneChip, { borderColor: active ? color : COLORS.line, backgroundColor: active ? color : COLORS.white }]}
               >
-                <Text style={{ fontSize: 14 }}>{info.emoji}</Text>
-                <Text style={[styles.chipText, { color: active ? COLORS.white : COLORS.ink }]}>{info.label}</Text>
+                <Text style={{ fontSize: 14 }}>{location.emoji}</Text>
+                <Text style={[styles.chipText, { color: active ? COLORS.white : COLORS.ink }]}>{location.name}</Text>
               </Pressable>
             );
           })}
+          <Pressable onPress={() => setAddingLocation(true)} style={[styles.zoneChip, styles.addLocationChip]}>
+            <Ionicons name="add" size={16} color={COLORS.brand} />
+            <Text style={[styles.chipText, { color: COLORS.brand }]}>Nuova posizione</Text>
+          </Pressable>
         </View>
+
+        {addingLocation ? (
+          <View style={styles.newLocationRow}>
+            <TextInput
+              value={newLocationName}
+              onChangeText={setNewLocationName}
+              placeholder="Es. Cantina"
+              placeholderTextColor={COLORS.inkSoft}
+              style={styles.newLocationInput}
+              autoFocus
+              onSubmitEditing={handleCreateLocation}
+            />
+            <Pressable onPress={handleCreateLocation} style={styles.newLocationButton} hitSlop={8}>
+              <Ionicons name="checkmark" size={16} color={COLORS.white} />
+            </Pressable>
+            <Pressable onPress={() => setAddingLocation(false)} style={styles.newLocationCancel} hitSlop={8}>
+              <Ionicons name="close" size={16} color={COLORS.inkSoft} />
+            </Pressable>
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.field}>
@@ -152,7 +203,35 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
+  addLocationChip: { borderColor: COLORS.brand, borderStyle: 'dashed', backgroundColor: COLORS.white },
   chipText: { fontWeight: '600', fontSize: 13 },
+  newLocationRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 8 },
+  newLocationInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 13,
+    color: COLORS.ink,
+    backgroundColor: COLORS.white,
+  },
+  newLocationButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.brand,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  newLocationCancel: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   categoryScroll: { flexGrow: 0 },
   categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 2 },
   categoryChip: {

@@ -5,14 +5,13 @@ import { Alert, StyleSheet, View } from 'react-native';
 import { itemsApi } from '../../../src/api/items';
 import { getErrorMessage } from '../../../src/api/client';
 import { ItemForm } from '../../../src/components/ItemForm';
-import { ZONE_ORDER } from '../../../src/constants/domain';
 import { COLORS } from '../../../src/theme/colors';
-import type { ItemInput, StorageZone } from '../../../src/types';
+import type { ItemInput } from '../../../src/types';
 
 export default function NewItemScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const params = useLocalSearchParams<{ zone?: string }>();
+  const params = useLocalSearchParams<{ storageLocationId?: string }>();
 
   const createMutation = useMutation({
     mutationFn: (input: ItemInput) => itemsApi.create(input),
@@ -23,13 +22,10 @@ export default function NewItemScreen() {
     onError: (e) => Alert.alert('Errore', getErrorMessage(e)),
   });
 
-  const initialZone: StorageZone | undefined =
-    params.zone && ZONE_ORDER.includes(params.zone as StorageZone) ? (params.zone as StorageZone) : undefined;
-
   return (
     <View style={styles.container}>
       <ItemForm
-        initial={{ zone: initialZone }}
+        initial={{ storageLocationId: params.storageLocationId }}
         submitLabel="Salva"
         submitting={createMutation.isPending}
         onSubmit={(input) => createMutation.mutate(input)}

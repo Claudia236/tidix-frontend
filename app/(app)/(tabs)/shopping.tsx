@@ -6,10 +6,11 @@ import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { itemsApi } from '../../../src/api/items';
 import { shoppingNotesApi } from '../../../src/api/shoppingNotes';
-import { categoryInfo, ZONES } from '../../../src/constants/domain';
+import { categoryInfo, locationCode, locationColor } from '../../../src/constants/domain';
 import { EmptyState } from '../../../src/components/EmptyState';
 import { RestockDialog } from '../../../src/components/RestockDialog';
 import { SectionTitle } from '../../../src/components/SectionTitle';
+import { useStorageLocations } from '../../../src/hooks/useStorageLocations';
 import { COLORS } from '../../../src/theme/colors';
 import { webCentered } from '../../../src/theme/responsive';
 import type { Item, ShoppingNote } from '../../../src/types';
@@ -21,6 +22,7 @@ type Row =
 export default function ShoppingScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { byId } = useStorageLocations();
   const [quickText, setQuickText] = useState('');
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
 
@@ -110,7 +112,8 @@ export default function ShoppingScreen() {
 
             const item = row.data;
             const category = categoryInfo(item.category);
-            const zone = ZONES[item.zone];
+            const location = byId.get(item.storageLocationId);
+            const { color: locationFg, bg: locationBg } = locationColor(item.storageLocationId);
             return (
               <View style={[styles.row, index === 0 && styles.rowFirst]}>
                 <Pressable onPress={() => setRestockTarget(item)} style={styles.checkbox} hitSlop={8} />
@@ -120,9 +123,11 @@ export default function ShoppingScreen() {
                 >
                   <Text>{category.emoji}</Text>
                   <Text style={styles.rowName} numberOfLines={1}>{item.name}</Text>
-                  <View style={[styles.zoneBadge, { backgroundColor: zone.bg }]}>
-                    <Text style={[styles.zoneBadgeText, { color: zone.color }]}>{zone.code}</Text>
-                  </View>
+                  {location ? (
+                    <View style={[styles.zoneBadge, { backgroundColor: locationBg }]}>
+                      <Text style={[styles.zoneBadgeText, { color: locationFg }]}>{locationCode(location.name)}</Text>
+                    </View>
+                  ) : null}
                 </Pressable>
               </View>
             );

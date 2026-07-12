@@ -48,6 +48,13 @@ export default function TabsLayout() {
               tabBarBadge: shoppingCount > 0 ? shoppingCount : undefined,
             }}
           />
+          <Tabs.Screen
+            name="more"
+            options={{
+              title: 'Altro',
+              tabBarIcon: ({ color, size }) => <Ionicons name="ellipsis-horizontal-circle-outline" color={color} size={size} />,
+            }}
+          />
         </Tabs>
         <AddFab />
       </View>

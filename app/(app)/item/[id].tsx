@@ -55,7 +55,7 @@ export default function EditItemScreen() {
       <ItemForm
         initial={{
           name: item.name,
-          zone: item.zone,
+          storageLocationId: item.storageLocationId,
           category: item.category,
           quantity: item.quantity,
           unit: item.unit,

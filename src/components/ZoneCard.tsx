@@ -1,29 +1,26 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ZONES } from '../constants/domain';
 import { COLORS } from '../theme/colors';
-import type { StorageZone, ZoneSummary } from '../types';
+import type { ZoneSummary } from '../types';
 
 interface Props {
-  zone: StorageZone;
-  summary?: ZoneSummary;
+  summary: ZoneSummary;
   onPress: () => void;
 }
 
-export function ZoneCard({ zone, summary, onPress }: Props) {
-  const zoneInfo = ZONES[zone];
-  const count = summary?.count ?? 0;
-  const showDot = summary?.hasExpired || summary?.hasExpiring;
+export function ZoneCard({ summary, onPress }: Props) {
+  const count = summary.count;
+  const showDot = summary.hasExpired || summary.hasExpiring;
 
   return (
     <Pressable onPress={onPress} style={styles.card}>
       <View style={styles.topRow}>
-        <Text style={styles.emoji}>{zoneInfo.emoji}</Text>
+        <Text style={styles.emoji}>{summary.emoji}</Text>
         {showDot ? (
-          <View style={[styles.dot, { backgroundColor: summary?.hasExpired ? COLORS.danger : COLORS.warn }]} />
+          <View style={[styles.dot, { backgroundColor: summary.hasExpired ? COLORS.danger : COLORS.warn }]} />
         ) : null}
       </View>
-      <Text style={styles.label}>{zoneInfo.label}</Text>
+      <Text style={styles.label}>{summary.name}</Text>
       <Text style={styles.count}>{count} prodott{count === 1 ? 'o' : 'i'}</Text>
     </Pressable>
   );

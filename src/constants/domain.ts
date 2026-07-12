@@ -1,14 +1,5 @@
-import type { Category, StorageZone, Unit } from '../types';
+import type { Category, Unit, WasteType } from '../types';
 import { COLORS } from '../theme/colors';
-
-export const ZONES: Record<StorageZone, { label: string; code: string; color: string; bg: string; emoji: string }> = {
-  FRIGO: { label: 'Frigo', code: 'FR', color: '#2E6E8E', bg: '#E1EDF1', emoji: '🧊' },
-  FREEZER: { label: 'Freezer', code: 'FZ', color: '#1F7A8C', bg: '#DCEFF1', emoji: '❄️' },
-  DISPENSA: { label: 'Dispensa', code: 'DI', color: '#96702A', bg: '#F1E8D8', emoji: '🥫' },
-  SGABUZZINO: { label: 'Sgabuzzino', code: 'SG', color: '#5B5A52', bg: '#EAE8E2', emoji: '📦' },
-};
-
-export const ZONE_ORDER: StorageZone[] = ['FRIGO', 'FREEZER', 'DISPENSA', 'SGABUZZINO'];
 
 export const CATEGORIES: { key: Category; label: string; short: string; emoji: string }[] = [
   { key: 'LATTICINI', label: 'Latticini', short: 'Latticini', emoji: '🥛' },
@@ -36,3 +27,46 @@ export const EXPIRY_STATUS_COLORS = {
   presto: { fg: COLORS.gold, bg: COLORS.goldBg },
   ok: { fg: COLORS.inkSoft, bg: COLORS.okBg },
 } as const;
+
+// Le posizioni (frigo/freezer/dispensa/...) sono ormai personalizzate per famiglia
+// e arrivano dall'API: qui deriviamo solo un colore/codice coerenti e stabili
+// a partire dal nome, senza doverli salvare lato server.
+const LOCATION_PALETTE = [
+  { color: '#2E6E8E', bg: '#E1EDF1' },
+  { color: '#1F7A8C', bg: '#DCEFF1' },
+  { color: '#96702A', bg: '#F1E8D8' },
+  { color: '#5B5A52', bg: '#EAE8E2' },
+  { color: '#6B4F8C', bg: '#EAE3F1' },
+  { color: '#3F6B52', bg: '#E1EDE5' },
+  { color: '#A3572E', bg: '#F3E4D8' },
+];
+
+function hashString(value: string): number {
+  let hash = 0;
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+export function locationColor(id: string): { color: string; bg: string } {
+  return LOCATION_PALETTE[hashString(id) % LOCATION_PALETTE.length];
+}
+
+export function locationCode(name: string): string {
+  const letters = name.trim().toUpperCase().replace(/[^A-ZÀ-Ù]/g, '');
+  return (letters.slice(0, 2) || '??').padEnd(2, letters[0] ?? '?');
+}
+
+export const WASTE_TYPES: { key: WasteType; label: string; emoji: string }[] = [
+  { key: 'ORGANICO', label: 'Organico', emoji: '🍂' },
+  { key: 'PLASTICA', label: 'Plastica', emoji: '♻️' },
+  { key: 'CARTA_CARTONE', label: 'Carta e cartone', emoji: '📦' },
+  { key: 'VETRO', label: 'Vetro', emoji: '🍾' },
+  { key: 'INDIFFERENZIATO', label: 'Indifferenziato', emoji: '🗑️' },
+  { key: 'ALTRO', label: 'Altro', emoji: '📌' },
+];
+
+export function wasteTypeInfo(key: WasteType) {
+  return WASTE_TYPES.find((w) => w.key === key) ?? WASTE_TYPES[WASTE_TYPES.length - 1];
+}

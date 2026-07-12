@@ -1,5 +1,3 @@
-export type StorageZone = 'FRIGO' | 'FREEZER' | 'DISPENSA' | 'SGABUZZINO';
-
 export type Category =
   | 'LATTICINI'
   | 'CARNE'
@@ -14,6 +12,8 @@ export type Category =
   | 'ALTRO';
 
 export type Unit = 'PZ' | 'KG' | 'G' | 'L' | 'ML' | 'CONF';
+
+export type WasteType = 'ORGANICO' | 'PLASTICA' | 'CARTA_CARTONE' | 'VETRO' | 'INDIFFERENZIATO' | 'ALTRO';
 
 export interface UserResponse {
   id: string;
@@ -41,10 +41,21 @@ export interface HouseholdResponse {
   members: HouseholdMember[];
 }
 
+export interface StorageLocation {
+  id: string;
+  name: string;
+  emoji: string;
+}
+
+export interface StorageLocationInput {
+  name: string;
+  emoji?: string;
+}
+
 export interface Item {
   id: string;
   name: string;
-  zone: StorageZone;
+  storageLocationId: string;
   category: Category;
   quantity: number;
   unit: Unit;
@@ -57,7 +68,7 @@ export interface Item {
 
 export interface ItemInput {
   name: string;
-  zone: StorageZone;
+  storageLocationId: string;
   category: Category;
   quantity: number;
   unit: Unit;
@@ -78,10 +89,80 @@ export interface ShoppingNote {
 }
 
 export interface ZoneSummary {
-  zone: StorageZone;
+  storageLocationId: string;
+  name: string;
+  emoji: string;
   count: number;
   hasExpired: boolean;
   hasExpiring: boolean;
+}
+
+export interface CleaningTask {
+  id: string;
+  name: string;
+  frequencyDays: number | null;
+  lastCleanedAt: string | null;
+  lastCleanedByUserId: string | null;
+  daysSinceCleaned: number | null;
+  overdue: boolean;
+}
+
+export interface CleaningTaskInput {
+  name: string;
+  frequencyDays?: number | null;
+}
+
+export interface WasteLog {
+  id: string;
+  type: WasteType;
+  date: string;
+  doneByUserId: string;
+  createdAt: string;
+}
+
+export interface ExpenseSplitInput {
+  userId: string;
+  percentage: number;
+}
+
+export interface ExpenseSplit {
+  userId: string;
+  userName: string;
+  percentage: number;
+  amount: number;
+}
+
+export interface Expense {
+  id: string;
+  description: string;
+  amount: number;
+  paidByUserId: string;
+  paidByName: string;
+  date: string;
+  splits: ExpenseSplit[];
+  createdAt: string;
+}
+
+export interface ExpenseInput {
+  description: string;
+  amount: number;
+  paidByUserId: string;
+  date: string;
+  splits?: ExpenseSplitInput[];
+}
+
+export interface UserBalance {
+  userId: string;
+  userName: string;
+  totalPaid: number;
+  totalShare: number;
+  netBalance: number;
+}
+
+export interface ExpenseSummary {
+  month: string;
+  totalAmount: number;
+  byUser: UserBalance[];
 }
 
 export interface ApiErrorBody {

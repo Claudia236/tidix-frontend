@@ -1,119 +1,104 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useMemo } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useMemo } from 'react';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { getErrorMessage } from '../../src/api/client';
-import { householdApi } from '../../src/api/household';
 import { wasteApi } from '../../src/api/waste';
-import { EmptyState } from '../../src/components/EmptyState';
-import { WASTE_TYPES, wasteTypeInfo } from '../../src/constants/domain';
-import { useAuth } from '../../src/context/AuthContext';
+import { DAYS_OF_WEEK, WASTE_TYPES } from '../../src/constants/domain';
+import { syncWasteReminders } from '../../src/notifications/wasteReminders';
 import { COLORS } from '../../src/theme/colors';
 import { webCentered } from '../../src/theme/responsive';
-import type { WasteLog } from '../../src/types';
+import type { DayOfWeek, WasteType } from '../../src/types';
 
 export default function WasteScreen() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const schedulesQuery = useQuery({ queryKey: ['waste-schedules'], queryFn: wasteApi.list });
 
-  const logsQuery = useQuery({ queryKey: ['waste-logs'], queryFn: () => wasteApi.recent(14) });
-  const householdQuery = useQuery({ queryKey: ['household', 'me'], queryFn: householdApi.me });
+  const daysByType = useMemo(() => {
+    const map = new Map<WasteType, DayOfWeek[]>();
+    (schedulesQuery.data ?? []).forEach((s) => map.set(s.type, s.daysOfWeek));
+    return map;
+  }, [schedulesQuery.data]);
 
-  const memberName = useMemo(() => {
-    const map = new Map((householdQuery.data?.members ?? []).map((m) => [m.id, m.name]));
-    return (userId: string) => (userId === user?.id ? 'Tu' : map.get(userId) ?? 'Un familiare');
-  }, [householdQuery.data, user?.id]);
+  useEffect(() => {
+    if (Platform.OS === 'web' || !schedulesQuery.data) return;
+    syncWasteReminders(schedulesQuery.data);
+  }, [schedulesQuery.data]);
 
-  const createMutation = useMutation({
-    mutationFn: (type: WasteLog['type']) => wasteApi.create(type),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['waste-logs'] }),
+  const toggleMutation = useMutation({
+    mutationFn: ({ type, daysOfWeek }: { type: WasteType; daysOfWeek: DayOfWeek[] }) =>
+      daysOfWeek.length > 0 ? wasteApi.setSchedule(type, daysOfWeek) : wasteApi.remove(type),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['waste-schedules'] }),
     onError: (e) => Alert.alert('Rifiuti', getErrorMessage(e)),
   });
 
-  const removeMutation = useMutation({
-    mutationFn: (id: string) => wasteApi.remove(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['waste-logs'] }),
-    onError: (e) => Alert.alert('Errore', getErrorMessage(e)),
-  });
-
-  const logs = logsQuery.data ?? [];
+  function toggleDay(type: WasteType, day: DayOfWeek) {
+    const current = daysByType.get(type) ?? [];
+    const next = current.includes(day) ? current.filter((d) => d !== day) : [...current, day];
+    toggleMutation.mutate({ type, daysOfWeek: next });
+  }
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.quickSection, webCentered]}>
-        <Text style={styles.quickLabel}>Segna la raccolta di oggi</Text>
-        <View style={styles.quickGrid}>
-          {WASTE_TYPES.map((w) => (
-            <Pressable key={w.key} onPress={() => createMutation.mutate(w.key)} style={styles.quickChip}>
-              <Text style={{ fontSize: 16 }}>{w.emoji}</Text>
-              <Text style={styles.quickChipText}>{w.label}</Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, webCentered]}>
+      <Text style={styles.intro}>
+        Segna i giorni in cui il tuo comune raccoglie ogni tipo di rifiuto. La sera prima riceverai un promemoria
+        per mettere fuori il secchio.
+      </Text>
 
-      <FlatList
-        data={logs}
-        keyExtractor={(l) => l.id}
-        contentContainerStyle={[styles.list, webCentered]}
-        ListEmptyComponent={
-          <EmptyState
-            icon="trash-outline"
-            title="Nessuna raccolta registrata"
-            subtitle="Tocca un tipo di rifiuto qui sopra per segnare la raccolta di oggi."
-          />
-        }
-        renderItem={({ item }) => {
-          const info = wasteTypeInfo(item.type);
-          return (
-            <View style={styles.row}>
-              <Text style={{ fontSize: 18 }}>{info.emoji}</Text>
-              <View style={styles.rowInfo}>
-                <Text style={styles.rowLabel}>{info.label}</Text>
-                <Text style={styles.rowSubtitle}>
-                  {item.date} · {memberName(item.doneByUserId)}
-                </Text>
-              </View>
-              <Pressable onPress={() => removeMutation.mutate(item.id)} hitSlop={8}>
-                <Ionicons name="trash-outline" size={18} color={COLORS.inkSoft} />
-              </Pressable>
+      {WASTE_TYPES.map((w) => {
+        const selectedDays = daysByType.get(w.key) ?? [];
+        return (
+          <View key={w.key} style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Text style={{ fontSize: 18 }}>{w.emoji}</Text>
+              <Text style={styles.cardTitle}>{w.label}</Text>
             </View>
-          );
-        }}
-      />
-    </View>
+            <View style={styles.dayRow}>
+              {DAYS_OF_WEEK.map((d) => {
+                const active = selectedDays.includes(d.key);
+                return (
+                  <Pressable
+                    key={d.key}
+                    onPress={() => toggleDay(w.key, d.key)}
+                    style={[styles.dayChip, active && styles.dayChipActive]}
+                  >
+                    <Text style={[styles.dayChipText, active && styles.dayChipTextActive]}>{d.short}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        );
+      })}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg, paddingTop: 16 },
-  quickSection: { paddingHorizontal: 20, gap: 10 },
-  quickLabel: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4, color: COLORS.inkSoft },
-  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  quickChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    backgroundColor: COLORS.white,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  quickChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
-  list: { padding: 20, paddingTop: 16, gap: 8 },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  container: { flex: 1, backgroundColor: COLORS.bg },
+  content: { padding: 20, gap: 12, paddingBottom: 60 },
+  intro: { fontSize: 13, color: COLORS.inkSoft, lineHeight: 18, marginBottom: 4 },
+  card: {
     backgroundColor: COLORS.white,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.line,
     padding: 14,
+    gap: 10,
   },
-  rowInfo: { flex: 1 },
-  rowLabel: { fontSize: 14, fontWeight: '700', color: COLORS.ink },
-  rowSubtitle: { fontSize: 12, color: COLORS.inkSoft, marginTop: 2 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  cardTitle: { fontSize: 14, fontWeight: '700', color: COLORS.ink },
+  dayRow: { flexDirection: 'row', gap: 6 },
+  dayChip: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    paddingVertical: 8,
+  },
+  dayChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
+  dayChipText: { fontSize: 13, fontWeight: '700', color: COLORS.ink },
+  dayChipTextActive: { color: COLORS.white },
 });

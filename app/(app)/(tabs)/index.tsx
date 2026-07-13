@@ -2,13 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { itemsApi } from '../../../src/api/items';
+import { wasteApi } from '../../../src/api/waste';
 import { AlertBanner } from '../../../src/components/AlertBanner';
 import { EmptyState } from '../../../src/components/EmptyState';
 import { SectionTitle } from '../../../src/components/SectionTitle';
 import { ZoneCard } from '../../../src/components/ZoneCard';
+import { jsWeekdayToDay, wasteTypeInfo, wasteTypesCollectedOn } from '../../../src/constants/domain';
 import { COLORS } from '../../../src/theme/colors';
 import { webCentered } from '../../../src/theme/responsive';
 
@@ -19,16 +21,22 @@ export default function OverviewScreen() {
   const expiredQuery = useQuery({ queryKey: ['items', 'expired'], queryFn: itemsApi.expired });
   const expiringQuery = useQuery({ queryKey: ['items', 'expiring', 3], queryFn: () => itemsApi.expiring(3) });
   const shoppingQuery = useQuery({ queryKey: ['items', 'shopping-list'], queryFn: itemsApi.shoppingList });
+  const wasteSchedulesQuery = useQuery({
+    queryKey: ['waste-schedules'],
+    queryFn: wasteApi.list,
+    enabled: Platform.OS === 'web',
+  });
 
   const totalCount = useMemo(
     () => (summaryQuery.data ?? []).reduce((sum, z) => sum + z.count, 0),
     [summaryQuery.data]
   );
 
-  const todayLabel = useMemo(
-    () => new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }),
-    []
-  );
+  const wasteTomorrow = useMemo(() => {
+    if (Platform.OS !== 'web' || !wasteSchedulesQuery.data) return [];
+    const tomorrow = jsWeekdayToDay((new Date().getDay() + 1) % 7);
+    return wasteTypesCollectedOn(wasteSchedulesQuery.data, tomorrow);
+  }, [wasteSchedulesQuery.data]);
 
   function refresh() {
     summaryQuery.refetch();
@@ -53,13 +61,19 @@ export default function OverviewScreen() {
       >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Logistica Domestica</Text>
-          <View style={styles.headerRight}>
-            <Text style={styles.headerDate}>{todayLabel}</Text>
-            <Pressable onPress={() => router.push('/(app)/household')} hitSlop={8}>
-              <Ionicons name="people-outline" size={20} color={COLORS.inkSoft} />
-            </Pressable>
-          </View>
+          <Pressable onPress={() => router.push('/(app)/household')} style={styles.familyButton} hitSlop={8}>
+            <Ionicons name="people-circle-outline" size={26} color={COLORS.brand} />
+          </Pressable>
         </View>
+
+        {wasteTomorrow.length > 0 ? (
+          <Pressable style={styles.wasteBanner} onPress={() => router.push('/(app)/waste')}>
+            <Ionicons name="trash-outline" size={18} color={COLORS.warn} />
+            <Text style={styles.wasteBannerText}>
+              Domani passa: {wasteTomorrow.map((t) => wasteTypeInfo(t).label).join(', ')}. Ricordati il secchio stasera.
+            </Text>
+          </Pressable>
+        ) : null}
 
         <SectionTitle>Panoramica</SectionTitle>
 
@@ -133,8 +147,7 @@ const styles = StyleSheet.create({
   container: { padding: 20, gap: 16, paddingBottom: 120, ...webCentered },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '800', color: COLORS.ink },
-  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  headerDate: { fontSize: 12, color: COLORS.inkSoft, textTransform: 'capitalize' },
+  familyButton: { padding: 2 },
   okBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -144,6 +157,15 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   okBannerText: { fontSize: 13, color: COLORS.ink, flexShrink: 1 },
+  wasteBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: COLORS.warnBg,
+    borderRadius: 14,
+    padding: 14,
+  },
+  wasteBannerText: { fontSize: 13, color: COLORS.ink, flexShrink: 1 },
   zonesSection: { gap: 8 },
   zonesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   shoppingLink: {

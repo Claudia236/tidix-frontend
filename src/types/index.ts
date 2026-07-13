@@ -15,6 +15,8 @@ export type Unit = 'PZ' | 'KG' | 'G' | 'L' | 'ML' | 'CONF';
 
 export type WasteType = 'ORGANICO' | 'PLASTICA' | 'CARTA_CARTONE' | 'VETRO' | 'INDIFFERENZIATO' | 'ALTRO';
 
+export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+
 export interface UserResponse {
   id: string;
   name: string;
@@ -112,12 +114,10 @@ export interface CleaningTaskInput {
   frequencyDays?: number | null;
 }
 
-export interface WasteLog {
+export interface WasteSchedule {
   id: string;
   type: WasteType;
-  date: string;
-  doneByUserId: string;
-  createdAt: string;
+  daysOfWeek: DayOfWeek[];
 }
 
 export interface ExpenseSplitInput {

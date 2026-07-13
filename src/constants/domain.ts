@@ -1,4 +1,4 @@
-import type { Category, Unit, WasteType } from '../types';
+import type { Category, DayOfWeek, Unit, WasteSchedule, WasteType } from '../types';
 import { COLORS } from '../theme/colors';
 
 export const CATEGORIES: { key: Category; label: string; short: string; emoji: string }[] = [
@@ -69,4 +69,36 @@ export const WASTE_TYPES: { key: WasteType; label: string; emoji: string }[] = [
 
 export function wasteTypeInfo(key: WasteType) {
   return WASTE_TYPES.find((w) => w.key === key) ?? WASTE_TYPES[WASTE_TYPES.length - 1];
+}
+
+// Ordine lunedì -> domenica, coerente con java.time.DayOfWeek usato dal backend
+export const DAYS_OF_WEEK: { key: DayOfWeek; short: string; label: string }[] = [
+  { key: 'MONDAY', short: 'L', label: 'Lunedì' },
+  { key: 'TUESDAY', short: 'M', label: 'Martedì' },
+  { key: 'WEDNESDAY', short: 'M', label: 'Mercoledì' },
+  { key: 'THURSDAY', short: 'G', label: 'Giovedì' },
+  { key: 'FRIDAY', short: 'V', label: 'Venerdì' },
+  { key: 'SATURDAY', short: 'S', label: 'Sabato' },
+  { key: 'SUNDAY', short: 'D', label: 'Domenica' },
+];
+
+export function dayOfWeekLabel(key: DayOfWeek): string {
+  return DAYS_OF_WEEK.find((d) => d.key === key)?.label ?? key;
+}
+
+// Ordine domenica -> sabato, coerente con Date.getDay() (0 = domenica)
+const DAY_ORDER_FROM_SUNDAY: DayOfWeek[] = [
+  'SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY',
+];
+
+export function jsWeekdayToDay(jsWeekday: number): DayOfWeek {
+  return DAY_ORDER_FROM_SUNDAY[jsWeekday];
+}
+
+export function dayToJsWeekday(day: DayOfWeek): number {
+  return DAY_ORDER_FROM_SUNDAY.indexOf(day);
+}
+
+export function wasteTypesCollectedOn(schedules: WasteSchedule[], day: DayOfWeek): WasteType[] {
+  return schedules.filter((s) => s.daysOfWeek.includes(day)).map((s) => s.type);
 }

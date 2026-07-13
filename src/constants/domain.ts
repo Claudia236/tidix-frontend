@@ -49,7 +49,10 @@ function hashString(value: string): number {
   return hash;
 }
 
-export function locationColor(id: string): { color: string; bg: string } {
+// id puo' essere null/undefined per prodotti creati prima dell'introduzione
+// delle posizioni personalizzabili, mai riassegnati a una posizione valida
+export function locationColor(id: string | null | undefined): { color: string; bg: string } {
+  if (!id) return LOCATION_PALETTE[0];
   return LOCATION_PALETTE[hashString(id) % LOCATION_PALETTE.length];
 }
 

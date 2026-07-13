@@ -62,7 +62,7 @@ export default function OverviewScreen() {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Logistica Domestica</Text>
           <Pressable onPress={() => router.push('/(app)/household')} style={styles.familyButton} hitSlop={8}>
-            <Ionicons name="people-circle-outline" size={26} color={COLORS.brand} />
+            <Ionicons name="home-outline" size={22} color={COLORS.inkSoft} />
           </Pressable>
         </View>
 

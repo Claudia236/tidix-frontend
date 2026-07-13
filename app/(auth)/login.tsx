@@ -1,6 +1,6 @@
 import { Link } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { getErrorMessage } from '../../src/api/client';
 import { PasswordField } from '../../src/components/PasswordField';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
@@ -36,7 +36,10 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.logo}>Tidix</Text>
+        <View style={styles.brand}>
+          <Image source={require('../../assets/logo-mark.png')} style={styles.brandLogo} resizeMode="contain" />
+          <Text style={styles.logo}>Tidix</Text>
+        </View>
         <Text style={styles.subtitle}>{t('auth.login.subtitle')}</Text>
 
         <View style={styles.form}>
@@ -73,6 +76,8 @@ function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
     flex: { flex: 1, backgroundColor: COLORS.bg },
     container: { flexGrow: 1, justifyContent: 'center', padding: 24, gap: 24, ...webCentered },
+    brand: { alignItems: 'center', gap: 8 },
+    brandLogo: { width: 64, height: 64 },
     logo: { fontSize: 24, fontWeight: '800', color: COLORS.ink, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 0.5 },
     subtitle: { fontSize: 14, color: COLORS.inkSoft, textAlign: 'center' },
     form: { gap: 16 },

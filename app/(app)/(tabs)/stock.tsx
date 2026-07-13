@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../../src/api/client';
@@ -37,12 +37,27 @@ export default function StockScreen() {
   );
 
   // Ogni volta che la schermata prende il focus (tab premuto o navigazione da
-  // una zona), riparte da "Tutti" a meno che non arrivi un filtro esplicito:
-  // cosi' il tab Scorte non resta bloccato sull'ultima zona selezionata.
+  // una zona), riparte da "Tutti" a meno che non arrivi un filtro esplicito.
+  // Il parametro viene "consumato" subito con setParams: altrimenti expo-router
+  // lo ripropone anche ai focus successivi (es. ri-premendo il tab Scorte),
+  // facendo restare la schermata bloccata sull'ultima zona aperta da un link.
+  // Si legge da un ref (invece che dalle dipendenze dell'effect) perche'
+  // chiamare setParams qui dentro cambierebbe params.storageLocationId mentre
+  // la schermata e' ancora a fuoco: se fosse nelle dipendenze, l'effect si
+  // ririeseguirebbe subito e annullerebbe il filtro appena impostato.
+  const paramsRef = useRef(params);
+  paramsRef.current = params;
+
   useFocusEffect(
     useCallback(() => {
-      setFilterLocationId(params.storageLocationId ?? 'TUTTI');
-    }, [params.storageLocationId])
+      const zoneId = paramsRef.current.storageLocationId;
+      if (zoneId) {
+        setFilterLocationId(zoneId);
+        router.setParams({ storageLocationId: undefined });
+      } else {
+        setFilterLocationId('TUTTI');
+      }
+    }, [])
   );
 
   const itemsQuery = useQuery({
@@ -53,6 +68,11 @@ export default function StockScreen() {
         search: search || undefined,
       }),
   });
+
+  // Query separata, sempre senza filtri, usata solo per sapere se esistono
+  // prodotti aperti (e quanti) a prescindere dalla zona/ricerca selezionata:
+  // cosi' il chip "Aperti" non appare/scompare cambiando zona.
+  const allItemsQuery = useQuery({ queryKey: ['items', 'list', 'TUTTI', ''], queryFn: () => itemsApi.list({}) });
 
   const adjustMutation = useMutation({
     mutationFn: ({
@@ -105,7 +125,7 @@ export default function StockScreen() {
     const list = itemsQuery.data ?? [];
     return onlyOpened ? list.filter((i) => i.opened) : list;
   }, [itemsQuery.data, onlyOpened]);
-  const openedCount = useMemo(() => (itemsQuery.data ?? []).filter((i) => i.opened).length, [itemsQuery.data]);
+  const openedCount = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.opened).length, [allItemsQuery.data]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>

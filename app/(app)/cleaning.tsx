@@ -248,11 +248,11 @@ function createStyles(COLORS: ColorPalette) {
       borderColor: COLORS.line,
       padding: 14,
     },
-    cardOverdue: { borderColor: COLORS.warn },
+    cardOverdue: { borderColor: COLORS.danger },
     cardInfo: { flex: 1, gap: 2 },
     cardName: { fontSize: 14, fontWeight: '700', color: COLORS.ink },
     cardStatus: { fontSize: 12, color: COLORS.inkSoft },
-    overdueLabel: { fontSize: 11, fontWeight: '700', color: COLORS.warn, marginTop: 2 },
+    overdueLabel: { fontSize: 11, fontWeight: '700', color: COLORS.danger, marginTop: 2 },
     cardActions: { flexDirection: 'row', alignItems: 'center', gap: 14 },
     cleanButton: {
       width: 30,

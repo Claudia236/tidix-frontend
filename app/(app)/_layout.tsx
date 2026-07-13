@@ -8,7 +8,7 @@ export default function AppLayout() {
   const { t } = useI18n();
 
   return (
-    <Stack>
+    <Stack screenOptions={{ headerTintColor: colors.ink, headerTitleStyle: { color: colors.ink } }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
         name="item/new"

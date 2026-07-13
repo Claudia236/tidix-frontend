@@ -72,8 +72,8 @@ export interface ExpiryStatusColors {
 export function buildExpiryStatusColors(COLORS: ColorPalette): ExpiryStatusColors {
   return {
     critico: { fg: COLORS.danger, bg: COLORS.dangerBg },
-    attenzione: { fg: COLORS.warn, bg: COLORS.warnBg },
-    presto: { fg: COLORS.gold, bg: COLORS.goldBg },
+    attenzione: { fg: COLORS.danger, bg: COLORS.dangerBg },
+    presto: { fg: COLORS.danger, bg: COLORS.dangerBg },
     ok: { fg: COLORS.inkSoft, bg: COLORS.okBg },
   };
 }

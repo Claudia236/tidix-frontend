@@ -22,7 +22,7 @@ export interface ColorPalette {
 export type AccentKey = 'green' | 'blue' | 'purple' | 'orange' | 'teal' | 'pink';
 
 export const ACCENTS: Record<AccentKey, { light: string; dark: string; label: string }> = {
-  green: { light: '#3F6B52', dark: '#7FBF9C', label: 'Verde' },
+  green: { light: '#4F6B47', dark: '#9CC08F', label: 'Verde' },
   blue: { light: '#2F6FA8', dark: '#7AB6E8', label: 'Blu' },
   purple: { light: '#6B4FA0', dark: '#B79BE0', label: 'Viola' },
   orange: { light: '#B8621D', dark: '#E8A560', label: 'Arancione' },

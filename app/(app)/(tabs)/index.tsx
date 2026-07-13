@@ -180,7 +180,7 @@ export default function OverviewScreen() {
             <View style={styles.detailCard}>
               <View style={styles.detailCardHeader}>
                 <Text style={styles.detailCardTitle}>{t('overview.expiringCard.title')}</Text>
-                <Text style={[styles.detailCardCount, expiringItems.length > 0 && { color: colors.warn }]}>
+                <Text style={[styles.detailCardCount, expiringItems.length > 0 && { color: colors.danger }]}>
                   {expiringItems.length}
                 </Text>
               </View>
@@ -208,7 +208,7 @@ export default function OverviewScreen() {
             <View style={styles.detailCard}>
               <View style={styles.detailCardHeader}>
                 <Text style={styles.detailCardTitle}>{t('overview.cleaningDueSection')}</Text>
-                <Text style={[styles.detailCardCount, overdueCleaning.length > 0 && { color: colors.warn }]}>
+                <Text style={[styles.detailCardCount, overdueCleaning.length > 0 && { color: colors.danger }]}>
                   {overdueCleaning.length}
                 </Text>
               </View>
@@ -252,12 +252,7 @@ export default function OverviewScreen() {
                 <Text style={styles.zoneName} numberOfLines={1}>{zone.name}</Text>
                 <Text style={styles.zoneCount}>{zone.count}</Text>
                 {(zone.hasExpired || zone.hasExpiring) && (
-                  <View
-                    style={[
-                      styles.zoneDot,
-                      { backgroundColor: zone.hasExpired ? colors.danger : colors.warn },
-                    ]}
-                  />
+                  <View style={[styles.zoneDot, { backgroundColor: colors.danger }]} />
                 )}
               </Pressable>
               <Pressable

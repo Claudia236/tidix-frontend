@@ -13,7 +13,7 @@ export default function TabsLayout() {
   const pathname = usePathname();
   const { colors } = useTheme();
   const { t } = useI18n();
-  const showFab = !pathname.endsWith('/shopping');
+  const showFab = pathname === '/' || pathname.endsWith('/stock');
 
   const { data: shoppingList } = useQuery({
     queryKey: ['items', 'shopping-list'],
@@ -28,7 +28,7 @@ export default function TabsLayout() {
           screenOptions={{
             headerShown: false,
             tabBarActiveTintColor: colors.brand,
-            tabBarInactiveTintColor: colors.inkSoft,
+            tabBarInactiveTintColor: colors.ink,
             tabBarStyle: { borderTopColor: colors.line, backgroundColor: colors.card },
           }}
         >

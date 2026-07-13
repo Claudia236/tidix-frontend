@@ -12,4 +12,9 @@ export const householdApi = {
 
   rename: (name: string) =>
     apiClient.put<HouseholdResponse>('/api/households/me', { name }).then((r) => r.data),
+
+  leave: () => apiClient.post('/api/households/leave').then(() => undefined),
+
+  removeMember: (memberId: string) =>
+    apiClient.delete(`/api/households/members/${memberId}`).then(() => undefined),
 };

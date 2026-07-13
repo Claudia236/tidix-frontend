@@ -11,7 +11,7 @@ import { COLORS } from '../../src/theme/colors';
 import { webCentered } from '../../src/theme/responsive';
 
 export default function HouseholdScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const queryClient = useQueryClient();
   const householdQuery = useQuery({ queryKey: ['household', 'me'], queryFn: householdApi.me });
 
@@ -24,6 +24,21 @@ export default function HouseholdScreen() {
       queryClient.invalidateQueries({ queryKey: ['household', 'me'] });
       setEditingName(false);
     },
+    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+  });
+
+  const leaveMutation = useMutation({
+    mutationFn: () => householdApi.leave(),
+    onSuccess: async () => {
+      queryClient.clear();
+      await refreshUser();
+    },
+    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+  });
+
+  const removeMemberMutation = useMutation({
+    mutationFn: (memberId: string) => householdApi.removeMember(memberId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['household', 'me'] }),
     onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
 
@@ -45,6 +60,35 @@ export default function HouseholdScreen() {
     renameMutation.mutate(trimmed);
   }
 
+  function handleLeavePress() {
+    if (!householdQuery.data) return;
+    const isOwner = householdQuery.data.ownerId === user?.id;
+
+    if (isOwner && householdQuery.data.members.length > 1) {
+      showAlert(
+        'Non puoi ancora uscire',
+        'Sei il creatore della famiglia: rimuovi prima tutti gli altri membri per poter uscire.'
+      );
+      return;
+    }
+
+    const message = isOwner
+      ? 'Sei l\'unico membro rimasto: uscendo, la famiglia e tutti i suoi dati verranno eliminati definitivamente. Continuare?'
+      : `Sei sicuro di voler uscire dalla famiglia "${householdQuery.data.name}"?`;
+
+    showAlert('Esci dalla famiglia', message, [
+      { text: 'Annulla', style: 'cancel' },
+      { text: 'Esci', style: 'destructive', onPress: () => leaveMutation.mutate() },
+    ]);
+  }
+
+  function handleRemoveMember(memberId: string, memberName: string) {
+    showAlert('Rimuovi membro', `Rimuovere ${memberName} dalla famiglia?`, [
+      { text: 'Annulla', style: 'cancel' },
+      { text: 'Rimuovi', style: 'destructive', onPress: () => removeMemberMutation.mutate(memberId) },
+    ]);
+  }
+
   if (householdQuery.isLoading || !householdQuery.data) {
     return (
       <View style={styles.loading}>
@@ -54,6 +98,7 @@ export default function HouseholdScreen() {
   }
 
   const household = householdQuery.data;
+  const isOwner = household.ownerId === user?.id;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -95,15 +140,30 @@ export default function HouseholdScreen() {
         <Text style={styles.cardLabel}>Membri ({household.members.length})</Text>
         {household.members.map((member) => (
           <View key={member.id} style={styles.member}>
-            <Text style={styles.memberName}>
-              {member.name}
-              {member.id === user?.id ? ' (tu)' : ''}
-            </Text>
-            <Text style={styles.memberEmail}>{member.email}</Text>
+            <View style={styles.memberRow}>
+              <View style={styles.memberInfo}>
+                <Text style={styles.memberName}>
+                  {member.name}
+                  {member.id === user?.id ? ' (tu)' : ''}
+                  {member.id === household.ownerId ? ' 👑' : ''}
+                </Text>
+                <Text style={styles.memberEmail}>{member.email}</Text>
+              </View>
+              {isOwner && member.id !== user?.id ? (
+                <Pressable
+                  onPress={() => handleRemoveMember(member.id, member.name)}
+                  hitSlop={8}
+                  style={styles.removeMemberButton}
+                >
+                  <Ionicons name="person-remove-outline" size={18} color={COLORS.danger} />
+                </Pressable>
+              ) : null}
+            </View>
           </View>
         ))}
       </View>
 
+      <PrimaryButton label="Esci dalla famiglia" variant="secondary" onPress={handleLeavePress} />
       <PrimaryButton label="Esci dall'account" variant="danger" onPress={logout} />
     </ScrollView>
   );
@@ -148,6 +208,9 @@ const styles = StyleSheet.create({
   inviteCode: { fontSize: 28, fontWeight: '800', color: COLORS.brand, letterSpacing: 4 },
   cardHint: { fontSize: 12, color: COLORS.inkSoft },
   member: { borderTopWidth: 1, borderColor: COLORS.line, paddingTop: 8, marginTop: 4 },
+  memberRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  memberInfo: { flex: 1 },
   memberName: { fontSize: 14, fontWeight: '700', color: COLORS.ink },
   memberEmail: { fontSize: 12, color: COLORS.inkSoft },
+  removeMemberButton: { padding: 4 },
 });

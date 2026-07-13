@@ -28,8 +28,7 @@ export function ZoneCard({ summary, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    flexBasis: '48%',
-    flexGrow: 1,
+    width: '48%',
     backgroundColor: COLORS.white,
     borderRadius: 14,
     borderWidth: 1,

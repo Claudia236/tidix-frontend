@@ -72,6 +72,7 @@ export default function ExpensesScreen() {
   const [participantIds, setParticipantIds] = useState<Set<string>>(() => new Set(members.map((m) => m.id)));
   const [equalSplit, setEqualSplit] = useState(true);
   const [customPercentages, setCustomPercentages] = useState<Record<string, string>>({});
+  const [paidUserIds, setPaidUserIds] = useState<Set<string>>(new Set());
 
   const effectivePaidBy = paidByUserId || user?.id || members[0]?.id || '';
 
@@ -118,6 +119,15 @@ export default function ExpensesScreen() {
     });
   }
 
+  function togglePaidUser(id: string) {
+    setPaidUserIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
   function openAddForm() {
     setEditingId(null);
     setDescription('');
@@ -127,6 +137,7 @@ export default function ExpensesScreen() {
     setParticipantIds(new Set(members.map((m) => m.id)));
     setEqualSplit(true);
     setCustomPercentages({});
+    setPaidUserIds(new Set());
     setAdding(true);
   }
 
@@ -144,6 +155,7 @@ export default function ExpensesScreen() {
       custom[s.userId] = String(s.percentage);
     });
     setCustomPercentages(custom);
+    setPaidUserIds(new Set(expense.splits.filter((s) => s.paid).map((s) => s.userId)));
     setAdding(true);
   }
 
@@ -159,9 +171,13 @@ export default function ExpensesScreen() {
     if (ids.length > 0) {
       if (equalSplit) {
         const pct = equalPercentages(ids);
-        splits = ids.map((id) => ({ userId: id, percentage: pct[id] }));
+        splits = ids.map((id) => ({ userId: id, percentage: pct[id], paid: paidUserIds.has(id) }));
       } else {
-        splits = ids.map((id) => ({ userId: id, percentage: Number((customPercentages[id] ?? '0').replace(',', '.')) || 0 }));
+        splits = ids.map((id) => ({
+          userId: id,
+          percentage: Number((customPercentages[id] ?? '0').replace(',', '.')) || 0,
+          paid: paidUserIds.has(id),
+        }));
         const sum = splits.reduce((s, sp) => s + sp.percentage, 0);
         if (Math.abs(sum - 100) > 0.5) {
           showAlert('Spese', `Le percentuali devono sommare a 100 (attualmente ${sum.toFixed(1)}).`);
@@ -279,6 +295,31 @@ export default function ExpensesScreen() {
                 <Ionicons name={equalSplit ? 'checkbox' : 'square-outline'} size={18} color={COLORS.brand} />
                 <Text style={styles.equalToggleText}>Dividi in parti uguali</Text>
               </Pressable>
+
+              {Array.from(participantIds).filter((id) => id !== effectivePaidBy).length > 0 ? (
+                <View style={styles.field}>
+                  <Text style={styles.label}>Chi ha già dato la sua parte</Text>
+                  <View style={styles.chipRow}>
+                    {Array.from(participantIds)
+                      .filter((id) => id !== effectivePaidBy)
+                      .map((id) => {
+                        const m = members.find((mm) => mm.id === id);
+                        const active = paidUserIds.has(id);
+                        return (
+                          <Pressable
+                            key={id}
+                            onPress={() => togglePaidUser(id)}
+                            style={[styles.chip, active && styles.chipActive]}
+                          >
+                            <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                              {id === user?.id ? 'Tu' : m?.name ?? id}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                  </View>
+                </View>
+              ) : null}
 
               {!equalSplit ? (
                 <View style={styles.field}>

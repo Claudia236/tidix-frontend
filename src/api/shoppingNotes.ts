@@ -11,5 +11,8 @@ export const shoppingNotesApi = {
 
   uncheck: (id: string) => apiClient.patch<ShoppingNote>(`/api/shopping-list-notes/${id}/uncheck`).then((r) => r.data),
 
+  setCategory: (id: string, category: Category | null) =>
+    apiClient.patch<ShoppingNote>(`/api/shopping-list-notes/${id}/category`, { category }).then((r) => r.data),
+
   remove: (id: string) => apiClient.delete(`/api/shopping-list-notes/${id}`).then(() => undefined),
 };

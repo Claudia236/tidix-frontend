@@ -9,6 +9,7 @@ import { itemsApi } from '../../../src/api/items';
 import { shoppingNotesApi } from '../../../src/api/shoppingNotes';
 import { showAlert } from '../../../src/components/AppAlert';
 import { CATEGORIES, categoryInfo, locationCode, locationColor } from '../../../src/constants/domain';
+import { CategoryPickerModal } from '../../../src/components/CategoryPickerModal';
 import { EmptyState } from '../../../src/components/EmptyState';
 import { RestockDialog } from '../../../src/components/RestockDialog';
 import { SectionTitle } from '../../../src/components/SectionTitle';
@@ -27,8 +28,8 @@ export default function ShoppingScreen() {
   const queryClient = useQueryClient();
   const { byId } = useStorageLocations();
   const [quickText, setQuickText] = useState('');
-  const [quickCategory, setQuickCategory] = useState<Category | null>(null);
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
+  const [categoryPickerNoteId, setCategoryPickerNoteId] = useState<string | null>(null);
 
   const shoppingQuery = useQuery({ queryKey: ['items', 'shopping-list'], queryFn: itemsApi.shoppingList });
   const notesQuery = useQuery({ queryKey: ['shopping-notes'], queryFn: shoppingNotesApi.list });
@@ -53,11 +54,17 @@ export default function ShoppingScreen() {
   });
 
   const addNoteMutation = useMutation({
-    mutationFn: () => shoppingNotesApi.create(quickText.trim(), quickCategory),
+    mutationFn: () => shoppingNotesApi.create(quickText.trim()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
       setQuickText('');
     },
+    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+  });
+
+  const setCategoryMutation = useMutation({
+    mutationFn: ({ id, category }: { id: string; category: Category }) => shoppingNotesApi.setCategory(id, category),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
     onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
 
@@ -130,7 +137,7 @@ export default function ShoppingScreen() {
           value={quickText}
           onChangeText={setQuickText}
           onSubmitEditing={handleAddNote}
-          placeholder={quickCategory ? `Aggiungi a ${categoryInfo(quickCategory).label}...` : 'Aggiungi cosa comprare...'}
+          placeholder="Aggiungi cosa comprare..."
           placeholderTextColor={COLORS.inkSoft}
           style={styles.quickAddInput}
           returnKeyType="done"
@@ -139,25 +146,6 @@ export default function ShoppingScreen() {
           <Ionicons name="add" size={18} color={COLORS.white} />
         </Pressable>
       </View>
-
-      <Text style={styles.categoryLabel}>
-        Categoria della prossima voce (opzionale){quickCategory ? `: ${categoryInfo(quickCategory).label}` : ''}
-      </Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll} contentContainerStyle={styles.categoryRow}>
-        {CATEGORIES.map((cat) => {
-          const active = quickCategory === cat.key;
-          return (
-            <Pressable
-              key={cat.key}
-              onPress={() => setQuickCategory(active ? null : cat.key)}
-              style={[styles.categoryChip, active && styles.categoryChipActive]}
-            >
-              <Text style={{ fontSize: 13 }}>{cat.emoji}</Text>
-              <Text style={[styles.categoryChipText, active && styles.categoryChipTextActive]}>{cat.short}</Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
 
       <FlatList
         data={toBuyRows}
@@ -187,6 +175,9 @@ export default function ShoppingScreen() {
               <View style={styles.row}>
                 <Pressable onPress={() => checkNoteMutation.mutate(note.id)} style={styles.checkbox} hitSlop={8} />
                 <Text style={styles.rowName} numberOfLines={1}>{note.text}</Text>
+                <Pressable onPress={() => setCategoryPickerNoteId(note.id)} style={styles.categoryTag} hitSlop={8}>
+                  <Text style={{ fontSize: 13 }}>{note.category ? categoryInfo(note.category).emoji : '🏷️'}</Text>
+                </Pressable>
                 <Pressable onPress={() => removeNoteMutation.mutate(note.id)} hitSlop={8}>
                   <Ionicons name="trash-outline" size={16} color={COLORS.inkSoft} />
                 </Pressable>
@@ -267,6 +258,16 @@ export default function ShoppingScreen() {
           }
         }}
       />
+
+      <CategoryPickerModal
+        visible={categoryPickerNoteId !== null}
+        title="Categoria della voce"
+        onClose={() => setCategoryPickerNoteId(null)}
+        onSelect={(category) => {
+          if (categoryPickerNoteId) setCategoryMutation.mutate({ id: categoryPickerNoteId, category });
+          setCategoryPickerNoteId(null);
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -294,23 +295,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  categoryScroll: { flexGrow: 0 },
-  categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingBottom: 2 },
-  categoryChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
+  categoryTag: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     borderWidth: 1,
     borderColor: COLORS.line,
-    backgroundColor: COLORS.white,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  categoryChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
-  categoryChipText: { fontSize: 11, fontWeight: '600', color: COLORS.ink },
-  categoryChipTextActive: { color: COLORS.white },
-  categoryLabel: { fontSize: 11, color: COLORS.inkSoft, marginTop: 2 },
   categoryHeader: {
     fontSize: 11,
     fontWeight: '700',

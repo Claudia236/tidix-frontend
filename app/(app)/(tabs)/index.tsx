@@ -81,7 +81,7 @@ export default function OverviewScreen() {
           <EmptyState
             icon="cube-outline"
             title="Inizia ad aggiungere i tuoi prodotti"
-            subtitle="Tocca il pulsante + per registrare cosa hai in frigo, freezer, dispensa e sgabuzzino."
+            subtitle="Tocca il pulsante + per registrare cosa hai in frigo, freezer, dispensa e nelle altre posizioni."
           />
         ) : (
           <>
@@ -112,7 +112,13 @@ export default function OverviewScreen() {
             )}
 
             <View style={styles.zonesSection}>
-              <SectionTitle small>Le zone</SectionTitle>
+              <View style={styles.zonesHeader}>
+                <SectionTitle small>Le zone</SectionTitle>
+                <Pressable onPress={() => router.push('/(app)/locations')} hitSlop={8} style={styles.zonesEditButton}>
+                  <Ionicons name="pencil-outline" size={14} color={COLORS.inkSoft} />
+                  <Text style={styles.zonesEditText}>Modifica</Text>
+                </Pressable>
+              </View>
               <View style={styles.zonesGrid}>
                 {(summaryQuery.data ?? []).map((summary) => (
                   <ZoneCard
@@ -167,6 +173,9 @@ const styles = StyleSheet.create({
   },
   wasteBannerText: { fontSize: 13, color: COLORS.ink, flexShrink: 1 },
   zonesSection: { gap: 8 },
+  zonesHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  zonesEditButton: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  zonesEditText: { fontSize: 12, color: COLORS.inkSoft, fontWeight: '600' },
   zonesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   shoppingLink: {
     flexDirection: 'row',

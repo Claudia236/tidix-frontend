@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS } from '../theme/colors';
+import { useI18n } from '../i18n/I18nContext';
+import type { ColorPalette } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 
 export interface AlertButton {
   text: string;
@@ -18,6 +20,7 @@ interface AlertState {
 const EMPTY_STATE: AlertState = { visible: false, title: '', buttons: [] };
 
 let setStateRef: ((state: AlertState) => void) | null = null;
+let defaultOkText = 'OK';
 
 /**
  * Sostituto di React Native `Alert.alert` che funziona anche sul web:
@@ -27,12 +30,19 @@ let setStateRef: ((state: AlertState) => void) | null = null;
  * sostituire le chiamate esistenti senza cambiarne la struttura.
  */
 export function showAlert(title: string, message?: string, buttons?: AlertButton[]) {
-  const finalButtons = buttons && buttons.length > 0 ? buttons : [{ text: 'OK' }];
+  const finalButtons = buttons && buttons.length > 0 ? buttons : [{ text: defaultOkText }];
   setStateRef?.({ visible: true, title, message, buttons: finalButtons });
 }
 
 export function AppAlertHost() {
+  const { colors } = useTheme();
+  const { t } = useI18n();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [state, setState] = useState<AlertState>(EMPTY_STATE);
+
+  useEffect(() => {
+    defaultOkText = t('common.ok');
+  }, [t]);
 
   useEffect(() => {
     setStateRef = setState;
@@ -73,14 +83,16 @@ export function AppAlertHost() {
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center', padding: 24 },
-  card: { backgroundColor: COLORS.white, borderRadius: 16, padding: 20, gap: 14, width: '100%', maxWidth: 360 },
-  title: { fontSize: 15, fontWeight: '700', color: COLORS.ink },
-  message: { fontSize: 13, color: COLORS.inkSoft, lineHeight: 18 },
-  actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 20, marginTop: 4 },
-  button: { paddingVertical: 4 },
-  buttonText: { fontSize: 14, fontWeight: '700', color: COLORS.brand },
-  cancelText: { color: COLORS.inkSoft },
-  destructiveText: { color: COLORS.danger },
-});
+function createStyles(COLORS: ColorPalette) {
+  return StyleSheet.create({
+    backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center', padding: 24 },
+    card: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 14, width: '100%', maxWidth: 360 },
+    title: { fontSize: 15, fontWeight: '700', color: COLORS.ink },
+    message: { fontSize: 13, color: COLORS.inkSoft, lineHeight: 18 },
+    actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 20, marginTop: 4 },
+    button: { paddingVertical: 4 },
+    buttonText: { fontSize: 14, fontWeight: '700', color: COLORS.brand },
+    cancelText: { color: COLORS.inkSoft },
+    destructiveText: { color: COLORS.danger },
+  });
+}

@@ -8,13 +8,15 @@ import { getErrorMessage } from '../../../src/api/client';
 import { itemsApi } from '../../../src/api/items';
 import { shoppingNotesApi } from '../../../src/api/shoppingNotes';
 import { showAlert } from '../../../src/components/AppAlert';
-import { CATEGORIES, categoryInfo, locationCode, locationColor } from '../../../src/constants/domain';
+import { useCategories, findCategoryInfo, useLocationColor, locationCode } from '../../../src/constants/domain';
 import { CategoryPickerModal } from '../../../src/components/CategoryPickerModal';
 import { EmptyState } from '../../../src/components/EmptyState';
 import { RestockDialog } from '../../../src/components/RestockDialog';
 import { SectionTitle } from '../../../src/components/SectionTitle';
 import { useStorageLocations } from '../../../src/hooks/useStorageLocations';
-import { COLORS } from '../../../src/theme/colors';
+import { useI18n } from '../../../src/i18n/I18nContext';
+import type { ColorPalette } from '../../../src/theme/colors';
+import { useTheme } from '../../../src/theme/ThemeContext';
 import { webCentered } from '../../../src/theme/responsive';
 import type { Category, Item, ItemInput, ShoppingNote } from '../../../src/types';
 
@@ -26,7 +28,12 @@ type ToBuyRow =
 export default function ShoppingScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { colors } = useTheme();
+  const { t } = useI18n();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { byId } = useStorageLocations();
+  const categories = useCategories();
+  const getLocationColor = useLocationColor();
   const [quickText, setQuickText] = useState('');
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
   const [categoryPickerNoteId, setCategoryPickerNoteId] = useState<string | null>(null);
@@ -41,7 +48,7 @@ export default function ShoppingScreen() {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       setRestockTarget(null);
     },
-    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const newBatchMutation = useMutation({
@@ -50,7 +57,7 @@ export default function ShoppingScreen() {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       setRestockTarget(null);
     },
-    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const addNoteMutation = useMutation({
@@ -59,31 +66,31 @@ export default function ShoppingScreen() {
       queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
       setQuickText('');
     },
-    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const setCategoryMutation = useMutation({
     mutationFn: ({ id, category }: { id: string; category: Category }) => shoppingNotesApi.setCategory(id, category),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
-    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const checkNoteMutation = useMutation({
     mutationFn: (id: string) => shoppingNotesApi.check(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
-    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const uncheckNoteMutation = useMutation({
     mutationFn: (id: string) => shoppingNotesApi.uncheck(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
-    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const removeNoteMutation = useMutation({
     mutationFn: (id: string) => shoppingNotesApi.remove(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
-    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const toBuyRows: ToBuyRow[] = useMemo(() => {
@@ -103,7 +110,7 @@ export default function ShoppingScreen() {
     }
 
     const rows: ToBuyRow[] = [];
-    for (const cat of CATEGORIES) {
+    for (const cat of categories) {
       const group = byCategory.get(cat.key);
       if (group && group.length > 0) {
         rows.push({ key: `header-${cat.key}`, type: 'header', category: cat.key });
@@ -111,7 +118,7 @@ export default function ShoppingScreen() {
       }
     }
     return rows;
-  }, [shoppingQuery.data, notesQuery.data]);
+  }, [shoppingQuery.data, notesQuery.data, categories]);
 
   const checkedNotes = useMemo(() => (notesQuery.data ?? []).filter((n) => n.checked), [notesQuery.data]);
 
@@ -135,20 +142,20 @@ export default function ShoppingScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={[styles.container, webCentered]}>
-      <SectionTitle>Lista della spesa</SectionTitle>
+      <SectionTitle>{t('shopping.title')}</SectionTitle>
 
       <View style={styles.quickAddRow}>
         <TextInput
           value={quickText}
           onChangeText={setQuickText}
           onSubmitEditing={handleAddNote}
-          placeholder="Aggiungi cosa comprare..."
-          placeholderTextColor={COLORS.inkSoft}
+          placeholder={t('shopping.addPlaceholder')}
+          placeholderTextColor={colors.inkSoft}
           style={styles.quickAddInput}
           returnKeyType="done"
         />
         <Pressable onPress={handleAddNote} style={styles.quickAddButton} hitSlop={8}>
-          <Ionicons name="add" size={18} color={COLORS.white} />
+          <Ionicons name="add" size={18} color={colors.white} />
         </Pressable>
       </View>
 
@@ -160,13 +167,13 @@ export default function ShoppingScreen() {
         ListEmptyComponent={
           <EmptyState
             icon="cart-outline"
-            title="La lista è vuota"
-            subtitle="I prodotti finiti vengono aggiunti qui automaticamente. Puoi anche aggiungere cose da comprare a mano."
+            title={t('shopping.emptyTitle')}
+            subtitle={t('shopping.emptySubtitle')}
           />
         }
         renderItem={({ item: row }) => {
           if (row.type === 'header') {
-            const info = categoryInfo(row.category);
+            const info = findCategoryInfo(categories, row.category);
             return (
               <Text style={styles.categoryHeader}>
                 {info.emoji} {info.label}
@@ -181,19 +188,19 @@ export default function ShoppingScreen() {
                 <Pressable onPress={() => checkNoteMutation.mutate(note.id)} style={styles.checkbox} hitSlop={8} />
                 <Text style={styles.rowName} numberOfLines={1}>{note.text}</Text>
                 <Pressable onPress={() => setCategoryPickerNoteId(note.id)} style={styles.categoryTag} hitSlop={8}>
-                  <Text style={{ fontSize: 13 }}>{note.category ? categoryInfo(note.category).emoji : '🏷️'}</Text>
+                  <Text style={{ fontSize: 13 }}>{note.category ? findCategoryInfo(categories, note.category).emoji : '🏷️'}</Text>
                 </Pressable>
                 <Pressable onPress={() => removeNoteMutation.mutate(note.id)} hitSlop={8}>
-                  <Ionicons name="trash-outline" size={16} color={COLORS.inkSoft} />
+                  <Ionicons name="trash-outline" size={16} color={colors.inkSoft} />
                 </Pressable>
               </View>
             );
           }
 
           const item = row.data;
-          const category = categoryInfo(item.category);
+          const category = findCategoryInfo(categories, item.category);
           const location = byId.get(item.storageLocationId);
-          const { color: locationFg, bg: locationBg } = locationColor(item.storageLocationId);
+          const { color: locationFg, bg: locationBg } = getLocationColor(item.storageLocationId);
           return (
             <View style={styles.row}>
               <Pressable onPress={() => setRestockTarget(item)} style={styles.checkbox} hitSlop={8} />
@@ -216,7 +223,7 @@ export default function ShoppingScreen() {
 
       {checkedNotes.length > 0 ? (
         <View style={styles.checkedSection}>
-          <SectionTitle small>Acquistato · da aggiungere alle scorte</SectionTitle>
+          <SectionTitle small>{t('shopping.purchasedSection')}</SectionTitle>
           <FlatList
             data={checkedNotes}
             keyExtractor={(n) => n.id}
@@ -226,13 +233,13 @@ export default function ShoppingScreen() {
               <View style={styles.checkedRow}>
                 <Text style={styles.rowName} numberOfLines={1}>{note.text}</Text>
                 <Pressable onPress={() => uncheckNoteMutation.mutate(note.id)} hitSlop={8}>
-                  <Ionicons name="arrow-undo-outline" size={16} color={COLORS.inkSoft} />
+                  <Ionicons name="arrow-undo-outline" size={16} color={colors.inkSoft} />
                 </Pressable>
                 <Pressable onPress={() => goAddToStock(note)} style={styles.addToStockButton} hitSlop={8}>
-                  <Text style={styles.addToStockText}>Aggiungi a scorte</Text>
+                  <Text style={styles.addToStockText}>{t('shopping.addToStock')}</Text>
                 </Pressable>
                 <Pressable onPress={() => removeNoteMutation.mutate(note.id)} hitSlop={8}>
-                  <Ionicons name="trash-outline" size={16} color={COLORS.inkSoft} />
+                  <Ionicons name="trash-outline" size={16} color={colors.inkSoft} />
                 </Pressable>
               </View>
             )}
@@ -266,7 +273,7 @@ export default function ShoppingScreen() {
 
       <CategoryPickerModal
         visible={categoryPickerNoteId !== null}
-        title="Categoria della voce"
+        title={t('shopping.categoryPickerTitle')}
         onClose={() => setCategoryPickerNoteId(null)}
         onSelect={(category) => {
           if (categoryPickerNoteId) setCategoryMutation.mutate({ id: categoryPickerNoteId, category });
@@ -277,79 +284,81 @@ export default function ShoppingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.bg },
-  container: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 120, gap: 12 },
-  quickAddRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  quickAddInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    backgroundColor: COLORS.white,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 13,
-    color: COLORS.ink,
-  },
-  quickAddButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: COLORS.brand,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  categoryTag: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  categoryHeader: {
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-    color: COLORS.inkSoft,
-    marginTop: 10,
-    marginBottom: 4,
-  },
-  list: { gap: 0 },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 10,
-    marginBottom: 6,
-  },
-  checkbox: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: COLORS.brand },
-  rowInfo: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0 },
-  rowName: { flex: 1, fontSize: 14, fontWeight: '600', color: COLORS.ink },
-  zoneBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
-  zoneBadgeText: { fontSize: 10, fontWeight: '700' },
-  checkedSection: { gap: 8, marginTop: 12 },
-  checkedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: COLORS.okBg,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 10,
-    marginBottom: 6,
-  },
-  addToStockButton: {
-    backgroundColor: COLORS.brand,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  addToStockText: { fontSize: 11, fontWeight: '700', color: COLORS.white },
-});
+function createStyles(COLORS: ColorPalette) {
+  return StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: COLORS.bg },
+    container: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 120, gap: 12 },
+    quickAddRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+    quickAddInput: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      backgroundColor: COLORS.card,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      fontSize: 13,
+      color: COLORS.ink,
+    },
+    quickAddButton: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      backgroundColor: COLORS.brand,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    categoryTag: {
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    categoryHeader: {
+      fontSize: 11,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
+      color: COLORS.inkSoft,
+      marginTop: 10,
+      marginBottom: 4,
+    },
+    list: { gap: 0 },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: COLORS.card,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderRadius: 10,
+      marginBottom: 6,
+    },
+    checkbox: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: COLORS.brand },
+    rowInfo: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0 },
+    rowName: { flex: 1, fontSize: 14, fontWeight: '600', color: COLORS.ink },
+    zoneBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+    zoneBadgeText: { fontSize: 10, fontWeight: '700' },
+    checkedSection: { gap: 8, marginTop: 12 },
+    checkedRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: COLORS.okBg,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderRadius: 10,
+      marginBottom: 6,
+    },
+    addToStockButton: {
+      backgroundColor: COLORS.brand,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+    },
+    addToStockText: { fontSize: 11, fontWeight: '700', color: COLORS.white },
+  });
+}

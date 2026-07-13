@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import type { TranslateFn } from '../i18n/I18nContext';
 import type { CleaningTask } from '../types';
 import { CHANNEL_ID, cancelByPrefix, ensureChannel, ensureNotificationPermissions } from './core';
 
@@ -13,13 +14,13 @@ const PREFIX = 'cleaning-reminder-';
  * viene segnato come pulito, quindi ogni promemoria e' una notifica singola
  * (non ricorrente) per la sera prima della prossima scadenza calcolata.
  */
-export async function syncCleaningReminders(tasks: CleaningTask[]): Promise<void> {
+export async function syncCleaningReminders(tasks: CleaningTask[], t: TranslateFn): Promise<void> {
   if (Platform.OS === 'web') return;
 
   const granted = await ensureNotificationPermissions();
   if (!granted) return;
 
-  await ensureChannel();
+  await ensureChannel(t('notif.channelName'));
   await cancelByPrefix(PREFIX);
 
   const now = new Date();
@@ -39,8 +40,8 @@ export async function syncCleaningReminders(tasks: CleaningTask[]): Promise<void
     await Notifications.scheduleNotificationAsync({
       identifier: `${PREFIX}${task.id}`,
       content: {
-        title: 'Promemoria pulizia',
-        body: `Domani tocca a "${task.name}": è ora di pulirlo.`,
+        title: t('notif.cleaningReminder.title'),
+        body: t('notif.cleaningReminder.body', { name: task.name }),
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,

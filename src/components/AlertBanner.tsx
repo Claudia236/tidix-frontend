@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { COLORS } from '../theme/colors';
+import type { ColorPalette } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 import type { Item } from '../types';
 
 interface Props {
@@ -12,8 +13,10 @@ interface Props {
 }
 
 export function AlertBanner({ tone, title, items, onItemPress }: Props) {
-  const color = tone === 'critico' ? COLORS.danger : COLORS.warn;
-  const bg = tone === 'critico' ? COLORS.dangerBg : COLORS.warnBg;
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const color = tone === 'critico' ? colors.danger : colors.warn;
+  const bg = tone === 'critico' ? colors.dangerBg : colors.warnBg;
   const shown = items.slice(0, 6);
   const extra = items.length - shown.length;
 
@@ -35,12 +38,14 @@ export function AlertBanner({ tone, title, items, onItemPress }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { borderRadius: 14, padding: 12, marginBottom: 8 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  title: { fontSize: 13, fontWeight: '700' },
-  chipsScroll: { flexGrow: 0 },
-  chips: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  chip: { backgroundColor: COLORS.white, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
-  chipText: { fontSize: 12, fontWeight: '600' },
-});
+function createStyles(COLORS: ColorPalette) {
+  return StyleSheet.create({
+    container: { borderRadius: 14, padding: 12, marginBottom: 8 },
+    header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+    title: { fontSize: 13, fontWeight: '700' },
+    chipsScroll: { flexGrow: 0 },
+    chips: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    chip: { backgroundColor: COLORS.card, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
+    chipText: { fontSize: 12, fontWeight: '600' },
+  });
+}

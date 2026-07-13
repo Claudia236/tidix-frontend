@@ -1,8 +1,10 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS } from '../theme/colors';
+import { useI18n } from '../i18n/I18nContext';
+import type { ColorPalette } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 
 interface Props {
   value: string | null;
@@ -12,24 +14,21 @@ interface Props {
   allowClear?: boolean;
 }
 
-export function DatePickerField({
-  value,
-  onChange,
-  placeholder = 'Nessuna scadenza',
-  clearLabel = 'Rimuovi scadenza',
-  allowClear = true,
-}: Props) {
+export function DatePickerField({ value, onChange, placeholder, clearLabel, allowClear = true }: Props) {
+  const { colors } = useTheme();
+  const { t } = useI18n();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [showPicker, setShowPicker] = useState(false);
 
   return (
     <View>
       <Pressable style={styles.dateButton} onPress={() => setShowPicker(true)}>
-        <Ionicons name="calendar-outline" size={16} color={COLORS.ink} />
-        <Text style={styles.dateButtonText}>{value ?? placeholder}</Text>
+        <Ionicons name="calendar-outline" size={16} color={colors.ink} />
+        <Text style={styles.dateButtonText}>{value ?? placeholder ?? t('common.noDateDefault')}</Text>
       </Pressable>
       {allowClear && value ? (
         <Pressable onPress={() => onChange(null)}>
-          <Text style={styles.clearDate}>{clearLabel}</Text>
+          <Text style={styles.clearDate}>{clearLabel ?? t('common.removeDateDefault')}</Text>
         </Pressable>
       ) : null}
       {showPicker ? (
@@ -54,18 +53,20 @@ export function DatePickerField({
   );
 }
 
-const styles = StyleSheet.create({
-  dateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    backgroundColor: COLORS.white,
-  },
-  dateButtonText: { fontSize: 14, color: COLORS.ink },
-  clearDate: { fontSize: 12, color: COLORS.danger, marginTop: 6, fontWeight: '600' },
-});
+function createStyles(COLORS: ColorPalette) {
+  return StyleSheet.create({
+    dateButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      borderRadius: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      backgroundColor: COLORS.card,
+    },
+    dateButtonText: { fontSize: 14, color: COLORS.ink },
+    clearDate: { fontSize: 12, color: COLORS.danger, marginTop: 6, fontWeight: '600' },
+  });
+}

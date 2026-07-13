@@ -1,38 +1,42 @@
 import { Stack } from 'expo-router';
 import React from 'react';
-import { COLORS } from '../../src/theme/colors';
+import { useI18n } from '../../src/i18n/I18nContext';
+import { useTheme } from '../../src/theme/ThemeContext';
 
 export default function AppLayout() {
+  const { colors } = useTheme();
+  const { t } = useI18n();
+
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
         name="item/new"
-        options={{ presentation: 'modal', title: 'Nuovo prodotto', headerStyle: { backgroundColor: COLORS.bg } }}
+        options={{ presentation: 'modal', title: t('appLayout.newProduct'), headerStyle: { backgroundColor: colors.bg } }}
       />
       <Stack.Screen
         name="item/[id]"
-        options={{ presentation: 'modal', title: 'Modifica prodotto', headerStyle: { backgroundColor: COLORS.bg } }}
+        options={{ presentation: 'modal', title: t('appLayout.editProduct'), headerStyle: { backgroundColor: colors.bg } }}
       />
       <Stack.Screen
         name="household"
-        options={{ title: 'La tua famiglia', headerStyle: { backgroundColor: COLORS.bg } }}
+        options={{ title: t('appLayout.household'), headerStyle: { backgroundColor: colors.bg } }}
       />
       <Stack.Screen
         name="cleaning"
-        options={{ title: 'Pulizia', headerStyle: { backgroundColor: COLORS.bg } }}
+        options={{ title: t('more.cleaning.label'), headerStyle: { backgroundColor: colors.bg } }}
       />
       <Stack.Screen
         name="waste"
-        options={{ title: 'Rifiuti', headerStyle: { backgroundColor: COLORS.bg } }}
+        options={{ title: t('more.waste.label'), headerStyle: { backgroundColor: colors.bg } }}
       />
       <Stack.Screen
         name="expenses"
-        options={{ title: 'Spese', headerStyle: { backgroundColor: COLORS.bg } }}
+        options={{ title: t('more.expenses.label'), headerStyle: { backgroundColor: colors.bg } }}
       />
       <Stack.Screen
         name="locations"
-        options={{ title: 'Posizioni', headerStyle: { backgroundColor: COLORS.bg } }}
+        options={{ title: t('more.locations.label'), headerStyle: { backgroundColor: colors.bg } }}
       />
     </Stack>
   );

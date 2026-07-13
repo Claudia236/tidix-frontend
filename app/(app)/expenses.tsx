@@ -11,14 +11,11 @@ import { EmptyState } from '../../src/components/EmptyState';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { TextField } from '../../src/components/TextField';
 import { useAuth } from '../../src/context/AuthContext';
-import { COLORS } from '../../src/theme/colors';
+import { useI18n, type TranslateFn } from '../../src/i18n/I18nContext';
+import type { ColorPalette } from '../../src/theme/colors';
+import { useTheme } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
 import type { Expense, ExpenseSplitInput, HouseholdMember } from '../../src/types';
-
-const MONTH_LABELS = [
-  'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-  'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
-];
 
 function currentMonth(): string {
   const now = new Date();
@@ -31,9 +28,9 @@ function shiftMonth(month: string, delta: number): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
-function monthLabel(month: string): string {
+function monthLabel(month: string, t: TranslateFn): string {
   const [y, m] = month.split('-').map(Number);
-  return `${MONTH_LABELS[m - 1]} ${y}`;
+  return `${t(`month.${m}`)} ${y}`;
 }
 
 function equalPercentages(userIds: string[]): Record<string, number> {
@@ -55,6 +52,9 @@ function equalPercentages(userIds: string[]): Record<string, number> {
 
 export default function ExpensesScreen() {
   const queryClient = useQueryClient();
+  const { colors } = useTheme();
+  const { t } = useI18n();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { user } = useAuth();
   const [month, setMonth] = useState(currentMonth());
   const [adding, setAdding] = useState(false);
@@ -91,7 +91,7 @@ export default function ExpensesScreen() {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       closeForm();
     },
-    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const removeMutation = useMutation({
@@ -100,7 +100,7 @@ export default function ExpensesScreen() {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       closeForm();
     },
-    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   function toggleParticipant(id: string) {
@@ -172,7 +172,7 @@ export default function ExpensesScreen() {
         }));
         const sum = splits.reduce((s, sp) => s + sp.percentage, 0);
         if (Math.abs(sum - 100) > 0.5) {
-          showAlert('Spese', `Le percentuali devono sommare a 100 (attualmente ${sum.toFixed(1)}).`);
+          showAlert(t('expenses.percentagesErrorTitle'), t('expenses.percentagesError', { sum: sum.toFixed(1) }));
           return;
         }
       }
@@ -181,9 +181,9 @@ export default function ExpensesScreen() {
   }
 
   function confirmDelete(id: string) {
-    showAlert('Elimina spesa', 'Vuoi eliminare definitivamente questa spesa?', [
-      { text: 'Annulla', style: 'cancel' },
-      { text: 'Elimina', style: 'destructive', onPress: () => removeMutation.mutate(id) },
+    showAlert(t('expenses.confirmDeleteTitle'), t('expenses.confirmDeleteMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: () => removeMutation.mutate(id) },
     ]);
   }
 
@@ -195,31 +195,31 @@ export default function ExpensesScreen() {
       <ScrollView contentContainerStyle={[styles.scroll, webCentered]}>
         <View style={styles.monthRow}>
           <Pressable onPress={() => setMonth((m) => shiftMonth(m, -1))} hitSlop={8}>
-            <Ionicons name="chevron-back" size={20} color={COLORS.ink} />
+            <Ionicons name="chevron-back" size={20} color={colors.ink} />
           </Pressable>
-          <Text style={styles.monthLabel}>{monthLabel(month)}</Text>
+          <Text style={styles.monthLabel}>{monthLabel(month, t)}</Text>
           <Pressable onPress={() => setMonth((m) => shiftMonth(m, 1))} hitSlop={8}>
-            <Ionicons name="chevron-forward" size={20} color={COLORS.ink} />
+            <Ionicons name="chevron-forward" size={20} color={colors.ink} />
           </Pressable>
         </View>
 
         {summary ? (
           <View style={styles.summaryCard}>
-            <Text style={styles.summaryTotal}>Totale: {summary.totalAmount.toFixed(2)} €</Text>
+            <Text style={styles.summaryTotal}>{t('expenses.total')}: {summary.totalAmount.toFixed(2)} €</Text>
             {summary.byUser.map((b) => (
               <View key={b.userId} style={styles.balanceRow}>
-                <Text style={styles.balanceName}>{b.userId === user?.id ? 'Tu' : b.userName}</Text>
+                <Text style={styles.balanceName}>{b.userId === user?.id ? t('common.you') : b.userName}</Text>
                 <Text
                   style={[
                     styles.balanceNet,
-                    { color: b.netBalance > 0.01 ? COLORS.brand : b.netBalance < -0.01 ? COLORS.danger : COLORS.inkSoft },
+                    { color: b.netBalance > 0.01 ? colors.brand : b.netBalance < -0.01 ? colors.danger : colors.inkSoft },
                   ]}
                 >
                   {b.netBalance > 0.01
-                    ? `Deve ricevere ${b.netBalance.toFixed(2)} €`
+                    ? t('expenses.deveRicevere', { amount: b.netBalance.toFixed(2) })
                     : b.netBalance < -0.01
-                      ? `Deve dare ${Math.abs(b.netBalance).toFixed(2)} €`
-                      : 'In pari'}
+                      ? t('expenses.deveDare', { amount: Math.abs(b.netBalance).toFixed(2) })
+                      : t('expenses.inPari')}
                 </Text>
               </View>
             ))}
@@ -228,22 +228,22 @@ export default function ExpensesScreen() {
 
         <View style={styles.addSection}>
           <Pressable onPress={() => (adding ? closeForm() : openAddForm())} style={styles.addToggle}>
-            <Ionicons name={adding ? 'remove-circle-outline' : 'add-circle-outline'} size={18} color={COLORS.brand} />
-            <Text style={styles.addToggleText}>{adding ? 'Annulla' : 'Aggiungi spesa'}</Text>
+            <Ionicons name={adding ? 'remove-circle-outline' : 'add-circle-outline'} size={18} color={colors.brand} />
+            <Text style={styles.addToggleText}>{adding ? t('common.cancel') : t('expenses.addToggleAdd')}</Text>
           </Pressable>
 
           {adding ? (
             <View style={styles.form}>
-              <TextField label="Descrizione" placeholder="Es. Spesa supermercato" value={description} onChangeText={setDescription} />
-              <TextField label="Importo (€)" placeholder="0.00" keyboardType="numeric" value={amount} onChangeText={setAmount} />
+              <TextField label={t('expenses.descriptionLabel')} placeholder={t('expenses.descriptionPlaceholder')} value={description} onChangeText={setDescription} />
+              <TextField label={t('expenses.amountLabel')} placeholder="0.00" keyboardType="numeric" value={amount} onChangeText={setAmount} />
 
               <View style={styles.field}>
-                <Text style={styles.label}>Data della spesa</Text>
-                <DatePickerField value={date} onChange={setDate} placeholder="Seleziona una data" allowClear={false} />
+                <Text style={styles.label}>{t('expenses.dateLabel')}</Text>
+                <DatePickerField value={date} onChange={setDate} placeholder={t('expenses.datePlaceholder')} allowClear={false} />
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Pagato da</Text>
+                <Text style={styles.label}>{t('expenses.paidByLabel')}</Text>
                 <View style={styles.chipRow}>
                   {members.map((m) => {
                     const active = effectivePaidBy === m.id;
@@ -254,7 +254,7 @@ export default function ExpensesScreen() {
                         style={[styles.chip, active && styles.chipActive]}
                       >
                         <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                          {m.id === user?.id ? 'Tu' : m.name}
+                          {m.id === user?.id ? t('common.you') : m.name}
                         </Text>
                       </Pressable>
                     );
@@ -263,7 +263,7 @@ export default function ExpensesScreen() {
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Dividi con</Text>
+                <Text style={styles.label}>{t('expenses.splitWithLabel')}</Text>
                 <View style={styles.chipRow}>
                   {members.map((m) => {
                     const active = participantIds.has(m.id);
@@ -274,7 +274,7 @@ export default function ExpensesScreen() {
                         style={[styles.chip, active && styles.chipActive]}
                       >
                         <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                          {m.id === user?.id ? 'Tu' : m.name}
+                          {m.id === user?.id ? t('common.you') : m.name}
                         </Text>
                       </Pressable>
                     );
@@ -283,29 +283,27 @@ export default function ExpensesScreen() {
               </View>
 
               <Pressable onPress={() => setEqualSplit((v) => !v)} style={styles.equalToggle}>
-                <Ionicons name={equalSplit ? 'checkbox' : 'square-outline'} size={18} color={COLORS.brand} />
-                <Text style={styles.equalToggleText}>Dividi in parti uguali</Text>
+                <Ionicons name={equalSplit ? 'checkbox' : 'square-outline'} size={18} color={colors.brand} />
+                <Text style={styles.equalToggleText}>{t('expenses.equalSplitToggle')}</Text>
               </Pressable>
 
               {Array.from(participantIds).filter((id) => id !== effectivePaidBy).length > 0 ? (
                 <View style={styles.field}>
-                  <Text style={styles.label}>Chi ha già dato la sua parte</Text>
-                  <Text style={styles.helperText}>
-                    Indica quanto ognuno ha già versato in contanti, anche se non corrisponde esattamente alla quota.
-                  </Text>
+                  <Text style={styles.label}>{t('expenses.alreadyPaidLabel')}</Text>
+                  <Text style={styles.helperText}>{t('expenses.alreadyPaidHint')}</Text>
                   {Array.from(participantIds)
                     .filter((id) => id !== effectivePaidBy)
                     .map((id) => {
                       const m = members.find((mm) => mm.id === id);
                       return (
                         <View key={id} style={styles.percentRow}>
-                          <Text style={styles.percentName}>{id === user?.id ? 'Tu' : m?.name ?? id}</Text>
+                          <Text style={styles.percentName}>{id === user?.id ? t('common.you') : m?.name ?? id}</Text>
                           <TextInput
                             value={paidAmounts[id] ?? ''}
                             onChangeText={(v) => setPaidAmounts((prev) => ({ ...prev, [id]: v }))}
                             keyboardType="numeric"
                             placeholder="0.00"
-                            placeholderTextColor={COLORS.inkSoft}
+                            placeholderTextColor={colors.inkSoft}
                             style={styles.percentInput}
                           />
                           <Text style={styles.percentSign}>€</Text>
@@ -317,18 +315,18 @@ export default function ExpensesScreen() {
 
               {!equalSplit ? (
                 <View style={styles.field}>
-                  <Text style={styles.label}>Percentuali (devono sommare a 100)</Text>
+                  <Text style={styles.label}>{t('expenses.percentagesLabel')}</Text>
                   {Array.from(participantIds).map((id) => {
                     const m = members.find((mm) => mm.id === id);
                     return (
                       <View key={id} style={styles.percentRow}>
-                        <Text style={styles.percentName}>{id === user?.id ? 'Tu' : m?.name ?? id}</Text>
+                        <Text style={styles.percentName}>{id === user?.id ? t('common.you') : m?.name ?? id}</Text>
                         <TextInput
                           value={customPercentages[id] ?? ''}
                           onChangeText={(v) => setCustomPercentages((prev) => ({ ...prev, [id]: v }))}
                           keyboardType="numeric"
                           placeholder="0"
-                          placeholderTextColor={COLORS.inkSoft}
+                          placeholderTextColor={colors.inkSoft}
                           style={styles.percentInput}
                         />
                         <Text style={styles.percentSign}>%</Text>
@@ -341,7 +339,7 @@ export default function ExpensesScreen() {
               <View style={styles.formActions}>
                 {editingId ? (
                   <PrimaryButton
-                    label="Elimina"
+                    label={t('common.delete')}
                     variant="danger"
                     onPress={() => confirmDelete(editingId)}
                     loading={removeMutation.isPending}
@@ -349,7 +347,7 @@ export default function ExpensesScreen() {
                   />
                 ) : null}
                 <PrimaryButton
-                  label={editingId ? 'Salva modifiche' : 'Salva spesa'}
+                  label={editingId ? t('common.saveChanges') : t('expenses.saveExpense')}
                   onPress={handleSubmit}
                   disabled={!description.trim() || !amount.trim()}
                   loading={saveMutation.isPending}
@@ -366,7 +364,7 @@ export default function ExpensesScreen() {
           scrollEnabled={false}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            <EmptyState icon="cash-outline" title="Nessuna spesa questo mese" subtitle="Aggiungi la prima spesa condivisa." />
+            <EmptyState icon="cash-outline" title={t('expenses.emptyTitle')} subtitle={t('expenses.emptySubtitle')} />
           }
           renderItem={({ item }) => (
             <View style={styles.expenseCard}>
@@ -377,11 +375,11 @@ export default function ExpensesScreen() {
                     <Text style={styles.expenseAmount}>{item.amount.toFixed(2)} €</Text>
                   </View>
                   <Text style={styles.expenseMeta}>
-                    {item.paidByUserId === user?.id ? 'Tu' : item.paidByName} · {item.date}
+                    {item.paidByUserId === user?.id ? t('common.you') : item.paidByName} · {item.date}
                   </Text>
                 </Pressable>
                 <Pressable onPress={() => confirmDelete(item.id)} hitSlop={8}>
-                  <Ionicons name="trash-outline" size={16} color={COLORS.inkSoft} />
+                  <Ionicons name="trash-outline" size={16} color={colors.inkSoft} />
                 </Pressable>
               </View>
 
@@ -394,15 +392,15 @@ export default function ExpensesScreen() {
                       <Ionicons
                         name={isPayer ? 'wallet-outline' : settled ? 'checkmark-circle' : 'ellipse-outline'}
                         size={16}
-                        color={isPayer ? COLORS.inkSoft : settled ? COLORS.brand : COLORS.danger}
+                        color={isPayer ? colors.inkSoft : settled ? colors.brand : colors.danger}
                       />
-                      <Text style={styles.splitName}>{s.userId === user?.id ? 'Tu' : s.userName}</Text>
+                      <Text style={styles.splitName}>{s.userId === user?.id ? t('common.you') : s.userName}</Text>
                       <Text style={styles.splitAmount}>
                         {s.percentage.toFixed(0)}% · {s.amount.toFixed(2)} €
                       </Text>
                       {!isPayer ? (
-                        <Text style={[styles.splitPaidStatus, { color: settled ? COLORS.brand : COLORS.danger }]}>
-                          {s.paidAmount.toFixed(2)} di {s.amount.toFixed(2)} €
+                        <Text style={[styles.splitPaidStatus, { color: settled ? colors.brand : colors.danger }]}>
+                          {t('expenses.paidOfTotal', { paid: s.paidAmount.toFixed(2), total: s.amount.toFixed(2) })}
                         </Text>
                       ) : null}
                     </View>
@@ -417,90 +415,92 @@ export default function ExpensesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg },
-  scroll: { padding: 20, gap: 16, paddingBottom: 60 },
-  monthRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 },
-  monthLabel: { fontSize: 15, fontWeight: '700', color: COLORS.ink, textTransform: 'capitalize' },
-  summaryCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    padding: 16,
-    gap: 10,
-  },
-  summaryTotal: { fontSize: 15, fontWeight: '800', color: COLORS.ink },
-  balanceRow: { borderTopWidth: 1, borderColor: COLORS.line, paddingTop: 8, marginTop: 2, gap: 2 },
-  balanceName: { fontSize: 13, fontWeight: '700', color: COLORS.ink },
-  balanceNet: { fontSize: 12, fontWeight: '700' },
-  addSection: { gap: 12 },
-  addToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  addToggleText: { fontSize: 14, fontWeight: '700', color: COLORS.brand },
-  form: {
-    gap: 14,
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    padding: 16,
-  },
-  field: { gap: 8 },
-  label: {
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-    color: COLORS.inkSoft,
-  },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: {
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    backgroundColor: COLORS.white,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-  },
-  chipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
-  chipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
-  chipTextActive: { color: COLORS.white },
-  equalToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  equalToggleText: { fontSize: 13, color: COLORS.ink },
-  percentRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  percentName: { flex: 1, fontSize: 13, color: COLORS.ink },
-  percentInput: {
-    width: 56,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    fontSize: 13,
-    color: COLORS.ink,
-    textAlign: 'right',
-  },
-  percentSign: { fontSize: 13, color: COLORS.inkSoft },
-  helperText: { fontSize: 11, color: COLORS.inkSoft, marginTop: -4 },
-  formActions: { flexDirection: 'row', gap: 10 },
-  list: { gap: 10 },
-  expenseCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    padding: 14,
-    gap: 10,
-  },
-  expenseTopRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  expenseCardInfo: { flex: 1, gap: 4 },
-  expenseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  expenseDescription: { fontSize: 14, fontWeight: '700', color: COLORS.ink, flexShrink: 1 },
-  expenseAmount: { fontSize: 14, fontWeight: '800', color: COLORS.ink },
-  expenseMeta: { fontSize: 12, color: COLORS.inkSoft },
-  splitsList: { gap: 6, borderTopWidth: 1, borderColor: COLORS.line, paddingTop: 10 },
-  splitRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  splitName: { flex: 1, fontSize: 12, fontWeight: '600', color: COLORS.ink },
-  splitAmount: { fontSize: 11, color: COLORS.inkSoft },
-  splitPaidStatus: { fontSize: 11, fontWeight: '700' },
-});
+function createStyles(COLORS: ColorPalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: COLORS.bg },
+    scroll: { padding: 20, gap: 16, paddingBottom: 60 },
+    monthRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 },
+    monthLabel: { fontSize: 15, fontWeight: '700', color: COLORS.ink, textTransform: 'capitalize' },
+    summaryCard: {
+      backgroundColor: COLORS.card,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      padding: 16,
+      gap: 10,
+    },
+    summaryTotal: { fontSize: 15, fontWeight: '800', color: COLORS.ink },
+    balanceRow: { borderTopWidth: 1, borderColor: COLORS.line, paddingTop: 8, marginTop: 2, gap: 2 },
+    balanceName: { fontSize: 13, fontWeight: '700', color: COLORS.ink },
+    balanceNet: { fontSize: 12, fontWeight: '700' },
+    addSection: { gap: 12 },
+    addToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    addToggleText: { fontSize: 14, fontWeight: '700', color: COLORS.brand },
+    form: {
+      gap: 14,
+      backgroundColor: COLORS.card,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      padding: 16,
+    },
+    field: { gap: 8 },
+    label: {
+      fontSize: 12,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
+      color: COLORS.inkSoft,
+    },
+    chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    chip: {
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      backgroundColor: COLORS.card,
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+    },
+    chipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
+    chipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
+    chipTextActive: { color: COLORS.white },
+    equalToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    equalToggleText: { fontSize: 13, color: COLORS.ink },
+    percentRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    percentName: { flex: 1, fontSize: 13, color: COLORS.ink },
+    percentInput: {
+      width: 56,
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 6,
+      fontSize: 13,
+      color: COLORS.ink,
+      textAlign: 'right',
+    },
+    percentSign: { fontSize: 13, color: COLORS.inkSoft },
+    helperText: { fontSize: 11, color: COLORS.inkSoft, marginTop: -4 },
+    formActions: { flexDirection: 'row', gap: 10 },
+    list: { gap: 10 },
+    expenseCard: {
+      backgroundColor: COLORS.card,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      padding: 14,
+      gap: 10,
+    },
+    expenseTopRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+    expenseCardInfo: { flex: 1, gap: 4 },
+    expenseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    expenseDescription: { fontSize: 14, fontWeight: '700', color: COLORS.ink, flexShrink: 1 },
+    expenseAmount: { fontSize: 14, fontWeight: '800', color: COLORS.ink },
+    expenseMeta: { fontSize: 12, color: COLORS.inkSoft },
+    splitsList: { gap: 6, borderTopWidth: 1, borderColor: COLORS.line, paddingTop: 10 },
+    splitRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    splitName: { flex: 1, fontSize: 12, fontWeight: '600', color: COLORS.ink },
+    splitAmount: { fontSize: 11, color: COLORS.inkSoft },
+    splitPaidStatus: { fontSize: 11, fontWeight: '700' },
+  });
+}

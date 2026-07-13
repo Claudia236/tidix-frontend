@@ -1,47 +1,111 @@
+import { useMemo } from 'react';
+import { useI18n, type TranslateFn } from '../i18n/I18nContext';
+import type { ColorPalette, ColorScheme } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 import type { Category, DayOfWeek, Unit, WasteSchedule, WasteType } from '../types';
-import { COLORS } from '../theme/colors';
 
-export const CATEGORIES: { key: Category; label: string; short: string; emoji: string }[] = [
-  { key: 'LATTICINI', label: 'Latticini', short: 'Latticini', emoji: '🥛' },
-  { key: 'CARNE', label: 'Carne e pesce', short: 'Carne/Pesce', emoji: '🥩' },
-  { key: 'FRUTTA_VERDURA', label: 'Frutta e verdura', short: 'Frutta/Verdura', emoji: '🥦' },
-  { key: 'CEREALI', label: 'Pasta e cereali', short: 'Pasta/Cereali', emoji: '🍝' },
-  { key: 'CONSERVE', label: 'Conserve e legumi', short: 'Conserve/Legumi', emoji: '🥫' },
-  { key: 'CONDIMENTI', label: 'Condimenti e spezie', short: 'Condimenti', emoji: '🧂' },
-  { key: 'BEVANDE', label: 'Bevande', short: 'Bevande', emoji: '🥤' },
-  { key: 'PIATTI_PRONTI', label: 'Avanzi', short: 'Avanzi', emoji: '🍱' },
-  { key: 'DOLCI', label: 'Dolci e snack', short: 'Dolci/Snack', emoji: '🍪' },
-  { key: 'PULIZIA', label: 'Pulizia casa', short: 'Pulizia casa', emoji: '🧹' },
-  { key: 'BUCATO', label: 'Bucato', short: 'Bucato', emoji: '🧺' },
-  { key: 'IGIENE', label: 'Igiene personale', short: 'Igiene', emoji: '🧴' },
-  { key: 'ALTRO', label: 'Altro', short: 'Altro', emoji: '📌' },
+export interface CategoryInfo {
+  key: Category;
+  label: string;
+  short: string;
+  emoji: string;
+}
+
+const CATEGORY_KEYS: Category[] = [
+  'LATTICINI', 'CARNE', 'FRUTTA_VERDURA', 'CEREALI', 'CONSERVE', 'CONDIMENTI',
+  'BEVANDE', 'PIATTI_PRONTI', 'DOLCI', 'PULIZIA', 'BUCATO', 'IGIENE', 'ALTRO',
 ];
+
+const CATEGORY_EMOJI: Record<Category, string> = {
+  LATTICINI: '🥛',
+  CARNE: '🥩',
+  FRUTTA_VERDURA: '🥦',
+  CEREALI: '🍝',
+  CONSERVE: '🥫',
+  CONDIMENTI: '🧂',
+  BEVANDE: '🥤',
+  PIATTI_PRONTI: '🍱',
+  DOLCI: '🍪',
+  PULIZIA: '🧹',
+  BUCATO: '🧺',
+  IGIENE: '🧴',
+  ALTRO: '📌',
+};
+
+export function buildCategories(t: TranslateFn): CategoryInfo[] {
+  return CATEGORY_KEYS.map((key) => ({
+    key,
+    label: t(`category.${key}.label`),
+    short: t(`category.${key}.short`),
+    emoji: CATEGORY_EMOJI[key],
+  }));
+}
+
+export function findCategoryInfo(categories: CategoryInfo[], key: Category): CategoryInfo {
+  return categories.find((c) => c.key === key) ?? categories[categories.length - 1];
+}
+
+export function useCategories(): CategoryInfo[] {
+  const { t } = useI18n();
+  return useMemo(() => buildCategories(t), [t]);
+}
+
+export function useCategoryInfo(key: Category): CategoryInfo {
+  const categories = useCategories();
+  return findCategoryInfo(categories, key);
+}
 
 export const UNITS: Unit[] = ['PZ', 'KG', 'G', 'L', 'ML', 'CONF'];
 
-export function categoryInfo(key: Category) {
-  return CATEGORIES.find((c) => c.key === key) ?? CATEGORIES[CATEGORIES.length - 1];
+export function useUnitLabel(): (unit: Unit) => string {
+  const { t } = useI18n();
+  return (unit: Unit) => t(`unit.${unit}`);
 }
 
-export const EXPIRY_STATUS_COLORS = {
-  critico: { fg: COLORS.danger, bg: COLORS.dangerBg },
-  attenzione: { fg: COLORS.warn, bg: COLORS.warnBg },
-  presto: { fg: COLORS.gold, bg: COLORS.goldBg },
-  ok: { fg: COLORS.inkSoft, bg: COLORS.okBg },
-} as const;
+export interface ExpiryStatusColors {
+  critico: { fg: string; bg: string };
+  attenzione: { fg: string; bg: string };
+  presto: { fg: string; bg: string };
+  ok: { fg: string; bg: string };
+}
+
+export function buildExpiryStatusColors(COLORS: ColorPalette): ExpiryStatusColors {
+  return {
+    critico: { fg: COLORS.danger, bg: COLORS.dangerBg },
+    attenzione: { fg: COLORS.warn, bg: COLORS.warnBg },
+    presto: { fg: COLORS.gold, bg: COLORS.goldBg },
+    ok: { fg: COLORS.inkSoft, bg: COLORS.okBg },
+  };
+}
+
+export function useExpiryStatusColors(): ExpiryStatusColors {
+  const { colors } = useTheme();
+  return useMemo(() => buildExpiryStatusColors(colors), [colors]);
+}
 
 // Le posizioni (frigo/freezer/dispensa/...) sono ormai personalizzate per famiglia
 // e arrivano dall'API: qui deriviamo solo un colore/codice coerenti e stabili
 // a partire dal nome, senza doverli salvare lato server.
-const LOCATION_PALETTE = [
-  { color: '#2E6E8E', bg: '#E1EDF1' },
-  { color: '#1F7A8C', bg: '#DCEFF1' },
-  { color: '#96702A', bg: '#F1E8D8' },
-  { color: '#5B5A52', bg: '#EAE8E2' },
-  { color: '#6B4F8C', bg: '#EAE3F1' },
-  { color: '#3F6B52', bg: '#E1EDE5' },
-  { color: '#A3572E', bg: '#F3E4D8' },
-];
+const LOCATION_PALETTE: Record<ColorScheme, { color: string; bg: string }[]> = {
+  light: [
+    { color: '#2E6E8E', bg: '#E1EDF1' },
+    { color: '#1F7A8C', bg: '#DCEFF1' },
+    { color: '#96702A', bg: '#F1E8D8' },
+    { color: '#5B5A52', bg: '#EAE8E2' },
+    { color: '#6B4F8C', bg: '#EAE3F1' },
+    { color: '#3F6B52', bg: '#E1EDE5' },
+    { color: '#A3572E', bg: '#F3E4D8' },
+  ],
+  dark: [
+    { color: '#7FB8D8', bg: '#1E2C33' },
+    { color: '#6FCBDB', bg: '#1B2E30' },
+    { color: '#D9B463', bg: '#312A1B' },
+    { color: '#B7B4A8', bg: '#292825' },
+    { color: '#BBA3E0', bg: '#2A2333' },
+    { color: '#7FBF9C', bg: '#1E2C25' },
+    { color: '#E0A06F', bg: '#332419' },
+  ],
+};
 
 function hashString(value: string): number {
   let hash = 0;
@@ -53,9 +117,15 @@ function hashString(value: string): number {
 
 // id puo' essere null/undefined per prodotti creati prima dell'introduzione
 // delle posizioni personalizzabili, mai riassegnati a una posizione valida
-export function locationColor(id: string | null | undefined): { color: string; bg: string } {
-  if (!id) return LOCATION_PALETTE[0];
-  return LOCATION_PALETTE[hashString(id) % LOCATION_PALETTE.length];
+export function locationColor(id: string | null | undefined, scheme: ColorScheme = 'light'): { color: string; bg: string } {
+  const palette = LOCATION_PALETTE[scheme];
+  if (!id) return palette[0];
+  return palette[hashString(id) % palette.length];
+}
+
+export function useLocationColor(): (id: string | null | undefined) => { color: string; bg: string } {
+  const { scheme } = useTheme();
+  return (id) => locationColor(id, scheme);
 }
 
 export function locationCode(name: string): string {
@@ -63,32 +133,66 @@ export function locationCode(name: string): string {
   return (letters.slice(0, 2) || '??').padEnd(2, letters[0] ?? '?');
 }
 
-export const WASTE_TYPES: { key: WasteType; label: string; emoji: string }[] = [
-  { key: 'ORGANICO', label: 'Organico', emoji: '🍂' },
-  { key: 'PLASTICA', label: 'Plastica', emoji: '♻️' },
-  { key: 'CARTA_CARTONE', label: 'Carta e cartone', emoji: '📦' },
-  { key: 'VETRO', label: 'Vetro', emoji: '🍾' },
-  { key: 'INDIFFERENZIATO', label: 'Indifferenziato', emoji: '🗑️' },
-  { key: 'ALTRO', label: 'Altro', emoji: '📌' },
-];
+export interface WasteTypeInfo {
+  key: WasteType;
+  label: string;
+  emoji: string;
+}
 
-export function wasteTypeInfo(key: WasteType) {
-  return WASTE_TYPES.find((w) => w.key === key) ?? WASTE_TYPES[WASTE_TYPES.length - 1];
+const WASTE_TYPE_KEYS: WasteType[] = ['ORGANICO', 'PLASTICA', 'CARTA_CARTONE', 'VETRO', 'INDIFFERENZIATO', 'ALTRO'];
+
+const WASTE_TYPE_EMOJI: Record<WasteType, string> = {
+  ORGANICO: '🍂',
+  PLASTICA: '♻️',
+  CARTA_CARTONE: '📦',
+  VETRO: '🍾',
+  INDIFFERENZIATO: '🗑️',
+  ALTRO: '📌',
+};
+
+export function buildWasteTypes(t: TranslateFn): WasteTypeInfo[] {
+  return WASTE_TYPE_KEYS.map((key) => ({ key, label: t(`waste.${key}.label`), emoji: WASTE_TYPE_EMOJI[key] }));
+}
+
+export function findWasteTypeInfo(types: WasteTypeInfo[], key: WasteType): WasteTypeInfo {
+  return types.find((w) => w.key === key) ?? types[types.length - 1];
+}
+
+export function useWasteTypes(): WasteTypeInfo[] {
+  const { t } = useI18n();
+  return useMemo(() => buildWasteTypes(t), [t]);
+}
+
+export function useWasteTypeInfo(key: WasteType): WasteTypeInfo {
+  const types = useWasteTypes();
+  return findWasteTypeInfo(types, key);
+}
+
+export interface DayOfWeekInfo {
+  key: DayOfWeek;
+  short: string;
+  label: string;
 }
 
 // Ordine lunedì -> domenica, coerente con java.time.DayOfWeek usato dal backend
-export const DAYS_OF_WEEK: { key: DayOfWeek; short: string; label: string }[] = [
-  { key: 'MONDAY', short: 'L', label: 'Lunedì' },
-  { key: 'TUESDAY', short: 'M', label: 'Martedì' },
-  { key: 'WEDNESDAY', short: 'M', label: 'Mercoledì' },
-  { key: 'THURSDAY', short: 'G', label: 'Giovedì' },
-  { key: 'FRIDAY', short: 'V', label: 'Venerdì' },
-  { key: 'SATURDAY', short: 'S', label: 'Sabato' },
-  { key: 'SUNDAY', short: 'D', label: 'Domenica' },
-];
+const DAY_KEYS: DayOfWeek[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
 
-export function dayOfWeekLabel(key: DayOfWeek): string {
-  return DAYS_OF_WEEK.find((d) => d.key === key)?.label ?? key;
+export function buildDaysOfWeek(t: TranslateFn): DayOfWeekInfo[] {
+  return DAY_KEYS.map((key) => ({ key, short: t(`day.${key}.short`), label: t(`day.${key}.label`) }));
+}
+
+export function findDayOfWeekLabel(days: DayOfWeekInfo[], key: DayOfWeek): string {
+  return days.find((d) => d.key === key)?.label ?? key;
+}
+
+export function useDaysOfWeek(): DayOfWeekInfo[] {
+  const { t } = useI18n();
+  return useMemo(() => buildDaysOfWeek(t), [t]);
+}
+
+export function useDayOfWeekLabel(): (key: DayOfWeek) => string {
+  const days = useDaysOfWeek();
+  return (key) => findDayOfWeekLabel(days, key);
 }
 
 // Ordine domenica -> sabato, coerente con Date.getDay() (0 = domenica)
@@ -108,18 +212,36 @@ export function wasteTypesCollectedOn(schedules: WasteSchedule[], day: DayOfWeek
   return schedules.filter((s) => s.daysOfWeek.includes(day)).map((s) => s.type);
 }
 
-// Frequenze standard consigliate per la pulizia domestica, usate come suggerimento rapido
-export const CLEANING_SUGGESTIONS: { name: string; emoji: string; frequencyDays: number }[] = [
-  { name: 'Bagno', emoji: '🚽', frequencyDays: 7 },
-  { name: 'Lenzuola', emoji: '🛏️', frequencyDays: 7 },
-  { name: 'Camera da letto', emoji: '🛋️', frequencyDays: 7 },
-  { name: 'Cucina', emoji: '🍽️', frequencyDays: 7 },
-  { name: 'Pavimenti', emoji: '🧹', frequencyDays: 7 },
-  { name: 'Frigorifero', emoji: '🧊', frequencyDays: 30 },
-  { name: 'Forno', emoji: '🔥', frequencyDays: 30 },
-  { name: 'Lavatrice', emoji: '🧺', frequencyDays: 30 },
-  { name: 'Tappeti', emoji: '🟫', frequencyDays: 14 },
-  { name: 'Vetri e finestre', emoji: '🪟', frequencyDays: 30 },
-  { name: 'Divano', emoji: '🛋️', frequencyDays: 30 },
-  { name: 'Cappa cucina', emoji: '💨', frequencyDays: 30 },
+export interface CleaningSuggestion {
+  name: string;
+  emoji: string;
+  frequencyDays: number;
+}
+
+const CLEANING_SUGGESTION_KEYS: { key: string; emoji: string; frequencyDays: number }[] = [
+  { key: 'bagno', emoji: '🚽', frequencyDays: 7 },
+  { key: 'lenzuola', emoji: '🛏️', frequencyDays: 7 },
+  { key: 'cameraDaLetto', emoji: '🛋️', frequencyDays: 7 },
+  { key: 'cucina', emoji: '🍽️', frequencyDays: 7 },
+  { key: 'pavimenti', emoji: '🧹', frequencyDays: 7 },
+  { key: 'frigorifero', emoji: '🧊', frequencyDays: 30 },
+  { key: 'forno', emoji: '🔥', frequencyDays: 30 },
+  { key: 'lavatrice', emoji: '🧺', frequencyDays: 30 },
+  { key: 'tappeti', emoji: '🟫', frequencyDays: 14 },
+  { key: 'vetriEFinestre', emoji: '🪟', frequencyDays: 30 },
+  { key: 'divano', emoji: '🛋️', frequencyDays: 30 },
+  { key: 'cappaCucina', emoji: '💨', frequencyDays: 30 },
 ];
+
+export function buildCleaningSuggestions(t: TranslateFn): CleaningSuggestion[] {
+  return CLEANING_SUGGESTION_KEYS.map((s) => ({
+    name: t(`cleaningSuggestion.${s.key}`),
+    emoji: s.emoji,
+    frequencyDays: s.frequencyDays,
+  }));
+}
+
+export function useCleaningSuggestions(): CleaningSuggestion[] {
+  const { t } = useI18n();
+  return useMemo(() => buildCleaningSuggestions(t), [t]);
+}

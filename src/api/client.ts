@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { secureStorage } from './secureStorage';
+import type { TranslateFn } from '../i18n/I18nContext';
 import type { ApiErrorBody } from '../types';
 
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080';
@@ -37,13 +38,13 @@ export async function clearPersistedToken() {
   setAuthToken(null);
 }
 
-export function getErrorMessage(error: unknown, fallback = 'Si è verificato un errore. Riprova.'): string {
+export function getErrorMessage(error: unknown, t: TranslateFn): string {
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError<ApiErrorBody>;
     const body = axiosError.response?.data;
     if (body?.details?.length) return body.details.join('\n');
     if (body?.message) return body.message;
-    if (axiosError.message === 'Network Error') return 'Impossibile contattare il server. Controlla la connessione.';
+    if (axiosError.message === 'Network Error') return t('common.networkError');
   }
-  return fallback;
+  return t('common.genericError');
 }

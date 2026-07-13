@@ -1,18 +1,23 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { getErrorMessage } from '../../../src/api/client';
 import { itemsApi } from '../../../src/api/items';
 import { shoppingNotesApi } from '../../../src/api/shoppingNotes';
 import { showAlert } from '../../../src/components/AppAlert';
 import { ItemForm } from '../../../src/components/ItemForm';
-import { COLORS } from '../../../src/theme/colors';
+import { useI18n } from '../../../src/i18n/I18nContext';
+import type { ColorPalette } from '../../../src/theme/colors';
+import { useTheme } from '../../../src/theme/ThemeContext';
 import type { Category, ItemInput } from '../../../src/types';
 
 export default function NewItemScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { colors } = useTheme();
+  const { t } = useI18n();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const params = useLocalSearchParams<{
     storageLocationId?: string;
     name?: string;
@@ -31,7 +36,7 @@ export default function NewItemScreen() {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       router.back();
     },
-    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   return (
@@ -43,7 +48,7 @@ export default function NewItemScreen() {
           category: params.category as Category | undefined,
           purchaseDate: params.purchaseDate,
         }}
-        submitLabel="Salva"
+        submitLabel={t('common.save')}
         submitting={createMutation.isPending}
         onSubmit={(input) => createMutation.mutate(input)}
       />
@@ -51,6 +56,8 @@ export default function NewItemScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg },
-});
+function createStyles(COLORS: ColorPalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: COLORS.bg },
+  });
+}

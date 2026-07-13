@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
-import { dayToJsWeekday, wasteTypeInfo } from '../constants/domain';
+import { buildWasteTypes, dayToJsWeekday, findWasteTypeInfo } from '../constants/domain';
+import type { TranslateFn } from '../i18n/I18nContext';
 import type { WasteSchedule } from '../types';
 import { CHANNEL_ID, cancelByPrefix, ensureChannel, ensureNotificationPermissions } from './core';
 
@@ -19,17 +20,19 @@ function toTriggerWeekday(jsWeekday: number): number {
  * Non tocca il web: li' non esiste uno scheduler persistente affidabile,
  * il promemoria e' invece un banner mostrato in app (vedi wasteTypesCollectedOn).
  */
-export async function syncWasteReminders(schedules: WasteSchedule[]): Promise<void> {
+export async function syncWasteReminders(schedules: WasteSchedule[], t: TranslateFn): Promise<void> {
   if (Platform.OS === 'web') return;
 
   const granted = await ensureNotificationPermissions();
   if (!granted) return;
 
-  await ensureChannel();
+  await ensureChannel(t('notif.channelName'));
   await cancelByPrefix(PREFIX);
 
+  const wasteTypes = buildWasteTypes(t);
+
   for (const schedule of schedules) {
-    const info = wasteTypeInfo(schedule.type);
+    const info = findWasteTypeInfo(wasteTypes, schedule.type);
     for (const day of schedule.daysOfWeek) {
       const collectionJsWeekday = dayToJsWeekday(day);
       const reminderJsWeekday = (collectionJsWeekday + 6) % 7; // il giorno prima
@@ -37,8 +40,8 @@ export async function syncWasteReminders(schedules: WasteSchedule[]): Promise<vo
       await Notifications.scheduleNotificationAsync({
         identifier: `${PREFIX}${schedule.type}-${day}`,
         content: {
-          title: 'Promemoria raccolta rifiuti',
-          body: `Domani passa ${info.label.toLowerCase()}: metti fuori il secchio stasera.`,
+          title: t('notif.wasteReminder.title'),
+          body: t('notif.wasteReminder.body', { type: info.label.toLowerCase() }),
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.WEEKLY,

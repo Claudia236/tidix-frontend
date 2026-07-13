@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
-import { COLORS } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 
 interface Props {
   label: string;
@@ -12,12 +12,13 @@ interface Props {
 }
 
 export function PrimaryButton({ label, onPress, disabled, loading, variant = 'primary', style }: Props) {
+  const { colors } = useTheme();
   const isDisabled = disabled || loading;
 
   const backgroundColor =
-    variant === 'primary' ? COLORS.brand : variant === 'danger' ? COLORS.dangerBg : COLORS.white;
-  const textColor = variant === 'danger' ? COLORS.danger : variant === 'secondary' ? COLORS.ink : COLORS.white;
-  const borderColor = variant === 'secondary' ? COLORS.line : 'transparent';
+    variant === 'primary' ? colors.brand : variant === 'danger' ? colors.dangerBg : colors.card;
+  const textColor = variant === 'danger' ? colors.danger : variant === 'secondary' ? colors.ink : colors.white;
+  const borderColor = variant === 'secondary' ? colors.line : 'transparent';
 
   return (
     <Pressable

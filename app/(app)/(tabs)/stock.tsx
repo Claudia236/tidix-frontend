@@ -12,13 +12,18 @@ import { ItemCard } from '../../../src/components/ItemCard';
 import { RestockDialog } from '../../../src/components/RestockDialog';
 import { SectionTitle } from '../../../src/components/SectionTitle';
 import { useStorageLocations } from '../../../src/hooks/useStorageLocations';
-import { COLORS } from '../../../src/theme/colors';
+import { useI18n } from '../../../src/i18n/I18nContext';
+import type { ColorPalette } from '../../../src/theme/colors';
+import { useTheme } from '../../../src/theme/ThemeContext';
 import { webCentered } from '../../../src/theme/responsive';
 import type { Item, ItemInput } from '../../../src/types';
 
 export default function StockScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { colors } = useTheme();
+  const { t } = useI18n();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const params = useLocalSearchParams<{ storageLocationId?: string }>();
   const { locations, byId } = useStorageLocations();
   const [filterLocationId, setFilterLocationId] = useState<string>('TUTTI');
@@ -27,8 +32,8 @@ export default function StockScreen() {
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
 
   const filters = useMemo(
-    () => [{ key: 'TUTTI', label: 'Tutti', emoji: '📋' }, ...locations.map((l) => ({ key: l.id, label: l.name, emoji: l.emoji }))],
-    [locations]
+    () => [{ key: 'TUTTI', label: t('stock.filterAll'), emoji: '📋' }, ...locations.map((l) => ({ key: l.id, label: l.name, emoji: l.emoji }))],
+    [locations, t]
   );
 
   useEffect(() => {
@@ -64,7 +69,7 @@ export default function StockScreen() {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       setRestockTarget(null);
     },
-    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const newBatchMutation = useMutation({
@@ -73,7 +78,7 @@ export default function StockScreen() {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       setRestockTarget(null);
     },
-    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   function handleAdjust(item: Item, delta: number) {
@@ -83,9 +88,9 @@ export default function StockScreen() {
     }
 
     if (item.quantity + delta <= 0) {
-      showAlert('Scorta finita', `"${item.name}" è finita. Vuoi aggiungerla alla lista della spesa?`, [
-        { text: 'No', style: 'cancel', onPress: () => adjustMutation.mutate({ id: item.id, delta, hideFromShoppingList: true }) },
-        { text: 'Sì', onPress: () => adjustMutation.mutate({ id: item.id, delta, hideFromShoppingList: false }) },
+      showAlert(t('stock.outOfStockTitle'), t('stock.outOfStockMessage', { name: item.name }), [
+        { text: t('common.no'), style: 'cancel', onPress: () => adjustMutation.mutate({ id: item.id, delta, hideFromShoppingList: true }) },
+        { text: t('common.yes'), onPress: () => adjustMutation.mutate({ id: item.id, delta, hideFromShoppingList: false }) },
       ]);
       return;
     }
@@ -102,15 +107,15 @@ export default function StockScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
-        <SectionTitle>Le tue scorte</SectionTitle>
+        <SectionTitle>{t('stock.title')}</SectionTitle>
 
         <View style={styles.searchBox}>
-          <Ionicons name="search" size={16} color={COLORS.inkSoft} />
+          <Ionicons name="search" size={16} color={colors.inkSoft} />
           <TextInput
             value={search}
             onChangeText={setSearch}
-            placeholder="Cerca un prodotto..."
-            placeholderTextColor={COLORS.inkSoft}
+            placeholder={t('stock.searchPlaceholder')}
+            placeholderTextColor={colors.inkSoft}
             style={styles.searchInput}
           />
         </View>
@@ -139,9 +144,9 @@ export default function StockScreen() {
               onPress={() => setOnlyOpened((v) => !v)}
               style={[styles.filterChip, onlyOpened && styles.filterChipActive]}
             >
-              <Ionicons name="lock-open-outline" size={12} color={onlyOpened ? COLORS.white : COLORS.gold} />
+              <Ionicons name="lock-open-outline" size={12} color={onlyOpened ? colors.white : colors.gold} />
               <Text style={[styles.filterChipText, onlyOpened && styles.filterChipTextActive]}>
-                Aperti ({openedCount})
+                {t('stock.openedFilter', { n: openedCount })}
               </Text>
             </Pressable>
           )}
@@ -154,8 +159,8 @@ export default function StockScreen() {
           ListEmptyComponent={
             <EmptyState
               icon="cube-outline"
-              title="Nessun prodotto trovato"
-              subtitle="Prova a modificare la ricerca o aggiungi un nuovo prodotto."
+              title={t('stock.emptyTitle')}
+              subtitle={t('stock.emptySubtitle')}
             />
           }
           renderItem={({ item }) => (
@@ -194,37 +199,39 @@ export default function StockScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.bg },
-  container: { flex: 1, paddingHorizontal: 20, paddingTop: 20, gap: 12, ...webCentered },
-  searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  searchInput: { flex: 1, fontSize: 13, color: COLORS.ink },
-  filtersScroll: { flexGrow: 0 },
-  filters: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingBottom: 4 },
-  filterChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    backgroundColor: COLORS.white,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  filterChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
-  filterChipEmoji: { fontSize: 12, lineHeight: 15 },
-  filterChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
-  filterChipTextActive: { color: COLORS.white },
-  list: { paddingBottom: 120, paddingTop: 4 },
-});
+function createStyles(COLORS: ColorPalette) {
+  return StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: COLORS.bg },
+    container: { flex: 1, paddingHorizontal: 20, paddingTop: 20, gap: 12, ...webCentered },
+    searchBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: COLORS.card,
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    searchInput: { flex: 1, fontSize: 13, color: COLORS.ink },
+    filtersScroll: { flexGrow: 0 },
+    filters: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingBottom: 4 },
+    filterChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      backgroundColor: COLORS.card,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+    },
+    filterChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
+    filterChipEmoji: { fontSize: 12, lineHeight: 15 },
+    filterChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
+    filterChipTextActive: { color: COLORS.white },
+    list: { paddingBottom: 120, paddingTop: 4 },
+  });
+}

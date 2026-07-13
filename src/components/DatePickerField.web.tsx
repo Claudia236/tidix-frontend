@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS } from '../theme/colors';
+import { useI18n } from '../i18n/I18nContext';
+import type { ColorPalette } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 
 interface Props {
   value: string | null;
@@ -9,7 +11,11 @@ interface Props {
   allowClear?: boolean;
 }
 
-export function DatePickerField({ value, onChange, clearLabel = 'Rimuovi scadenza', allowClear = true }: Props) {
+export function DatePickerField({ value, onChange, clearLabel, allowClear = true }: Props) {
+  const { colors } = useTheme();
+  const { t } = useI18n();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View>
       <View style={styles.dateButton}>
@@ -23,28 +29,30 @@ export function DatePickerField({ value, onChange, clearLabel = 'Rimuovi scadenz
             background: 'transparent',
             fontFamily: 'inherit',
             fontSize: 14,
-            color: COLORS.ink,
+            color: colors.ink,
             width: '100%',
           },
         })}
       </View>
       {allowClear && value ? (
         <Pressable onPress={() => onChange(null)}>
-          <Text style={styles.clearDate}>{clearLabel}</Text>
+          <Text style={styles.clearDate}>{clearLabel ?? t('common.removeDateDefault')}</Text>
         </Pressable>
       ) : null}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  dateButton: {
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    backgroundColor: COLORS.white,
-  },
-  clearDate: { fontSize: 12, color: COLORS.danger, marginTop: 6, fontWeight: '600' },
-});
+function createStyles(COLORS: ColorPalette) {
+  return StyleSheet.create({
+    dateButton: {
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      borderRadius: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 14,
+      backgroundColor: COLORS.card,
+    },
+    clearDate: { fontSize: 12, color: COLORS.danger, marginTop: 6, fontWeight: '600' },
+  });
+}

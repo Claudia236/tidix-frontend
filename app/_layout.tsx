@@ -8,6 +8,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { queryClient } from '../src/api/queryClient';
 import { AppAlertHost } from '../src/components/AppAlert';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
+import { I18nProvider } from '../src/i18n/I18nContext';
+import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -15,16 +17,25 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <StatusBar style="dark" />
-            <RootNavigator />
-            <AppAlertHost />
-          </AuthProvider>
-        </QueryClientProvider>
+        <ThemeProvider>
+          <I18nProvider>
+            <QueryClientProvider client={queryClient}>
+              <AuthProvider>
+                <ThemedStatusBar />
+                <RootNavigator />
+                <AppAlertHost />
+              </AuthProvider>
+            </QueryClientProvider>
+          </I18nProvider>
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
+}
+
+function ThemedStatusBar() {
+  const { scheme } = useTheme();
+  return <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />;
 }
 
 function RootNavigator() {

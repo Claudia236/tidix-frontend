@@ -5,11 +5,14 @@ import { View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { AddFab } from '../../../src/components/AddFab';
 import { itemsApi } from '../../../src/api/items';
-import { COLORS } from '../../../src/theme/colors';
+import { useI18n } from '../../../src/i18n/I18nContext';
+import { useTheme } from '../../../src/theme/ThemeContext';
 import { webCentered } from '../../../src/theme/responsive';
 
 export default function TabsLayout() {
   const pathname = usePathname();
+  const { colors } = useTheme();
+  const { t } = useI18n();
   const showFab = !pathname.endsWith('/shopping');
 
   const { data: shoppingList } = useQuery({
@@ -19,34 +22,34 @@ export default function TabsLayout() {
   const shoppingCount = shoppingList?.length ?? 0;
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <View style={[{ flex: 1 }, webCentered]}>
         <Tabs
           screenOptions={{
             headerShown: false,
-            tabBarActiveTintColor: COLORS.brand,
-            tabBarInactiveTintColor: COLORS.inkSoft,
-            tabBarStyle: { borderTopColor: COLORS.line },
+            tabBarActiveTintColor: colors.brand,
+            tabBarInactiveTintColor: colors.inkSoft,
+            tabBarStyle: { borderTopColor: colors.line, backgroundColor: colors.card },
           }}
         >
           <Tabs.Screen
             name="index"
             options={{
-              title: 'Panoramica',
+              title: t('nav.overview'),
               tabBarIcon: ({ color, size }) => <Ionicons name="grid-outline" color={color} size={size} />,
             }}
           />
           <Tabs.Screen
             name="stock"
             options={{
-              title: 'Scorte',
+              title: t('nav.stock'),
               tabBarIcon: ({ color, size }) => <Ionicons name="cube-outline" color={color} size={size} />,
             }}
           />
           <Tabs.Screen
             name="shopping"
             options={{
-              title: 'Lista Spesa',
+              title: t('nav.shopping'),
               tabBarIcon: ({ color, size }) => <Ionicons name="cart-outline" color={color} size={size} />,
               tabBarBadge: shoppingCount > 0 ? shoppingCount : undefined,
             }}
@@ -54,7 +57,7 @@ export default function TabsLayout() {
           <Tabs.Screen
             name="more"
             options={{
-              title: 'Altro',
+              title: t('nav.more'),
               tabBarIcon: ({ color, size }) => <Ionicons name="ellipsis-horizontal-circle-outline" color={color} size={size} />,
             }}
           />

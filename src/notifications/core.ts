@@ -20,10 +20,10 @@ export async function ensureNotificationPermissions(): Promise<boolean> {
   return requested.granted;
 }
 
-export async function ensureChannel() {
+export async function ensureChannel(channelName: string) {
   if (Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-    name: 'Promemoria',
+    name: channelName,
     importance: Notifications.AndroidImportance.DEFAULT,
   });
 }

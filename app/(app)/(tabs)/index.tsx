@@ -10,12 +10,18 @@ import { wasteApi } from '../../../src/api/waste';
 import { AlertBanner } from '../../../src/components/AlertBanner';
 import { EmptyState } from '../../../src/components/EmptyState';
 import { SectionTitle } from '../../../src/components/SectionTitle';
-import { jsWeekdayToDay, wasteTypeInfo, wasteTypesCollectedOn } from '../../../src/constants/domain';
-import { COLORS } from '../../../src/theme/colors';
+import { jsWeekdayToDay, useWasteTypes, findWasteTypeInfo, wasteTypesCollectedOn } from '../../../src/constants/domain';
+import { useI18n } from '../../../src/i18n/I18nContext';
+import type { ColorPalette } from '../../../src/theme/colors';
+import { useTheme } from '../../../src/theme/ThemeContext';
 import { webCentered } from '../../../src/theme/responsive';
 
 export default function OverviewScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
+  const { t } = useI18n();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const wasteTypes = useWasteTypes();
 
   const summaryQuery = useQuery({ queryKey: ['items', 'summary'], queryFn: itemsApi.summary });
   const expiredQuery = useQuery({ queryKey: ['items', 'expired'], queryFn: itemsApi.expired });
@@ -66,57 +72,59 @@ export default function OverviewScreen() {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Logistica Domestica</Text>
           <Pressable onPress={() => router.push('/(app)/household')} style={styles.familyButton} hitSlop={8}>
-            <Ionicons name="home-outline" size={22} color={COLORS.inkSoft} />
+            <Ionicons name="home-outline" size={22} color={colors.inkSoft} />
           </Pressable>
         </View>
 
         {wasteTomorrow.length > 0 ? (
           <Pressable style={styles.wasteBanner} onPress={() => router.push('/(app)/waste')}>
-            <Ionicons name="trash-outline" size={18} color={COLORS.warn} />
+            <Ionicons name="trash-outline" size={18} color={colors.warn} />
             <Text style={styles.wasteBannerText}>
-              Domani passa: {wasteTomorrow.map((t) => wasteTypeInfo(t).label).join(', ')}. Ricordati il secchio stasera.
+              {t('overview.wasteTomorrow', {
+                types: wasteTomorrow.map((w) => findWasteTypeInfo(wasteTypes, w).label).join(', '),
+              })}
             </Text>
           </Pressable>
         ) : null}
 
-        <SectionTitle>Panoramica</SectionTitle>
+        <SectionTitle>{t('overview.title')}</SectionTitle>
 
         {totalCount === 0 ? (
           <EmptyState
             icon="cube-outline"
-            title="Inizia ad aggiungere i tuoi prodotti"
-            subtitle="Tocca il pulsante + per registrare cosa hai in frigo, freezer, dispensa e nelle altre posizioni."
+            title={t('overview.emptyTitle')}
+            subtitle={t('overview.emptySubtitle')}
           />
         ) : (
           <>
             <View style={styles.statsRow}>
               <View style={styles.statTile}>
                 <Text style={styles.statValue}>{totalCount}</Text>
-                <Text style={styles.statLabel}>prodott{totalCount === 1 ? 'o' : 'i'}</Text>
+                <Text style={styles.statLabel}>{t('overview.statProducts', { n: totalCount })}</Text>
               </View>
               <Pressable style={styles.statTile} onPress={() => router.push('/(app)/locations')}>
                 <Text style={styles.statValue}>{zoneCount}</Text>
-                <Text style={styles.statLabel}>zon{zoneCount === 1 ? 'a' : 'e'}</Text>
+                <Text style={styles.statLabel}>{t('overview.statZones', { n: zoneCount })}</Text>
               </Pressable>
               <Pressable style={styles.statTile} onPress={() => router.push('/(app)/cleaning')}>
-                <Text style={[styles.statValue, overdueCleaning.length > 0 && { color: COLORS.warn }]}>
+                <Text style={[styles.statValue, overdueCleaning.length > 0 && { color: colors.warn }]}>
                   {overdueCleaning.length}
                 </Text>
-                <Text style={styles.statLabel}>pulizie da fare</Text>
+                <Text style={styles.statLabel}>{t('overview.statCleaningDue')}</Text>
               </Pressable>
             </View>
 
             {expiredItems.length === 0 && expiringItems.length === 0 ? (
               <View style={styles.okBanner}>
-                <Ionicons name="checkmark-circle-outline" size={18} color={COLORS.brand} />
-                <Text style={styles.okBannerText}>Nessuna scadenza imminente. Tutto sotto controllo.</Text>
+                <Ionicons name="checkmark-circle-outline" size={18} color={colors.brand} />
+                <Text style={styles.okBannerText}>{t('overview.allGood')}</Text>
               </View>
             ) : (
               <View style={{ gap: 8 }}>
                 {expiredItems.length > 0 && (
                   <AlertBanner
                     tone="critico"
-                    title={`${expiredItems.length} prodott${expiredItems.length === 1 ? 'o' : 'i'} scadut${expiredItems.length === 1 ? 'o' : 'i'}`}
+                    title={t('overview.expiredTitle', { n: expiredItems.length })}
                     items={expiredItems}
                     onItemPress={(item) => router.push({ pathname: '/(app)/item/[id]', params: { id: item.id } })}
                   />
@@ -124,7 +132,7 @@ export default function OverviewScreen() {
                 {expiringItems.length > 0 && (
                   <AlertBanner
                     tone="attenzione"
-                    title={`${expiringItems.length} prodott${expiringItems.length === 1 ? 'o' : 'i'} in scadenza`}
+                    title={t('overview.expiringTitle', { n: expiringItems.length })}
                     items={expiringItems}
                     onItemPress={(item) => router.push({ pathname: '/(app)/item/[id]', params: { id: item.id } })}
                   />
@@ -134,15 +142,15 @@ export default function OverviewScreen() {
 
             {overdueCleaning.length > 0 && (
               <View style={styles.cleaningSection}>
-                <SectionTitle small>Pulizie da fare</SectionTitle>
+                <SectionTitle small>{t('overview.cleaningDueSection')}</SectionTitle>
                 {overdueCleaning.map((task) => (
                   <Pressable key={task.id} style={styles.cleaningRow} onPress={() => router.push('/(app)/cleaning')}>
-                    <Ionicons name="sparkles-outline" size={16} color={COLORS.warn} />
+                    <Ionicons name="sparkles-outline" size={16} color={colors.warn} />
                     <Text style={styles.cleaningRowText}>{task.name}</Text>
                     <Text style={styles.cleaningRowMeta}>
                       {task.daysSinceCleaned === null
-                        ? 'Mai pulito'
-                        : `Pulito ${task.daysSinceCleaned} giorn${task.daysSinceCleaned === 1 ? 'o' : 'i'} fa`}
+                        ? t('overview.cleaningNeverCleaned')
+                        : t('overview.cleaningCleanedDaysAgo', { n: task.daysSinceCleaned })}
                     </Text>
                   </Pressable>
                 ))}
@@ -152,12 +160,10 @@ export default function OverviewScreen() {
             {shoppingCount > 0 && (
               <Pressable style={styles.shoppingLink} onPress={() => router.push('/(app)/(tabs)/shopping')}>
                 <View style={styles.shoppingLinkLeft}>
-                  <Ionicons name="cart-outline" size={18} color={COLORS.brand} />
-                  <Text style={styles.shoppingLinkText}>
-                    {shoppingCount} prodott{shoppingCount === 1 ? 'o' : 'i'} da comprare
-                  </Text>
+                  <Ionicons name="cart-outline" size={18} color={colors.brand} />
+                  <Text style={styles.shoppingLinkText}>{t('overview.shoppingLink', { n: shoppingCount })}</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={18} color={COLORS.inkSoft} />
+                <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
               </Pressable>
             )}
           </>
@@ -167,68 +173,70 @@ export default function OverviewScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.bg },
-  container: { padding: 20, gap: 16, paddingBottom: 120, ...webCentered },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  headerTitle: { fontSize: 17, fontWeight: '800', color: COLORS.ink },
-  familyButton: { padding: 2 },
-  okBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: COLORS.okBg,
-    borderRadius: 14,
-    padding: 14,
-  },
-  okBannerText: { fontSize: 13, color: COLORS.ink, flexShrink: 1 },
-  wasteBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: COLORS.warnBg,
-    borderRadius: 14,
-    padding: 14,
-  },
-  wasteBannerText: { fontSize: 13, color: COLORS.ink, flexShrink: 1 },
-  statsRow: { flexDirection: 'row', gap: 10 },
-  statTile: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 2,
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    paddingVertical: 14,
-  },
-  statValue: { fontSize: 20, fontWeight: '800', color: COLORS.ink },
-  statLabel: { fontSize: 11, color: COLORS.inkSoft, textAlign: 'center' },
-  cleaningSection: { gap: 8 },
-  cleaningRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-  },
-  cleaningRowText: { flex: 1, fontSize: 13, fontWeight: '600', color: COLORS.ink },
-  cleaningRowMeta: { fontSize: 11, color: COLORS.inkSoft },
-  shoppingLink: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
-    borderTopWidth: 2,
-    borderStyle: 'dashed' as const,
-    borderColor: COLORS.line,
-    padding: 16,
-  },
-  shoppingLinkLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  shoppingLinkText: { fontSize: 13, fontWeight: '600', color: COLORS.ink },
-});
+function createStyles(COLORS: ColorPalette) {
+  return StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: COLORS.bg },
+    container: { padding: 20, gap: 16, paddingBottom: 120, ...webCentered },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    headerTitle: { fontSize: 17, fontWeight: '800', color: COLORS.ink },
+    familyButton: { padding: 2 },
+    okBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: COLORS.okBg,
+      borderRadius: 14,
+      padding: 14,
+    },
+    okBannerText: { fontSize: 13, color: COLORS.ink, flexShrink: 1 },
+    wasteBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: COLORS.warnBg,
+      borderRadius: 14,
+      padding: 14,
+    },
+    wasteBannerText: { fontSize: 13, color: COLORS.ink, flexShrink: 1 },
+    statsRow: { flexDirection: 'row', gap: 10 },
+    statTile: {
+      flex: 1,
+      alignItems: 'center',
+      gap: 2,
+      backgroundColor: COLORS.card,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      paddingVertical: 14,
+    },
+    statValue: { fontSize: 20, fontWeight: '800', color: COLORS.ink },
+    statLabel: { fontSize: 11, color: COLORS.inkSoft, textAlign: 'center' },
+    cleaningSection: { gap: 8 },
+    cleaningRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: COLORS.card,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      paddingVertical: 10,
+      paddingHorizontal: 14,
+    },
+    cleaningRowText: { flex: 1, fontSize: 13, fontWeight: '600', color: COLORS.ink },
+    cleaningRowMeta: { fontSize: 11, color: COLORS.inkSoft },
+    shoppingLink: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: COLORS.card,
+      borderRadius: 14,
+      borderTopWidth: 2,
+      borderStyle: 'dashed' as const,
+      borderColor: COLORS.line,
+      padding: 16,
+    },
+    shoppingLinkLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    shoppingLinkText: { fontSize: 13, fontWeight: '600', color: COLORS.ink },
+  });
+}

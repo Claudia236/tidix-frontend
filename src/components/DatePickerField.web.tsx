@@ -5,9 +5,11 @@ import { COLORS } from '../theme/colors';
 interface Props {
   value: string | null;
   onChange: (value: string | null) => void;
+  clearLabel?: string;
+  allowClear?: boolean;
 }
 
-export function DatePickerField({ value, onChange }: Props) {
+export function DatePickerField({ value, onChange, clearLabel = 'Rimuovi scadenza', allowClear = true }: Props) {
   return (
     <View>
       <View style={styles.dateButton}>
@@ -26,9 +28,9 @@ export function DatePickerField({ value, onChange }: Props) {
           },
         })}
       </View>
-      {value ? (
+      {allowClear && value ? (
         <Pressable onPress={() => onChange(null)}>
-          <Text style={styles.clearDate}>Rimuovi scadenza</Text>
+          <Text style={styles.clearDate}>{clearLabel}</Text>
         </Pressable>
       ) : null}
     </View>

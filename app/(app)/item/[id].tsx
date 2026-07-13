@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getErrorMessage } from '../../../src/api/client';
 import { itemsApi } from '../../../src/api/items';
+import { showAlert } from '../../../src/components/AppAlert';
 import { ItemForm } from '../../../src/components/ItemForm';
 import { COLORS } from '../../../src/theme/colors';
 import type { ItemInput } from '../../../src/types';
@@ -21,7 +22,7 @@ export default function EditItemScreen() {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       router.back();
     },
-    onError: (e) => Alert.alert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
 
   const deleteMutation = useMutation({
@@ -30,11 +31,11 @@ export default function EditItemScreen() {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       router.back();
     },
-    onError: (e) => Alert.alert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
 
   function confirmDelete() {
-    Alert.alert('Elimina prodotto', 'Vuoi eliminare definitivamente questo prodotto?', [
+    showAlert('Elimina prodotto', 'Vuoi eliminare definitivamente questo prodotto?', [
       { text: 'Annulla', style: 'cancel' },
       { text: 'Elimina', style: 'destructive', onPress: () => deleteMutation.mutate() },
     ]);

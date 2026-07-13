@@ -7,20 +7,29 @@ import { COLORS } from '../theme/colors';
 interface Props {
   value: string | null;
   onChange: (value: string | null) => void;
+  placeholder?: string;
+  clearLabel?: string;
+  allowClear?: boolean;
 }
 
-export function DatePickerField({ value, onChange }: Props) {
+export function DatePickerField({
+  value,
+  onChange,
+  placeholder = 'Nessuna scadenza',
+  clearLabel = 'Rimuovi scadenza',
+  allowClear = true,
+}: Props) {
   const [showPicker, setShowPicker] = useState(false);
 
   return (
     <View>
       <Pressable style={styles.dateButton} onPress={() => setShowPicker(true)}>
         <Ionicons name="calendar-outline" size={16} color={COLORS.ink} />
-        <Text style={styles.dateButtonText}>{value ?? 'Nessuna scadenza'}</Text>
+        <Text style={styles.dateButtonText}>{value ?? placeholder}</Text>
       </Pressable>
-      {value ? (
+      {allowClear && value ? (
         <Pressable onPress={() => onChange(null)}>
-          <Text style={styles.clearDate}>Rimuovi scadenza</Text>
+          <Text style={styles.clearDate}>{clearLabel}</Text>
         </Pressable>
       ) : null}
       {showPicker ? (

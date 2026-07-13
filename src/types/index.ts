@@ -103,7 +103,7 @@ export interface CleaningTask {
   id: string;
   name: string;
   frequencyDays: number | null;
-  lastCleanedAt: string | null;
+  lastCleanedDate: string | null;
   lastCleanedByUserId: string | null;
   daysSinceCleaned: number | null;
   overdue: boolean;
@@ -112,6 +112,7 @@ export interface CleaningTask {
 export interface CleaningTaskInput {
   name: string;
   frequencyDays?: number | null;
+  lastCleanedDate?: string | null;
 }
 
 export interface WasteSchedule {

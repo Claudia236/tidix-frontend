@@ -7,6 +7,9 @@ export const cleaningApi = {
   create: (input: CleaningTaskInput) =>
     apiClient.post<CleaningTask>('/api/cleaning-tasks', input).then((r) => r.data),
 
+  update: (id: string, input: CleaningTaskInput) =>
+    apiClient.put<CleaningTask>(`/api/cleaning-tasks/${id}`, input).then((r) => r.data),
+
   markCleaned: (id: string) =>
     apiClient.patch<CleaningTask>(`/api/cleaning-tasks/${id}/mark-cleaned`).then((r) => r.data),
 

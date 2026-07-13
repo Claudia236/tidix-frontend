@@ -6,6 +6,7 @@ import React, { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { queryClient } from '../src/api/queryClient';
+import { AppAlertHost } from '../src/components/AppAlert';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -18,6 +19,7 @@ export default function RootLayout() {
           <AuthProvider>
             <StatusBar style="dark" />
             <RootNavigator />
+            <AppAlertHost />
           </AuthProvider>
         </QueryClientProvider>
       </SafeAreaProvider>

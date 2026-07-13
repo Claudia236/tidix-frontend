@@ -102,3 +102,19 @@ export function dayToJsWeekday(day: DayOfWeek): number {
 export function wasteTypesCollectedOn(schedules: WasteSchedule[], day: DayOfWeek): WasteType[] {
   return schedules.filter((s) => s.daysOfWeek.includes(day)).map((s) => s.type);
 }
+
+// Frequenze standard consigliate per la pulizia domestica, usate come suggerimento rapido
+export const CLEANING_SUGGESTIONS: { name: string; emoji: string; frequencyDays: number }[] = [
+  { name: 'Bagno', emoji: '🚽', frequencyDays: 7 },
+  { name: 'Lenzuola', emoji: '🛏️', frequencyDays: 7 },
+  { name: 'Camera da letto', emoji: '🛋️', frequencyDays: 7 },
+  { name: 'Cucina', emoji: '🍽️', frequencyDays: 7 },
+  { name: 'Pavimenti', emoji: '🧹', frequencyDays: 7 },
+  { name: 'Frigorifero', emoji: '🧊', frequencyDays: 30 },
+  { name: 'Forno', emoji: '🔥', frequencyDays: 30 },
+  { name: 'Lavatrice', emoji: '🧺', frequencyDays: 30 },
+  { name: 'Tappeti', emoji: '🟫', frequencyDays: 14 },
+  { name: 'Vetri e finestre', emoji: '🪟', frequencyDays: 30 },
+  { name: 'Divano', emoji: '🛋️', frequencyDays: 30 },
+  { name: 'Cappa cucina', emoji: '💨', frequencyDays: 30 },
+];

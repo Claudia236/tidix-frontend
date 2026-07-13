@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { itemsApi } from '../../../src/api/items';
 import { getErrorMessage } from '../../../src/api/client';
+import { showAlert } from '../../../src/components/AppAlert';
 import { ItemForm } from '../../../src/components/ItemForm';
 import { COLORS } from '../../../src/theme/colors';
 import type { ItemInput } from '../../../src/types';
@@ -19,7 +20,7 @@ export default function NewItemScreen() {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       router.back();
     },
-    onError: (e) => Alert.alert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
 
   return (

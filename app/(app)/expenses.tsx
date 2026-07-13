@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
-import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { getErrorMessage } from '../../src/api/client';
 import { expensesApi } from '../../src/api/expenses';
 import { householdApi } from '../../src/api/household';
+import { showAlert } from '../../src/components/AppAlert';
 import { DatePickerField } from '../../src/components/DatePickerField';
 import { EmptyState } from '../../src/components/EmptyState';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
@@ -12,7 +13,7 @@ import { TextField } from '../../src/components/TextField';
 import { useAuth } from '../../src/context/AuthContext';
 import { COLORS } from '../../src/theme/colors';
 import { webCentered } from '../../src/theme/responsive';
-import type { ExpenseSplitInput, HouseholdMember } from '../../src/types';
+import type { Expense, ExpenseSplitInput, HouseholdMember } from '../../src/types';
 
 const MONTH_LABELS = [
   'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -57,6 +58,7 @@ export default function ExpensesScreen() {
   const { user } = useAuth();
   const [month, setMonth] = useState(currentMonth());
   const [adding, setAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const expensesQuery = useQuery({ queryKey: ['expenses', month], queryFn: () => expensesApi.list(month) });
   const summaryQuery = useQuery({ queryKey: ['expenses', 'summary', month], queryFn: () => expensesApi.summary(month) });
@@ -73,28 +75,31 @@ export default function ExpensesScreen() {
 
   const effectivePaidBy = paidByUserId || user?.id || members[0]?.id || '';
 
-  const createMutation = useMutation({
-    mutationFn: (splits: ExpenseSplitInput[]) =>
-      expensesApi.create({
+  const saveMutation = useMutation({
+    mutationFn: (splits: ExpenseSplitInput[]) => {
+      const input = {
         description: description.trim(),
         amount: Math.max(0, Number(amount.replace(',', '.')) || 0),
         paidByUserId: effectivePaidBy,
         date: date ?? new Date().toISOString().slice(0, 10),
         splits,
-      }),
+      };
+      return editingId ? expensesApi.update(editingId, input) : expensesApi.create(input);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      setDescription('');
-      setAmount('');
-      setAdding(false);
+      closeForm();
     },
-    onError: (e) => Alert.alert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
 
   const removeMutation = useMutation({
     mutationFn: (id: string) => expensesApi.remove(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expenses'] }),
-    onError: (e) => Alert.alert('Errore', getErrorMessage(e)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      closeForm();
+    },
+    onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
 
   function toggleParticipant(id: string) {
@@ -104,6 +109,40 @@ export default function ExpensesScreen() {
       else next.add(id);
       return next;
     });
+  }
+
+  function openAddForm() {
+    setEditingId(null);
+    setDescription('');
+    setAmount('');
+    setDate(new Date().toISOString().slice(0, 10));
+    setPaidByUserId(user?.id ?? '');
+    setParticipantIds(new Set(members.map((m) => m.id)));
+    setEqualSplit(true);
+    setCustomPercentages({});
+    setAdding(true);
+  }
+
+  function openEditForm(expense: Expense) {
+    setEditingId(expense.id);
+    setDescription(expense.description);
+    setAmount(String(expense.amount));
+    setDate(expense.date);
+    setPaidByUserId(expense.paidByUserId);
+    setParticipantIds(new Set(expense.splits.map((s) => s.userId)));
+    const percentages = expense.splits.map((s) => s.percentage);
+    setEqualSplit(percentages.every((p) => Math.abs(p - percentages[0]) < 0.5));
+    const custom: Record<string, string> = {};
+    expense.splits.forEach((s) => {
+      custom[s.userId] = String(s.percentage);
+    });
+    setCustomPercentages(custom);
+    setAdding(true);
+  }
+
+  function closeForm() {
+    setAdding(false);
+    setEditingId(null);
   }
 
   function handleSubmit() {
@@ -118,16 +157,16 @@ export default function ExpensesScreen() {
         splits = ids.map((id) => ({ userId: id, percentage: Number((customPercentages[id] ?? '0').replace(',', '.')) || 0 }));
         const sum = splits.reduce((s, sp) => s + sp.percentage, 0);
         if (Math.abs(sum - 100) > 0.5) {
-          Alert.alert('Spese', `Le percentuali devono sommare a 100 (attualmente ${sum.toFixed(1)}).`);
+          showAlert('Spese', `Le percentuali devono sommare a 100 (attualmente ${sum.toFixed(1)}).`);
           return;
         }
       }
     }
-    createMutation.mutate(splits);
+    saveMutation.mutate(splits);
   }
 
   function confirmDelete(id: string) {
-    Alert.alert('Elimina spesa', 'Vuoi eliminare definitivamente questa spesa?', [
+    showAlert('Elimina spesa', 'Vuoi eliminare definitivamente questa spesa?', [
       { text: 'Annulla', style: 'cancel' },
       { text: 'Elimina', style: 'destructive', onPress: () => removeMutation.mutate(id) },
     ]);
@@ -176,7 +215,7 @@ export default function ExpensesScreen() {
         ) : null}
 
         <View style={styles.addSection}>
-          <Pressable onPress={() => setAdding((v) => !v)} style={styles.addToggle}>
+          <Pressable onPress={() => (adding ? closeForm() : openAddForm())} style={styles.addToggle}>
             <Ionicons name={adding ? 'remove-circle-outline' : 'add-circle-outline'} size={18} color={COLORS.brand} />
             <Text style={styles.addToggleText}>{adding ? 'Annulla' : 'Aggiungi spesa'}</Text>
           </Pressable>
@@ -187,8 +226,8 @@ export default function ExpensesScreen() {
               <TextField label="Importo (€)" placeholder="0.00" keyboardType="numeric" value={amount} onChangeText={setAmount} />
 
               <View style={styles.field}>
-                <Text style={styles.label}>Data</Text>
-                <DatePickerField value={date} onChange={setDate} />
+                <Text style={styles.label}>Data della spesa</Text>
+                <DatePickerField value={date} onChange={setDate} placeholder="Seleziona una data" allowClear={false} />
               </View>
 
               <View style={styles.field}>
@@ -259,12 +298,24 @@ export default function ExpensesScreen() {
                 </View>
               ) : null}
 
-              <PrimaryButton
-                label="Salva spesa"
-                onPress={handleSubmit}
-                disabled={!description.trim() || !amount.trim()}
-                loading={createMutation.isPending}
-              />
+              <View style={styles.formActions}>
+                {editingId ? (
+                  <PrimaryButton
+                    label="Elimina"
+                    variant="danger"
+                    onPress={() => confirmDelete(editingId)}
+                    loading={removeMutation.isPending}
+                    style={{ flex: 0 }}
+                  />
+                ) : null}
+                <PrimaryButton
+                  label={editingId ? 'Salva modifiche' : 'Salva spesa'}
+                  onPress={handleSubmit}
+                  disabled={!description.trim() || !amount.trim()}
+                  loading={saveMutation.isPending}
+                  style={{ flex: 1 }}
+                />
+              </View>
             </View>
           ) : null}
         </View>
@@ -279,17 +330,19 @@ export default function ExpensesScreen() {
           }
           renderItem={({ item }) => (
             <View style={styles.expenseCard}>
-              <View style={styles.expenseHeader}>
-                <Text style={styles.expenseDescription}>{item.description}</Text>
-                <Text style={styles.expenseAmount}>{item.amount.toFixed(2)} €</Text>
-              </View>
-              <Text style={styles.expenseMeta}>
-                {item.paidByUserId === user?.id ? 'Tu' : item.paidByName} · {item.date}
-              </Text>
-              <Text style={styles.expenseSplits} numberOfLines={1}>
-                {item.splits.map((s) => `${s.userId === user?.id ? 'Tu' : s.userName} ${s.percentage.toFixed(0)}%`).join(' · ')}
-              </Text>
-              <Pressable onPress={() => confirmDelete(item.id)} style={styles.expenseDelete} hitSlop={8}>
+              <Pressable style={styles.expenseCardInfo} onPress={() => openEditForm(item)}>
+                <View style={styles.expenseHeader}>
+                  <Text style={styles.expenseDescription}>{item.description}</Text>
+                  <Text style={styles.expenseAmount}>{item.amount.toFixed(2)} €</Text>
+                </View>
+                <Text style={styles.expenseMeta}>
+                  {item.paidByUserId === user?.id ? 'Tu' : item.paidByName} · {item.date}
+                </Text>
+                <Text style={styles.expenseSplits} numberOfLines={1}>
+                  {item.splits.map((s) => `${s.userId === user?.id ? 'Tu' : s.userName} ${s.percentage.toFixed(0)}%`).join(' · ')}
+                </Text>
+              </Pressable>
+              <Pressable onPress={() => confirmDelete(item.id)} hitSlop={8}>
                 <Ionicons name="trash-outline" size={16} color={COLORS.inkSoft} />
               </Pressable>
             </View>
@@ -365,19 +418,22 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   percentSign: { fontSize: 13, color: COLORS.inkSoft },
+  formActions: { flexDirection: 'row', gap: 10 },
   list: { gap: 10 },
   expenseCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
     backgroundColor: COLORS.white,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.line,
     padding: 14,
-    gap: 4,
   },
+  expenseCardInfo: { flex: 1, gap: 4 },
   expenseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   expenseDescription: { fontSize: 14, fontWeight: '700', color: COLORS.ink, flexShrink: 1 },
   expenseAmount: { fontSize: 14, fontWeight: '800', color: COLORS.ink },
   expenseMeta: { fontSize: 12, color: COLORS.inkSoft },
   expenseSplits: { fontSize: 11, color: COLORS.inkSoft },
-  expenseDelete: { position: 'absolute', top: 12, right: 12 },
 });

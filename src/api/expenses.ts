@@ -7,6 +7,8 @@ export const expensesApi = {
 
   create: (input: ExpenseInput) => apiClient.post<Expense>('/api/expenses', input).then((r) => r.data),
 
+  update: (id: string, input: ExpenseInput) => apiClient.put<Expense>(`/api/expenses/${id}`, input).then((r) => r.data),
+
   remove: (id: string) => apiClient.delete(`/api/expenses/${id}`).then(() => undefined),
 
   summary: (month?: string) =>

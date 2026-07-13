@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useMemo } from 'react';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { getErrorMessage } from '../../src/api/client';
 import { wasteApi } from '../../src/api/waste';
+import { showAlert } from '../../src/components/AppAlert';
 import { DAYS_OF_WEEK, WASTE_TYPES } from '../../src/constants/domain';
 import { syncWasteReminders } from '../../src/notifications/wasteReminders';
 import { COLORS } from '../../src/theme/colors';
@@ -28,7 +29,7 @@ export default function WasteScreen() {
     mutationFn: ({ type, daysOfWeek }: { type: WasteType; daysOfWeek: DayOfWeek[] }) =>
       daysOfWeek.length > 0 ? wasteApi.setSchedule(type, daysOfWeek) : wasteApi.remove(type),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['waste-schedules'] }),
-    onError: (e) => Alert.alert('Rifiuti', getErrorMessage(e)),
+    onError: (e) => showAlert('Rifiuti', getErrorMessage(e)),
   });
 
   function toggleDay(type: WasteType, day: DayOfWeek) {

@@ -1,54 +1,91 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { FlatList, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { cleaningApi } from '../../src/api/cleaning';
 import { getErrorMessage } from '../../src/api/client';
+import { showAlert } from '../../src/components/AppAlert';
+import { DatePickerField } from '../../src/components/DatePickerField';
 import { EmptyState } from '../../src/components/EmptyState';
+import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { TextField } from '../../src/components/TextField';
+import { CLEANING_SUGGESTIONS } from '../../src/constants/domain';
+import { syncCleaningReminders } from '../../src/notifications/cleaningReminders';
 import { COLORS } from '../../src/theme/colors';
 import { webCentered } from '../../src/theme/responsive';
 import type { CleaningTask } from '../../src/types';
 
 export default function CleaningScreen() {
   const queryClient = useQueryClient();
-  const [name, setName] = useState('');
-  const [frequencyDays, setFrequencyDays] = useState('');
-
   const tasksQuery = useQuery({ queryKey: ['cleaning-tasks'], queryFn: cleaningApi.list });
 
-  const createMutation = useMutation({
-    mutationFn: () =>
-      cleaningApi.create({
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [name, setName] = useState('');
+  const [frequencyDays, setFrequencyDays] = useState('');
+  const [lastCleanedDate, setLastCleanedDate] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (Platform.OS === 'web' || !tasksQuery.data) return;
+    syncCleaningReminders(tasksQuery.data);
+  }, [tasksQuery.data]);
+
+  const saveMutation = useMutation({
+    mutationFn: () => {
+      const input = {
         name: name.trim(),
         frequencyDays: frequencyDays.trim() ? Math.max(1, Number(frequencyDays)) : null,
-      }),
+        lastCleanedDate,
+      };
+      return editingId ? cleaningApi.update(editingId, input) : cleaningApi.create(input);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] });
-      setName('');
-      setFrequencyDays('');
+      closeForm();
     },
-    onError: (e) => Alert.alert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
 
   const markCleanedMutation = useMutation({
     mutationFn: (id: string) => cleaningApi.markCleaned(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] }),
-    onError: (e) => Alert.alert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
 
   const removeMutation = useMutation({
     mutationFn: (id: string) => cleaningApi.remove(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] }),
-    onError: (e) => Alert.alert('Errore', getErrorMessage(e)),
+    onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
 
-  function handleAdd() {
-    if (!name.trim()) return;
-    createMutation.mutate();
+  function openAddForm() {
+    setEditingId(null);
+    setName('');
+    setFrequencyDays('');
+    setLastCleanedDate(null);
+    setFormOpen(true);
+  }
+
+  function openEditForm(task: CleaningTask) {
+    setEditingId(task.id);
+    setName(task.name);
+    setFrequencyDays(task.frequencyDays ? String(task.frequencyDays) : '');
+    setLastCleanedDate(task.lastCleanedDate);
+    setFormOpen(true);
+  }
+
+  function closeForm() {
+    setFormOpen(false);
+    setEditingId(null);
+  }
+
+  function applySuggestion(suggestion: (typeof CLEANING_SUGGESTIONS)[number]) {
+    setName(suggestion.name);
+    setFrequencyDays(String(suggestion.frequencyDays));
   }
 
   function confirmDelete(task: CleaningTask) {
-    Alert.alert('Elimina', `Rimuovere "${task.name}" dalla lista pulizia?`, [
+    showAlert('Elimina', `Rimuovere "${task.name}" dalla lista pulizia?`, [
       { text: 'Annulla', style: 'cancel' },
       { text: 'Elimina', style: 'destructive', onPress: () => removeMutation.mutate(task.id) },
     ]);
@@ -58,26 +95,61 @@ export default function CleaningScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.addRow, webCentered]}>
-        <TextInput
-          value={name}
-          onChangeText={setName}
-          placeholder="Es. Bagno, Forno, Frigorifero..."
-          placeholderTextColor={COLORS.inkSoft}
-          style={styles.addInputName}
-          onSubmitEditing={handleAdd}
-        />
-        <TextInput
-          value={frequencyDays}
-          onChangeText={setFrequencyDays}
-          placeholder="Ogni gg"
-          placeholderTextColor={COLORS.inkSoft}
-          keyboardType="numeric"
-          style={styles.addInputFreq}
-        />
-        <Pressable onPress={handleAdd} style={styles.addButton} hitSlop={8}>
-          <Ionicons name="add" size={18} color={COLORS.white} />
+      <View style={[styles.topSection, webCentered]}>
+        <Pressable onPress={() => (formOpen ? closeForm() : openAddForm())} style={styles.addToggle}>
+          <Ionicons name={formOpen ? 'remove-circle-outline' : 'add-circle-outline'} size={18} color={COLORS.brand} />
+          <Text style={styles.addToggleText}>{formOpen ? 'Annulla' : 'Aggiungi ambiente'}</Text>
         </Pressable>
+
+        {formOpen ? (
+          <View style={styles.form}>
+            <TextField
+              label="Nome"
+              placeholder="Es. Bagno, Forno, Frigorifero..."
+              value={name}
+              onChangeText={setName}
+              autoFocus
+            />
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Suggerimenti</Text>
+              <View style={styles.suggestionRow}>
+                {CLEANING_SUGGESTIONS.map((s) => (
+                  <Pressable key={s.name} onPress={() => applySuggestion(s)} style={styles.suggestionChip}>
+                    <Text style={{ fontSize: 13 }}>{s.emoji}</Text>
+                    <Text style={styles.suggestionChipText}>{s.name}</Text>
+                    <Text style={styles.suggestionChipFreq}>ogni {s.frequencyDays}gg</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+
+            <TextField
+              label="Ogni quanti giorni pulirlo"
+              placeholder="Es. 7"
+              keyboardType="numeric"
+              value={frequencyDays}
+              onChangeText={setFrequencyDays}
+            />
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Ultima volta pulito</Text>
+              <DatePickerField
+                value={lastCleanedDate}
+                onChange={setLastCleanedDate}
+                placeholder="Non pulito di recente"
+                clearLabel="Non lo so / rimuovi data"
+              />
+            </View>
+
+            <PrimaryButton
+              label={editingId ? 'Salva modifiche' : 'Aggiungi'}
+              onPress={() => saveMutation.mutate()}
+              disabled={!name.trim()}
+              loading={saveMutation.isPending}
+            />
+          </View>
+        ) : null}
       </View>
 
       <FlatList
@@ -93,7 +165,7 @@ export default function CleaningScreen() {
         }
         renderItem={({ item }) => (
           <View style={[styles.card, item.overdue && styles.cardOverdue]}>
-            <View style={styles.cardInfo}>
+            <Pressable style={styles.cardInfo} onPress={() => openEditForm(item)}>
               <Text style={styles.cardName}>{item.name}</Text>
               <Text style={styles.cardStatus}>
                 {item.daysSinceCleaned === null
@@ -104,10 +176,13 @@ export default function CleaningScreen() {
                 {item.frequencyDays ? ` · ogni ${item.frequencyDays} gg` : ''}
               </Text>
               {item.overdue ? <Text style={styles.overdueLabel}>Da pulire</Text> : null}
-            </View>
+            </Pressable>
             <View style={styles.cardActions}>
               <Pressable onPress={() => markCleanedMutation.mutate(item.id)} style={styles.cleanButton} hitSlop={8}>
                 <Ionicons name="checkmark" size={16} color={COLORS.white} />
+              </Pressable>
+              <Pressable onPress={() => openEditForm(item)} hitSlop={8}>
+                <Ionicons name="pencil-outline" size={18} color={COLORS.inkSoft} />
               </Pressable>
               <Pressable onPress={() => confirmDelete(item)} hitSlop={8}>
                 <Ionicons name="trash-outline" size={18} color={COLORS.inkSoft} />
@@ -122,37 +197,39 @@ export default function CleaningScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg, paddingTop: 16 },
-  addRow: { flexDirection: 'row', gap: 8, alignItems: 'center', paddingHorizontal: 20 },
-  addInputName: {
-    flex: 1,
+  topSection: { paddingHorizontal: 20, gap: 12 },
+  addToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  addToggleText: { fontSize: 14, fontWeight: '700', color: COLORS.brand },
+  form: {
+    gap: 14,
+    backgroundColor: COLORS.white,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.line,
-    backgroundColor: COLORS.white,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 13,
-    color: COLORS.ink,
+    padding: 16,
   },
-  addInputFreq: {
-    width: 72,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    backgroundColor: COLORS.white,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 13,
-    color: COLORS.ink,
+  field: { gap: 8 },
+  label: {
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    color: COLORS.inkSoft,
   },
-  addButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: COLORS.brand,
+  suggestionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  suggestionChip: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 5,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    backgroundColor: COLORS.white,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
+  suggestionChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
+  suggestionChipFreq: { fontSize: 10, color: COLORS.inkSoft },
   list: { padding: 20, paddingTop: 16, gap: 10 },
   card: {
     flexDirection: 'row',

@@ -277,7 +277,7 @@ function createStyles(COLORS: ColorPalette) {
     memberInfo: { flex: 1 },
     memberName: { fontSize: 14, fontWeight: '700', color: COLORS.ink },
     memberEmail: { fontSize: 12, color: COLORS.inkSoft },
-    removeMemberButton: { padding: 4 },
+    removeMemberButton: { padding: 4, marginRight: 8 },
     settingsField: { gap: 8 },
     settingsFieldLabel: { fontSize: 12, fontWeight: '700', color: COLORS.ink },
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

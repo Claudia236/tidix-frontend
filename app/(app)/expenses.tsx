@@ -212,7 +212,7 @@ export default function ExpensesScreen() {
                 <Text
                   style={[
                     styles.balanceNet,
-                    { color: b.netBalance > 0.01 ? colors.brand : b.netBalance < -0.01 ? colors.danger : colors.inkSoft },
+                    { color: b.netBalance > 0.01 ? colors.positive : b.netBalance < -0.01 ? colors.danger : colors.inkSoft },
                   ]}
                 >
                   {b.netBalance > 0.01
@@ -392,14 +392,14 @@ export default function ExpensesScreen() {
                       <Ionicons
                         name={isPayer ? 'wallet-outline' : settled ? 'checkmark-circle' : 'ellipse-outline'}
                         size={16}
-                        color={isPayer ? colors.inkSoft : settled ? colors.brand : colors.danger}
+                        color={isPayer ? colors.inkSoft : settled ? colors.positive : colors.danger}
                       />
                       <Text style={styles.splitName}>{s.userId === user?.id ? t('common.you') : s.userName}</Text>
                       <Text style={styles.splitAmount}>
                         {s.percentage.toFixed(0)}% · {s.amount.toFixed(2)} €
                       </Text>
                       {!isPayer ? (
-                        <Text style={[styles.splitPaidStatus, { color: settled ? colors.brand : colors.danger }]}>
+                        <Text style={[styles.splitPaidStatus, { color: settled ? colors.positive : colors.danger }]}>
                           {t('expenses.paidOfTotal', { paid: s.paidAmount.toFixed(2), total: s.amount.toFixed(2) })}
                         </Text>
                       ) : null}

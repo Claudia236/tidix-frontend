@@ -34,10 +34,6 @@ export default function AppLayout() {
         name="expenses"
         options={{ title: t('more.expenses.label'), headerStyle: { backgroundColor: colors.bg } }}
       />
-      <Stack.Screen
-        name="locations"
-        options={{ title: t('more.locations.label'), headerStyle: { backgroundColor: colors.bg } }}
-      />
     </Stack>
   );
 }

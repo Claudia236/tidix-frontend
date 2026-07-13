@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../../src/api/client';
@@ -36,11 +36,14 @@ export default function StockScreen() {
     [locations, t]
   );
 
-  useEffect(() => {
-    if (params.storageLocationId) {
-      setFilterLocationId(params.storageLocationId);
-    }
-  }, [params.storageLocationId]);
+  // Ogni volta che la schermata prende il focus (tab premuto o navigazione da
+  // una zona), riparte da "Tutti" a meno che non arrivi un filtro esplicito:
+  // cosi' il tab Scorte non resta bloccato sull'ultima zona selezionata.
+  useFocusEffect(
+    useCallback(() => {
+      setFilterLocationId(params.storageLocationId ?? 'TUTTI');
+    }, [params.storageLocationId])
+  );
 
   const itemsQuery = useQuery({
     queryKey: ['items', 'list', filterLocationId, search],

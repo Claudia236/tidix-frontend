@@ -19,7 +19,6 @@ export default function MoreScreen() {
     { icon: 'sparkles-outline', label: t('more.cleaning.label'), subtitle: t('more.cleaning.subtitle'), path: '/(app)/cleaning' },
     { icon: 'trash-outline', label: t('more.waste.label'), subtitle: t('more.waste.subtitle'), path: '/(app)/waste' },
     { icon: 'cash-outline', label: t('more.expenses.label'), subtitle: t('more.expenses.subtitle'), path: '/(app)/expenses' },
-    { icon: 'cube-outline', label: t('more.locations.label'), subtitle: t('more.locations.subtitle'), path: '/(app)/locations' },
     { icon: 'people-outline', label: t('more.household.label'), subtitle: t('more.household.subtitle'), path: '/(app)/household' },
   ];
 
@@ -66,7 +65,7 @@ function createStyles(COLORS: ColorPalette) {
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: COLORS.okBg,
+      backgroundColor: COLORS.brandBg,
       alignItems: 'center',
       justifyContent: 'center',
     },

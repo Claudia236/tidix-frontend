@@ -17,14 +17,14 @@ interface Props {
 
 export function ItemCard({ item, location, onAdjust, onPress }: Props) {
   const { colors } = useTheme();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const category = useCategoryInfo(item.category);
   const expiryStatusColors = useExpiryStatusColors();
   const getLocationColor = useLocationColor();
 
   const needsBuying = item.quantity <= 0;
-  const expiry = !needsBuying ? getExpiryInfo(item.expirationDate) : null;
+  const expiry = !needsBuying ? getExpiryInfo(item.expirationDate, t, language) : null;
   const { color: locationFg, bg: locationBg } = getLocationColor(item.storageLocationId);
 
   let stripeColor: string = colors.line;
@@ -63,7 +63,7 @@ export function ItemCard({ item, location, onAdjust, onPress }: Props) {
             </View>
             {noteText ? <Text style={[styles.note, { color: noteColor }]}>{noteText}</Text> : null}
             {item.opened && item.openedDate ? (
-              <Text style={styles.openedNote}>{t('itemCard.openedOn', { date: formatShortDate(item.openedDate) })}</Text>
+              <Text style={styles.openedNote}>{t('itemCard.openedOn', { date: formatShortDate(item.openedDate, language) })}</Text>
             ) : null}
           </View>
         </Pressable>

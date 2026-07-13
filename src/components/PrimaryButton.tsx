@@ -16,9 +16,9 @@ export function PrimaryButton({ label, onPress, disabled, loading, variant = 'pr
   const isDisabled = disabled || loading;
 
   const backgroundColor =
-    variant === 'primary' ? colors.brand : variant === 'danger' ? colors.dangerBg : colors.card;
-  const textColor = variant === 'danger' ? colors.danger : variant === 'secondary' ? colors.ink : colors.white;
-  const borderColor = variant === 'secondary' ? colors.line : 'transparent';
+    variant === 'primary' ? colors.brand : variant === 'danger' ? colors.dangerBg : colors.brandBg;
+  const textColor = variant === 'danger' ? colors.danger : variant === 'secondary' ? colors.brand : colors.white;
+  const borderColor = variant === 'secondary' ? colors.brand : 'transparent';
 
   return (
     <Pressable

@@ -188,22 +188,10 @@ const ENTRIES: Record<string, EntryTriple> = {
     es: 'Toca el botón + para registrar lo que tienes en la nevera, el congelador, la despensa y otras ubicaciones.',
   },
   'overview.statProducts': { it: (v) => (v.n === 1 ? 'prodotto' : 'prodotti'), en: (v) => (v.n === 1 ? 'product' : 'products'), es: (v) => (v.n === 1 ? 'producto' : 'productos') },
-  'overview.statZones': { it: (v) => (v.n === 1 ? 'zona' : 'zone'), en: (v) => (v.n === 1 ? 'zone' : 'zones'), es: (v) => (v.n === 1 ? 'zona' : 'zonas') },
-  'overview.statCleaningDue': { it: 'pulizie da fare', en: 'chores due', es: 'limpiezas pendientes' },
   'overview.allGood': {
     it: 'Nessuna scadenza imminente. Tutto sotto controllo.',
     en: 'No upcoming expiry dates. All good.',
     es: 'Sin caducidades próximas. Todo bajo control.',
-  },
-  'overview.expiredTitle': {
-    it: (v) => (v.n === 1 ? `${v.n} prodotto scaduto` : `${v.n} prodotti scaduti`),
-    en: (v) => (v.n === 1 ? `${v.n} product expired` : `${v.n} products expired`),
-    es: (v) => (v.n === 1 ? `${v.n} producto caducado` : `${v.n} productos caducados`),
-  },
-  'overview.expiringTitle': {
-    it: (v) => (v.n === 1 ? `${v.n} prodotto in scadenza` : `${v.n} prodotti in scadenza`),
-    en: (v) => (v.n === 1 ? `${v.n} product expiring soon` : `${v.n} products expiring soon`),
-    es: (v) => (v.n === 1 ? `${v.n} producto por caducar` : `${v.n} productos por caducar`),
   },
   'overview.cleaningDueSection': { it: 'Pulizie da fare', en: 'Chores due', es: 'Limpiezas pendientes' },
   'overview.cleaningNeverCleaned': { it: 'Mai pulito', en: 'Never cleaned', es: 'Nunca limpiado' },
@@ -212,15 +200,45 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: (v) => (v.n === 1 ? `Cleaned ${v.n} day ago` : `Cleaned ${v.n} days ago`),
     es: (v) => (v.n === 1 ? `Limpiado hace ${v.n} día` : `Limpiado hace ${v.n} días`),
   },
+  'overview.cleaningCard.allGood': { it: 'Tutto pulito! ✨', en: 'All clean! ✨', es: '¡Todo limpio! ✨' },
+  'overview.expiringCard.title': { it: 'Prodotti in scadenza', en: 'Expiring products', es: 'Productos por caducar' },
+  'overview.expiringCard.allGood': {
+    it: 'Nessun prodotto in scadenza! 🎉',
+    en: 'No products expiring! 🎉',
+    es: '¡Ningún producto por caducar! 🎉',
+  },
   'overview.shoppingLink': {
     it: (v) => (v.n === 1 ? `${v.n} prodotto da comprare` : `${v.n} prodotti da comprare`),
     en: (v) => (v.n === 1 ? `${v.n} product to buy` : `${v.n} products to buy`),
     es: (v) => (v.n === 1 ? `${v.n} producto para comprar` : `${v.n} productos para comprar`),
   },
   'overview.wasteTomorrow': {
-    it: (v) => `Domani passa: ${v.types}. Ricordati il secchio stasera.`,
-    en: (v) => `Tomorrow: ${v.types} collection. Remember to put the bin out tonight.`,
-    es: (v) => `Mañana: recogida de ${v.types}. Recuerda sacar el cubo esta noche.`,
+    it: (v) => `Ehi! Domani è l'ora di buttare ${v.types} 🗑️ Non dimenticare di mettere fuori il secchio stasera!`,
+    en: (v) => `Hey! Tomorrow it's time to take out ${v.types} 🗑️ Don't forget to put the bin out tonight!`,
+    es: (v) => `¡Oye! Mañana toca sacar ${v.types} 🗑️ ¡No olvides sacar el cubo esta noche!`,
+  },
+
+  // Expiry status labels (used on item cards and the expiring-products overview card)
+  'expiry.expiredYesterday': { it: 'Scaduto ieri', en: 'Expired yesterday', es: 'Caducó ayer' },
+  'expiry.expiredDaysAgo': { it: (v) => `Scaduto da ${v.n} giorni`, en: (v) => `Expired ${v.n} days ago`, es: (v) => `Caducó hace ${v.n} días` },
+  'expiry.today': { it: 'Scade oggi', en: 'Expires today', es: 'Caduca hoy' },
+  'expiry.tomorrow': { it: 'Scade domani', en: 'Expires tomorrow', es: 'Caduca mañana' },
+  'expiry.inDays': { it: (v) => `Scade tra ${v.n} giorni`, en: (v) => `Expires in ${v.n} days`, es: (v) => `Caduca en ${v.n} días` },
+
+  // Zones (Panoramica)
+  'zone.title': { it: 'Le zone', en: 'Zones', es: 'Zonas' },
+  'zone.add': { it: 'Aggiungi zona', en: 'Add zone', es: 'Añadir zona' },
+  'zone.namePlaceholder': { it: 'Es. Cantina', en: 'e.g. Cellar', es: 'ej. Bodega' },
+  'zone.emojiHint': {
+    it: "L'emoji è opzionale: puoi incollarne una o lasciare vuoto (📦 di default).",
+    en: 'The emoji is optional: paste one in or leave it empty (📦 by default).',
+    es: 'El emoji es opcional: pega uno o déjalo vacío (📦 por defecto).',
+  },
+  'zone.confirmDeleteTitle': { it: 'Elimina zona', en: 'Delete zone', es: 'Eliminar zona' },
+  'zone.confirmDeleteMessage': {
+    it: (v) => `Rimuovere "${v.name}"? È possibile solo se non ci sono più prodotti lì.`,
+    en: (v) => `Remove "${v.name}"? Only possible if there are no more products there.`,
+    es: (v) => `¿Eliminar "${v.name}"? Solo es posible si ya no hay productos allí.`,
   },
 
   // Shopping list

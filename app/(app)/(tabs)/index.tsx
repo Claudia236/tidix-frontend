@@ -4,12 +4,12 @@ import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { cleaningApi } from '../../../src/api/cleaning';
 import { itemsApi } from '../../../src/api/items';
 import { wasteApi } from '../../../src/api/waste';
 import { AlertBanner } from '../../../src/components/AlertBanner';
 import { EmptyState } from '../../../src/components/EmptyState';
 import { SectionTitle } from '../../../src/components/SectionTitle';
-import { ZoneCard } from '../../../src/components/ZoneCard';
 import { jsWeekdayToDay, wasteTypeInfo, wasteTypesCollectedOn } from '../../../src/constants/domain';
 import { COLORS } from '../../../src/theme/colors';
 import { webCentered } from '../../../src/theme/responsive';
@@ -21,6 +21,7 @@ export default function OverviewScreen() {
   const expiredQuery = useQuery({ queryKey: ['items', 'expired'], queryFn: itemsApi.expired });
   const expiringQuery = useQuery({ queryKey: ['items', 'expiring', 3], queryFn: () => itemsApi.expiring(3) });
   const shoppingQuery = useQuery({ queryKey: ['items', 'shopping-list'], queryFn: itemsApi.shoppingList });
+  const cleaningQuery = useQuery({ queryKey: ['cleaning-tasks'], queryFn: cleaningApi.list });
   const wasteSchedulesQuery = useQuery({
     queryKey: ['waste-schedules'],
     queryFn: wasteApi.list,
@@ -30,6 +31,11 @@ export default function OverviewScreen() {
   const totalCount = useMemo(
     () => (summaryQuery.data ?? []).reduce((sum, z) => sum + z.count, 0),
     [summaryQuery.data]
+  );
+
+  const overdueCleaning = useMemo(
+    () => (cleaningQuery.data ?? []).filter((t) => t.overdue),
+    [cleaningQuery.data]
   );
 
   const wasteTomorrow = useMemo(() => {
@@ -43,15 +49,13 @@ export default function OverviewScreen() {
     expiredQuery.refetch();
     expiringQuery.refetch();
     shoppingQuery.refetch();
-  }
-
-  function goToZone(storageLocationId: string) {
-    router.push({ pathname: '/(app)/(tabs)/stock', params: { storageLocationId } });
+    cleaningQuery.refetch();
   }
 
   const expiredItems = expiredQuery.data ?? [];
   const expiringItems = expiringQuery.data ?? [];
   const shoppingCount = shoppingQuery.data?.length ?? 0;
+  const zoneCount = summaryQuery.data?.length ?? 0;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -85,6 +89,23 @@ export default function OverviewScreen() {
           />
         ) : (
           <>
+            <View style={styles.statsRow}>
+              <View style={styles.statTile}>
+                <Text style={styles.statValue}>{totalCount}</Text>
+                <Text style={styles.statLabel}>prodott{totalCount === 1 ? 'o' : 'i'}</Text>
+              </View>
+              <Pressable style={styles.statTile} onPress={() => router.push('/(app)/locations')}>
+                <Text style={styles.statValue}>{zoneCount}</Text>
+                <Text style={styles.statLabel}>zon{zoneCount === 1 ? 'a' : 'e'}</Text>
+              </Pressable>
+              <Pressable style={styles.statTile} onPress={() => router.push('/(app)/cleaning')}>
+                <Text style={[styles.statValue, overdueCleaning.length > 0 && { color: COLORS.warn }]}>
+                  {overdueCleaning.length}
+                </Text>
+                <Text style={styles.statLabel}>pulizie da fare</Text>
+              </Pressable>
+            </View>
+
             {expiredItems.length === 0 && expiringItems.length === 0 ? (
               <View style={styles.okBanner}>
                 <Ionicons name="checkmark-circle-outline" size={18} color={COLORS.brand} />
@@ -111,24 +132,22 @@ export default function OverviewScreen() {
               </View>
             )}
 
-            <View style={styles.zonesSection}>
-              <View style={styles.zonesHeader}>
-                <SectionTitle small>Le zone</SectionTitle>
-                <Pressable onPress={() => router.push('/(app)/locations')} hitSlop={8} style={styles.zonesEditButton}>
-                  <Ionicons name="pencil-outline" size={14} color={COLORS.inkSoft} />
-                  <Text style={styles.zonesEditText}>Modifica</Text>
-                </Pressable>
-              </View>
-              <View style={styles.zonesGrid}>
-                {(summaryQuery.data ?? []).map((summary) => (
-                  <ZoneCard
-                    key={summary.storageLocationId}
-                    summary={summary}
-                    onPress={() => goToZone(summary.storageLocationId)}
-                  />
+            {overdueCleaning.length > 0 && (
+              <View style={styles.cleaningSection}>
+                <SectionTitle small>Pulizie da fare</SectionTitle>
+                {overdueCleaning.map((task) => (
+                  <Pressable key={task.id} style={styles.cleaningRow} onPress={() => router.push('/(app)/cleaning')}>
+                    <Ionicons name="sparkles-outline" size={16} color={COLORS.warn} />
+                    <Text style={styles.cleaningRowText}>{task.name}</Text>
+                    <Text style={styles.cleaningRowMeta}>
+                      {task.daysSinceCleaned === null
+                        ? 'Mai pulito'
+                        : `Pulito ${task.daysSinceCleaned} giorn${task.daysSinceCleaned === 1 ? 'o' : 'i'} fa`}
+                    </Text>
+                  </Pressable>
                 ))}
               </View>
-            </View>
+            )}
 
             {shoppingCount > 0 && (
               <Pressable style={styles.shoppingLink} onPress={() => router.push('/(app)/(tabs)/shopping')}>
@@ -172,11 +191,33 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   wasteBannerText: { fontSize: 13, color: COLORS.ink, flexShrink: 1 },
-  zonesSection: { gap: 8 },
-  zonesHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  zonesEditButton: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  zonesEditText: { fontSize: 12, color: COLORS.inkSoft, fontWeight: '600' },
-  zonesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  statsRow: { flexDirection: 'row', gap: 10 },
+  statTile: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: COLORS.white,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    paddingVertical: 14,
+  },
+  statValue: { fontSize: 20, fontWeight: '800', color: COLORS.ink },
+  statLabel: { fontSize: 11, color: COLORS.inkSoft, textAlign: 'center' },
+  cleaningSection: { gap: 8 },
+  cleaningRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  cleaningRowText: { flex: 1, fontSize: 13, fontWeight: '600', color: COLORS.ink },
+  cleaningRowMeta: { fontSize: 11, color: COLORS.inkSoft },
   shoppingLink: {
     flexDirection: 'row',
     justifyContent: 'space-between',

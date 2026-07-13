@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { getErrorMessage } from '../../src/api/client';
 import { expensesApi } from '../../src/api/expenses';
@@ -53,38 +53,6 @@ function equalPercentages(userIds: string[]): Record<string, number> {
   return result;
 }
 
-function SplitPaidAmountInput({
-  amount,
-  onSave,
-}: {
-  amount: number;
-  onSave: (value: number) => void;
-}) {
-  const [value, setValue] = useState(amount ? String(amount) : '');
-
-  useEffect(() => {
-    setValue(amount ? String(amount) : '');
-  }, [amount]);
-
-  function commit() {
-    const num = Math.max(0, Number(value.replace(',', '.')) || 0);
-    if (num !== amount) onSave(num);
-  }
-
-  return (
-    <TextInput
-      value={value}
-      onChangeText={setValue}
-      onEndEditing={commit}
-      onBlur={commit}
-      keyboardType="numeric"
-      placeholder="0.00"
-      placeholderTextColor={COLORS.inkSoft}
-      style={styles.paidAmountInput}
-    />
-  );
-}
-
 export default function ExpensesScreen() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -132,13 +100,6 @@ export default function ExpensesScreen() {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       closeForm();
     },
-    onError: (e) => showAlert('Errore', getErrorMessage(e)),
-  });
-
-  const setSplitPaidMutation = useMutation({
-    mutationFn: ({ expenseId, userId, paidAmount }: { expenseId: string; userId: string; paidAmount: number }) =>
-      expensesApi.setSplitPaidAmount(expenseId, userId, paidAmount),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expenses'] }),
     onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
 
@@ -248,7 +209,6 @@ export default function ExpensesScreen() {
             {summary.byUser.map((b) => (
               <View key={b.userId} style={styles.balanceRow}>
                 <Text style={styles.balanceName}>{b.userId === user?.id ? 'Tu' : b.userName}</Text>
-                <Text style={styles.balanceDetail}>pagato {b.totalPaid.toFixed(2)} €</Text>
                 <Text
                   style={[
                     styles.balanceNet,
@@ -256,9 +216,9 @@ export default function ExpensesScreen() {
                   ]}
                 >
                   {b.netBalance > 0.01
-                    ? `+${b.netBalance.toFixed(2)} € (deve ricevere)`
+                    ? `Deve ricevere ${b.netBalance.toFixed(2)} €`
                     : b.netBalance < -0.01
-                      ? `${b.netBalance.toFixed(2)} € (deve dare)`
+                      ? `Deve dare ${Math.abs(b.netBalance).toFixed(2)} €`
                       : 'In pari'}
                 </Text>
               </View>
@@ -429,28 +389,21 @@ export default function ExpensesScreen() {
                 {item.splits.map((s) => {
                   const isPayer = s.userId === item.paidByUserId;
                   const settled = !isPayer && s.paidAmount >= s.amount - 0.01;
-                  const partial = !isPayer && s.paidAmount > 0.01 && !settled;
                   return (
                     <View key={s.userId} style={styles.splitRow}>
                       <Ionicons
-                        name={isPayer ? 'wallet-outline' : settled ? 'checkmark-circle' : partial ? 'remove-circle' : 'ellipse-outline'}
+                        name={isPayer ? 'wallet-outline' : settled ? 'checkmark-circle' : 'ellipse-outline'}
                         size={16}
-                        color={isPayer ? COLORS.inkSoft : settled ? COLORS.brand : partial ? COLORS.warn : COLORS.inkSoft}
+                        color={isPayer ? COLORS.inkSoft : settled ? COLORS.brand : COLORS.danger}
                       />
                       <Text style={styles.splitName}>{s.userId === user?.id ? 'Tu' : s.userName}</Text>
                       <Text style={styles.splitAmount}>
                         {s.percentage.toFixed(0)}% · {s.amount.toFixed(2)} €
                       </Text>
                       {!isPayer ? (
-                        <View style={styles.paidAmountRow}>
-                          <SplitPaidAmountInput
-                            amount={s.paidAmount}
-                            onSave={(value) =>
-                              setSplitPaidMutation.mutate({ expenseId: item.id, userId: s.userId, paidAmount: value })
-                            }
-                          />
-                          <Text style={styles.paidAmountSuffix}>€ dati</Text>
-                        </View>
+                        <Text style={[styles.splitPaidStatus, { color: settled ? COLORS.brand : COLORS.danger }]}>
+                          {s.paidAmount.toFixed(2)} di {s.amount.toFixed(2)} €
+                        </Text>
                       ) : null}
                     </View>
                   );
@@ -480,7 +433,6 @@ const styles = StyleSheet.create({
   summaryTotal: { fontSize: 15, fontWeight: '800', color: COLORS.ink },
   balanceRow: { borderTopWidth: 1, borderColor: COLORS.line, paddingTop: 8, marginTop: 2, gap: 2 },
   balanceName: { fontSize: 13, fontWeight: '700', color: COLORS.ink },
-  balanceDetail: { fontSize: 12, color: COLORS.inkSoft },
   balanceNet: { fontSize: 12, fontWeight: '700' },
   addSection: { gap: 12 },
   addToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -550,17 +502,5 @@ const styles = StyleSheet.create({
   splitRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   splitName: { flex: 1, fontSize: 12, fontWeight: '600', color: COLORS.ink },
   splitAmount: { fontSize: 11, color: COLORS.inkSoft },
-  paidAmountRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  paidAmountInput: {
-    width: 52,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    borderRadius: 8,
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-    fontSize: 11,
-    color: COLORS.ink,
-    textAlign: 'right',
-  },
-  paidAmountSuffix: { fontSize: 10, color: COLORS.inkSoft },
+  splitPaidStatus: { fontSize: 11, fontWeight: '700' },
 });

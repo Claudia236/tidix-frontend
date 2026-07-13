@@ -82,11 +82,10 @@ export default function LocationsScreen() {
             <View style={styles.formRow}>
               <TextInput
                 value={emoji}
-                onChangeText={setEmoji}
+                onChangeText={(v) => setEmoji(Array.from(v).slice(0, 1).join(''))}
                 placeholder="📦"
                 placeholderTextColor={COLORS.inkSoft}
                 style={styles.emojiInput}
-                maxLength={4}
               />
               <TextInput
                 value={name}

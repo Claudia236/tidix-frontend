@@ -123,7 +123,12 @@ export default function ShoppingScreen() {
   function goAddToStock(note: ShoppingNote) {
     router.push({
       pathname: '/(app)/item/new',
-      params: { name: note.text, category: note.category ?? undefined, sourceNoteId: note.id },
+      params: {
+        name: note.text,
+        category: note.category ?? undefined,
+        sourceNoteId: note.id,
+        purchaseDate: note.checkedAt ? note.checkedAt.slice(0, 10) : undefined,
+      },
     });
   }
 

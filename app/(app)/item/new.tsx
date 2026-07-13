@@ -18,6 +18,7 @@ export default function NewItemScreen() {
     name?: string;
     category?: string;
     sourceNoteId?: string;
+    purchaseDate?: string;
   }>();
 
   const createMutation = useMutation({
@@ -40,6 +41,7 @@ export default function NewItemScreen() {
           storageLocationId: params.storageLocationId,
           name: params.name,
           category: params.category as Category | undefined,
+          purchaseDate: params.purchaseDate,
         }}
         submitLabel="Salva"
         submitting={createMutation.isPending}

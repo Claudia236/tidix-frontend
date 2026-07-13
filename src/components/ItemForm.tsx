@@ -31,6 +31,9 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   const [quantity, setQuantity] = useState(String(initial?.quantity ?? 1));
   const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'PZ');
   const [expirationDate, setExpirationDate] = useState<string | null>(initial?.expirationDate ?? null);
+  const [purchaseDate, setPurchaseDate] = useState<string | null>(
+    initial?.purchaseDate ?? new Date().toISOString().slice(0, 10)
+  );
   const [addingLocation, setAddingLocation] = useState(false);
   const [newLocationName, setNewLocationName] = useState('');
   const [newLocationEmoji, setNewLocationEmoji] = useState('');
@@ -59,6 +62,7 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
       quantity: Math.max(0, Number(quantity.replace(',', '.')) || 0),
       unit,
       expirationDate,
+      purchaseDate,
     });
   }
 
@@ -98,11 +102,10 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
           <View style={styles.newLocationRow}>
             <TextInput
               value={newLocationEmoji}
-              onChangeText={setNewLocationEmoji}
+              onChangeText={(v) => setNewLocationEmoji(Array.from(v).slice(0, 1).join(''))}
               placeholder="📦"
               placeholderTextColor={COLORS.inkSoft}
               style={styles.newLocationEmojiInput}
-              maxLength={4}
             />
             <TextInput
               value={newLocationName}
@@ -173,6 +176,11 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
             })}
           </View>
         </View>
+      </View>
+
+      <View style={styles.field}>
+        <Text style={styles.label}>Data di acquisto</Text>
+        <DatePickerField value={purchaseDate} onChange={setPurchaseDate} allowClear={false} />
       </View>
 
       <View style={styles.field}>

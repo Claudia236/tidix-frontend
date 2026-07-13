@@ -5,6 +5,7 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
+import { formatFullDate, toLocalISODate } from '../utils/expiry';
 
 interface Props {
   value: string | null;
@@ -16,7 +17,7 @@ interface Props {
 
 export function DatePickerField({ value, onChange, placeholder, clearLabel, allowClear = true }: Props) {
   const { colors } = useTheme();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [showPicker, setShowPicker] = useState(false);
 
@@ -24,7 +25,9 @@ export function DatePickerField({ value, onChange, placeholder, clearLabel, allo
     <View>
       <Pressable style={styles.dateButton} onPress={() => setShowPicker(true)}>
         <Ionicons name="calendar-outline" size={16} color={colors.ink} />
-        <Text style={styles.dateButtonText}>{value ?? placeholder ?? t('common.noDateDefault')}</Text>
+        <Text style={styles.dateButtonText}>
+          {value ? formatFullDate(value, language) : placeholder ?? t('common.noDateDefault')}
+        </Text>
       </Pressable>
       {allowClear && value ? (
         <Pressable onPress={() => onChange(null)}>
@@ -43,7 +46,7 @@ export function DatePickerField({ value, onChange, placeholder, clearLabel, allo
               return;
             }
             if (date) {
-              onChange(date.toISOString().slice(0, 10));
+              onChange(toLocalISODate(date));
             }
             if (Platform.OS === 'android') setShowPicker(false);
           }}

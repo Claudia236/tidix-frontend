@@ -50,7 +50,7 @@ export default function HouseholdSetupScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>{t('householdSetup.greeting', { name: user?.name ?? '' })}</Text>
         <Text style={styles.subtitle}>{t('householdSetup.subtitle')}</Text>

@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { useColorScheme } from 'react-native';
 import { secureStorage } from '../api/secureStorage';
 import { buildPalette, type ColorPalette, type ColorScheme } from './colors';
 
-export type ThemeMode = 'light' | 'dark' | 'system';
+export type ThemeMode = 'light' | 'dark';
 
 const MODE_KEY = 'ld_theme_mode';
 
@@ -17,13 +16,12 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const systemScheme = useColorScheme();
-  const [mode, setModeState] = useState<ThemeMode>('system');
+  const [mode, setModeState] = useState<ThemeMode>('light');
 
   useEffect(() => {
     (async () => {
       const savedMode = await secureStorage.getItemAsync(MODE_KEY);
-      if (savedMode === 'light' || savedMode === 'dark' || savedMode === 'system') {
+      if (savedMode === 'light' || savedMode === 'dark') {
         setModeState(savedMode);
       }
     })();
@@ -34,10 +32,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     secureStorage.setItemAsync(MODE_KEY, next).catch(() => {});
   }
 
-  const scheme: ColorScheme = mode === 'system' ? (systemScheme === 'dark' ? 'dark' : 'light') : mode;
-  const colors = useMemo(() => buildPalette(scheme), [scheme]);
+  const colors = useMemo(() => buildPalette(mode), [mode]);
 
-  const value = useMemo(() => ({ colors, scheme, mode, setMode }), [colors, scheme, mode]);
+  const value = useMemo(() => ({ colors, scheme: mode, mode, setMode }), [colors, mode]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

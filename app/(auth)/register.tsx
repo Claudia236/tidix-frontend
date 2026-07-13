@@ -35,7 +35,7 @@ export default function RegisterScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.logo}>{t('auth.register.title')}</Text>
         <Text style={styles.subtitle}>{t('auth.register.subtitle')}</Text>

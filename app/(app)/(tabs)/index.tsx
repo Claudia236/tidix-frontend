@@ -16,6 +16,7 @@ import { SectionTitle } from '../../../src/components/SectionTitle';
 import { jsWeekdayToDay, wasteTypesCollectedOn } from '../../../src/constants/domain';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import { syncExpiryReminders } from '../../../src/notifications/expiryReminders';
+import { syncWasteReminders } from '../../../src/notifications/wasteReminders';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import { webCentered } from '../../../src/theme/responsive';
@@ -34,11 +35,7 @@ export default function OverviewScreen() {
   const expiringQuery = useQuery({ queryKey: ['items', 'expiring', 3], queryFn: () => itemsApi.expiring(3) });
   const shoppingQuery = useQuery({ queryKey: ['items', 'shopping-list'], queryFn: itemsApi.shoppingList });
   const cleaningQuery = useQuery({ queryKey: ['cleaning-tasks'], queryFn: cleaningApi.list });
-  const wasteSchedulesQuery = useQuery({
-    queryKey: ['waste-schedules'],
-    queryFn: wasteApi.list,
-    enabled: Platform.OS === 'web',
-  });
+  const wasteSchedulesQuery = useQuery({ queryKey: ['waste-schedules'], queryFn: wasteApi.list });
 
   const [addingZone, setAddingZone] = useState(false);
   const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
@@ -123,6 +120,11 @@ export default function OverviewScreen() {
     if (Platform.OS === 'web' || !expiringQuery.data) return;
     syncExpiryReminders(expiringQuery.data, t);
   }, [expiringQuery.data, t]);
+
+  useEffect(() => {
+    if (Platform.OS === 'web' || !wasteSchedulesQuery.data) return;
+    syncWasteReminders(wasteSchedulesQuery.data, t);
+  }, [wasteSchedulesQuery.data, t]);
 
   function refresh() {
     summaryQuery.refetch();

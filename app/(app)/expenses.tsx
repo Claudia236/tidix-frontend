@@ -16,6 +16,7 @@ import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
 import type { Expense, ExpenseSplitInput, HouseholdMember } from '../../src/types';
+import { todayLocalISODate } from '../../src/utils/expiry';
 
 function currentMonth(): string {
   const now = new Date();
@@ -67,7 +68,7 @@ export default function ExpensesScreen() {
 
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-  const [date, setDate] = useState<string | null>(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState<string | null>(todayLocalISODate());
   const [paidByUserId, setPaidByUserId] = useState<string>(user?.id ?? '');
   const [participantIds, setParticipantIds] = useState<Set<string>>(() => new Set(members.map((m) => m.id)));
   const [equalSplit, setEqualSplit] = useState(true);
@@ -82,7 +83,7 @@ export default function ExpensesScreen() {
         description: description.trim(),
         amount: Math.max(0, Number(amount.replace(',', '.')) || 0),
         paidByUserId: effectivePaidBy,
-        date: date ?? new Date().toISOString().slice(0, 10),
+        date: date ?? todayLocalISODate(),
         splits,
       };
       return editingId ? expensesApi.update(editingId, input) : expensesApi.create(input);
@@ -116,7 +117,7 @@ export default function ExpensesScreen() {
     setEditingId(null);
     setDescription('');
     setAmount('');
-    setDate(new Date().toISOString().slice(0, 10));
+    setDate(todayLocalISODate());
     setPaidByUserId(user?.id ?? '');
     setParticipantIds(new Set(members.map((m) => m.id)));
     setEqualSplit(true);

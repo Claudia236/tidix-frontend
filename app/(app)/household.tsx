@@ -193,9 +193,9 @@ export default function HouseholdScreen() {
         <View style={styles.settingsField}>
           <Text style={styles.settingsFieldLabel}>{t('household.themeLabel')}</Text>
           <View style={styles.chipRow}>
-            {(['light', 'dark', 'system'] as ThemeMode[]).map((m) => {
+            {(['light', 'dark'] as ThemeMode[]).map((m) => {
               const active = mode === m;
-              const label = m === 'light' ? t('household.themeLight') : m === 'dark' ? t('household.themeDark') : t('household.themeSystem');
+              const label = m === 'light' ? t('household.themeLight') : t('household.themeDark');
               return (
                 <Pressable key={m} onPress={() => setMode(m)} style={[styles.chip, active && styles.chipActive]}>
                   <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>

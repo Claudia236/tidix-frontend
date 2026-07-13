@@ -22,6 +22,25 @@ export function formatShortDate(dateStr: string, language: Language = 'it'): str
   return d.toLocaleDateString(LOCALE_MAP[language] ?? 'it-IT', { day: 'numeric', month: 'short' });
 }
 
+export function formatFullDate(dateStr: string, language: Language = 'it'): string {
+  const d = new Date(`${dateStr}T00:00:00`);
+  return d.toLocaleDateString(LOCALE_MAP[language] ?? 'it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+// Converte un Date in "YYYY-MM-DD" usando i componenti locali: a differenza
+// di toISOString() (che passa per UTC) non sposta mai la data di un giorno
+// nei fusi orari avanti rispetto a UTC (es. l'Italia).
+export function toLocalISODate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+export function todayLocalISODate(): string {
+  return toLocalISODate(new Date());
+}
+
 export function getExpiryInfo(expirationDate: string | null, t: TranslateFn, language: Language = 'it'): ExpiryInfo | null {
   if (!expirationDate) return null;
   const days = daysUntil(expirationDate);

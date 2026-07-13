@@ -434,7 +434,6 @@ const ENTRIES: Record<string, EntryTriple> = {
   'household.themeLabel': { it: 'Aspetto', en: 'Appearance', es: 'Apariencia' },
   'household.themeLight': { it: 'Chiaro', en: 'Light', es: 'Claro' },
   'household.themeDark': { it: 'Scuro', en: 'Dark', es: 'Oscuro' },
-  'household.themeSystem': { it: 'Sistema', en: 'System', es: 'Sistema' },
 
   // Locations
   'locations.addToggle': { it: 'Aggiungi posizione', en: 'Add location', es: 'Añadir ubicación' },

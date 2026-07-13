@@ -10,6 +10,7 @@ import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
 import { webCentered } from '../theme/responsive';
 import type { Category, ItemInput, Unit } from '../types';
+import { todayLocalISODate } from '../utils/expiry';
 import { DatePickerField } from './DatePickerField';
 import { PrimaryButton } from './PrimaryButton';
 import { TextField } from './TextField';
@@ -40,11 +41,11 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'PZ');
   const [expirationDate, setExpirationDate] = useState<string | null>(initial?.expirationDate ?? null);
   const [purchaseDate, setPurchaseDate] = useState<string | null>(
-    initial?.purchaseDate ?? new Date().toISOString().slice(0, 10)
+    initial?.purchaseDate ?? todayLocalISODate()
   );
   const [opened, setOpened] = useState(initial?.opened ?? false);
   const [openedDate, setOpenedDate] = useState<string | null>(
-    initial?.openedDate ?? new Date().toISOString().slice(0, 10)
+    initial?.openedDate ?? todayLocalISODate()
   );
   const [addingLocation, setAddingLocation] = useState(false);
   const [newLocationName, setNewLocationName] = useState('');

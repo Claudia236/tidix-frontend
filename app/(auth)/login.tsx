@@ -36,7 +36,7 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.logo}>Logistica Domestica</Text>
+        <Text style={styles.logo}>Tidix</Text>
         <Text style={styles.subtitle}>{t('auth.login.subtitle')}</Text>
 
         <View style={styles.form}>

@@ -134,18 +134,32 @@ const ENTRIES: Record<string, EntryTriple> = {
   'cleaningSuggestion.cappaCucina': { it: 'Cappa cucina', en: 'Kitchen hood', es: 'Campana extractora' },
 
   // notifications
-  'notif.wasteReminder.title': { it: 'Promemoria raccolta rifiuti', en: 'Waste collection reminder', es: 'Recordatorio de recogida de basura' },
+  'notif.wasteReminder.title': { it: 'Tidix ti ricorda 🗑️', en: 'Tidix reminder 🗑️', es: 'Tidix te recuerda 🗑️' },
   'notif.wasteReminder.body': {
-    it: (v) => `Domani passa ${v.type}: metti fuori il secchio stasera.`,
-    en: (v) => `Tomorrow is ${v.type} collection: put the bin out tonight.`,
-    es: (v) => `Mañana pasa la recogida de ${v.type}: saca el cubo esta noche.`,
+    it: (v) => `Ehi! Domani è l'ora di buttare ${v.type} 🗑️ Non dimenticare di mettere fuori il secchio stasera!`,
+    en: (v) => `Hey! Tomorrow it's time to take out ${v.type} 🗑️ Don't forget to put the bin out tonight!`,
+    es: (v) => `¡Oye! Mañana toca sacar ${v.type} 🗑️ ¡No olvides sacar el cubo esta noche!`,
   },
-  'notif.cleaningReminder.title': { it: 'Promemoria pulizia', en: 'Cleaning reminder', es: 'Recordatorio de limpieza' },
+  'notif.cleaningReminder.title': { it: 'Tidix ti ricorda 🧽', en: 'Tidix reminder 🧽', es: 'Tidix te recuerda 🧽' },
   'notif.cleaningReminder.body': {
-    it: (v) => `Domani tocca a "${v.name}": è ora di pulirlo.`,
-    en: (v) => `Tomorrow it's "${v.name}"'s turn: time to clean it.`,
-    es: (v) => `Mañana le toca a "${v.name}": es hora de limpiarlo.`,
+    it: (v) => `Ehi! "${v.name}" ti aspetta: che ne dici di dargli una bella pulita domani? ✨`,
+    en: (v) => `Hey! "${v.name}" is waiting for you: how about a good clean tomorrow? ✨`,
+    es: (v) => `¡Oye! "${v.name}" te está esperando: ¿qué tal si le das una buena limpieza mañana? ✨`,
   },
+  'notif.expiryReminder.title': { it: 'Tidix ti ricorda 👀', en: 'Tidix reminder 👀', es: 'Tidix te recuerda 👀' },
+  'notif.expiryReminder.body': {
+    it: (v) => `Ehi! Hai visto che ${v.name} sta per scadere? Meglio darci un'occhiata prima che sia tardi 🥲`,
+    en: (v) => `Hey! Have you seen that ${v.name} is about to expire? Better take a look before it's too late 🥲`,
+    es: (v) => `¡Oye! ¿Has visto que ${v.name} está a punto de caducar? Mejor échale un vistazo antes de que sea tarde 🥲`,
+  },
+
+  // waste type names with article, used inside the friendly notification body
+  'wasteNotif.ORGANICO': { it: "l'organico", en: 'the organic waste', es: 'el orgánico' },
+  'wasteNotif.PLASTICA': { it: 'la plastica', en: 'the plastic', es: 'el plástico' },
+  'wasteNotif.CARTA_CARTONE': { it: 'la carta e il cartone', en: 'the paper and cardboard', es: 'el papel y cartón' },
+  'wasteNotif.VETRO': { it: 'il vetro', en: 'the glass', es: 'el vidrio' },
+  'wasteNotif.INDIFFERENZIATO': { it: "l'indifferenziato", en: 'the general waste', es: 'el resto' },
+  'wasteNotif.ALTRO': { it: 'gli altri rifiuti', en: 'the rest', es: 'los demás residuos' },
 
   // ItemCard
   'itemCard.needsBuying': { it: 'Da comprare', en: 'To buy', es: 'A comprar' },
@@ -364,9 +378,9 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'household.shareCodeButton': { it: 'Condividi codice', en: 'Share code', es: 'Compartir código' },
   'household.shareMessage': {
-    it: (v) => `Unisciti alla nostra famiglia su Logistica Domestica! Codice invito: ${v.code}`,
-    en: (v) => `Join our household on Logistica Domestica! Invite code: ${v.code}`,
-    es: (v) => `¡Únete a nuestra familia en Logistica Domestica! Código de invitación: ${v.code}`,
+    it: (v) => `Unisciti alla nostra famiglia su Tidix! Codice invito: ${v.code}`,
+    en: (v) => `Join our household on Tidix! Invite code: ${v.code}`,
+    es: (v) => `¡Únete a nuestra familia en Tidix! Código de invitación: ${v.code}`,
   },
   'household.membersLabel': { it: (v) => `Membri (${v.n})`, en: (v) => `Members (${v.n})`, es: (v) => `Miembros (${v.n})` },
   'household.youSuffix': { it: ' (tu)', en: ' (you)', es: ' (tú)' },

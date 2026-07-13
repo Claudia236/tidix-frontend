@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { cleaningApi } from '../../../src/api/cleaning';
@@ -12,6 +12,7 @@ import { EmptyState } from '../../../src/components/EmptyState';
 import { SectionTitle } from '../../../src/components/SectionTitle';
 import { jsWeekdayToDay, useWasteTypes, findWasteTypeInfo, wasteTypesCollectedOn } from '../../../src/constants/domain';
 import { useI18n } from '../../../src/i18n/I18nContext';
+import { syncExpiryReminders } from '../../../src/notifications/expiryReminders';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import { webCentered } from '../../../src/theme/responsive';
@@ -50,6 +51,11 @@ export default function OverviewScreen() {
     return wasteTypesCollectedOn(wasteSchedulesQuery.data, tomorrow);
   }, [wasteSchedulesQuery.data]);
 
+  useEffect(() => {
+    if (Platform.OS === 'web' || !expiringQuery.data) return;
+    syncExpiryReminders(expiringQuery.data, t);
+  }, [expiringQuery.data, t]);
+
   function refresh() {
     summaryQuery.refetch();
     expiredQuery.refetch();
@@ -70,7 +76,7 @@ export default function OverviewScreen() {
         refreshControl={<RefreshControl refreshing={summaryQuery.isFetching} onRefresh={refresh} />}
       >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Logistica Domestica</Text>
+          <Text style={styles.headerTitle}>Tidix</Text>
           <Pressable onPress={() => router.push('/(app)/household')} style={styles.familyButton} hitSlop={8}>
             <Ionicons name="home-outline" size={22} color={colors.inkSoft} />
           </Pressable>

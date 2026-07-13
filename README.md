@@ -1,4 +1,4 @@
-# Logistica Domestica — App
+# Tidix — App
 
 App multi-piattaforma (Expo / React Native — Android, iOS e **web**) per gestire l'inventario di casa: frigo, freezer, dispensa e sgabuzzino, con scadenze e lista della spesa condivise tra i membri della famiglia.
 

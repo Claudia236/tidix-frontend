@@ -161,7 +161,7 @@ export default function HouseholdScreen() {
                   hitSlop={8}
                   style={styles.removeMemberButton}
                 >
-                  <Ionicons name="person-remove-outline" size={18} color={colors.danger} />
+                  <Ionicons name="person-remove" size={18} color={colors.danger} />
                 </Pressable>
               ) : null}
             </View>

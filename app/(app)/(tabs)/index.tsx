@@ -13,7 +13,7 @@ import { showAlert } from '../../../src/components/AppAlert';
 import { EmptyState } from '../../../src/components/EmptyState';
 import { PrimaryButton } from '../../../src/components/PrimaryButton';
 import { SectionTitle } from '../../../src/components/SectionTitle';
-import { jsWeekdayToDay, useExpiryStatusColors, wasteTypesCollectedOn } from '../../../src/constants/domain';
+import { jsWeekdayToDay, wasteTypesCollectedOn } from '../../../src/constants/domain';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import { syncExpiryReminders } from '../../../src/notifications/expiryReminders';
 import type { ColorPalette } from '../../../src/theme/colors';
@@ -28,7 +28,6 @@ export default function OverviewScreen() {
   const { colors } = useTheme();
   const { t, language } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const expiryStatusColors = useExpiryStatusColors();
 
   const summaryQuery = useQuery({ queryKey: ['items', 'summary'], queryFn: itemsApi.summary });
   const expiredQuery = useQuery({ queryKey: ['items', 'expired'], queryFn: itemsApi.expired });
@@ -193,11 +192,7 @@ export default function OverviewScreen() {
                     return (
                       <Pressable key={item.id} style={styles.detailRow} onPress={() => goToItem(item)}>
                         <Text style={styles.detailRowText} numberOfLines={1}>{item.name}</Text>
-                        {info ? (
-                          <Text style={[styles.detailRowMeta, { color: expiryStatusColors[info.status].fg }]}>
-                            {info.label}
-                          </Text>
-                        ) : null}
+                        {info ? <Text style={styles.detailRowMeta}>{info.label}</Text> : null}
                       </Pressable>
                     );
                   })}

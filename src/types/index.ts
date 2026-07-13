@@ -9,6 +9,8 @@ export type Category =
   | 'PIATTI_PRONTI'
   | 'DOLCI'
   | 'PULIZIA'
+  | 'BUCATO'
+  | 'IGIENE'
   | 'ALTRO';
 
 export type Unit = 'PZ' | 'KG' | 'G' | 'L' | 'ML' | 'CONF';

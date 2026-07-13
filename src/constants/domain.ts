@@ -7,11 +7,13 @@ export const CATEGORIES: { key: Category; label: string; short: string; emoji: s
   { key: 'FRUTTA_VERDURA', label: 'Frutta e verdura', short: 'Frutta/Verdura', emoji: '🥦' },
   { key: 'CEREALI', label: 'Pasta e cereali', short: 'Pasta/Cereali', emoji: '🍝' },
   { key: 'CONSERVE', label: 'Conserve e legumi', short: 'Conserve/Legumi', emoji: '🥫' },
-  { key: 'CONDIMENTI', label: 'Condimenti', short: 'Condimenti', emoji: '🧂' },
-  { key: 'BEVANDE', label: 'Bevande', short: 'Bevande', emoji: '🧃' },
+  { key: 'CONDIMENTI', label: 'Condimenti e spezie', short: 'Condimenti', emoji: '🧂' },
+  { key: 'BEVANDE', label: 'Bevande', short: 'Bevande', emoji: '🥤' },
   { key: 'PIATTI_PRONTI', label: 'Avanzi', short: 'Avanzi', emoji: '🍱' },
   { key: 'DOLCI', label: 'Dolci e snack', short: 'Dolci/Snack', emoji: '🍪' },
-  { key: 'PULIZIA', label: 'Pulizia e igiene', short: 'Pulizia', emoji: '🧴' },
+  { key: 'PULIZIA', label: 'Pulizia casa', short: 'Pulizia casa', emoji: '🧹' },
+  { key: 'BUCATO', label: 'Bucato', short: 'Bucato', emoji: '🧺' },
+  { key: 'IGIENE', label: 'Igiene personale', short: 'Igiene', emoji: '🧴' },
   { key: 'ALTRO', label: 'Altro', short: 'Altro', emoji: '📌' },
 ];
 

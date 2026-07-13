@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Tabs, usePathname } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
@@ -9,6 +9,9 @@ import { COLORS } from '../../../src/theme/colors';
 import { webCentered } from '../../../src/theme/responsive';
 
 export default function TabsLayout() {
+  const pathname = usePathname();
+  const showFab = !pathname.endsWith('/shopping');
+
   const { data: shoppingList } = useQuery({
     queryKey: ['items', 'shopping-list'],
     queryFn: itemsApi.shoppingList,
@@ -56,7 +59,7 @@ export default function TabsLayout() {
             }}
           />
         </Tabs>
-        <AddFab />
+        {showFab ? <AddFab /> : null}
       </View>
     </View>
   );

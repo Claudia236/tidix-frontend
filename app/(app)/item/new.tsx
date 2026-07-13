@@ -2,21 +2,31 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { itemsApi } from '../../../src/api/items';
 import { getErrorMessage } from '../../../src/api/client';
+import { itemsApi } from '../../../src/api/items';
+import { shoppingNotesApi } from '../../../src/api/shoppingNotes';
 import { showAlert } from '../../../src/components/AppAlert';
 import { ItemForm } from '../../../src/components/ItemForm';
 import { COLORS } from '../../../src/theme/colors';
-import type { ItemInput } from '../../../src/types';
+import type { Category, ItemInput } from '../../../src/types';
 
 export default function NewItemScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const params = useLocalSearchParams<{ storageLocationId?: string }>();
+  const params = useLocalSearchParams<{
+    storageLocationId?: string;
+    name?: string;
+    category?: string;
+    sourceNoteId?: string;
+  }>();
 
   const createMutation = useMutation({
     mutationFn: (input: ItemInput) => itemsApi.create(input),
-    onSuccess: () => {
+    onSuccess: async () => {
+      if (params.sourceNoteId) {
+        await shoppingNotesApi.remove(params.sourceNoteId).catch(() => {});
+        queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
+      }
       queryClient.invalidateQueries({ queryKey: ['items'] });
       router.back();
     },
@@ -26,7 +36,11 @@ export default function NewItemScreen() {
   return (
     <View style={styles.container}>
       <ItemForm
-        initial={{ storageLocationId: params.storageLocationId }}
+        initial={{
+          storageLocationId: params.storageLocationId,
+          name: params.name,
+          category: params.category as Category | undefined,
+        }}
         submitLabel="Salva"
         submitting={createMutation.isPending}
         onSubmit={(input) => createMutation.mutate(input)}

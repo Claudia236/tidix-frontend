@@ -5,8 +5,8 @@ import { DatePickerField } from './DatePickerField';
 import { PrimaryButton } from './PrimaryButton';
 
 export interface RestockResult {
+  mode: 'same' | 'new';
   expirationDate: string | null;
-  clearExpirationDate: boolean;
 }
 
 interface Props {
@@ -29,11 +29,11 @@ export function RestockDialog({ visible, itemName, currentExpirationDate, onConf
   }, [visible, currentExpirationDate]);
 
   function handleSame() {
-    onConfirm({ expirationDate: null, clearExpirationDate: false });
+    onConfirm({ mode: 'same', expirationDate: null });
   }
 
   function handleConfirmNewDate() {
-    onConfirm({ expirationDate: newDate, clearExpirationDate: newDate === null });
+    onConfirm({ mode: 'new', expirationDate: newDate });
   }
 
   return (
@@ -60,6 +60,9 @@ export function RestockDialog({ visible, itemName, currentExpirationDate, onConf
             </>
           ) : (
             <>
+              <Text style={styles.subtitle}>
+                Verrà aggiunta una nuova voce separata nelle scorte con questa scadenza, senza toccare quella già in giacenza.
+              </Text>
               <DatePickerField value={newDate} onChange={setNewDate} />
               <PrimaryButton label="Conferma" onPress={handleConfirmNewDate} />
             </>

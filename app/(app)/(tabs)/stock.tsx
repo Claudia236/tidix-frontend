@@ -4,7 +4,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getErrorMessage } from '../../../src/api/client';
 import { itemsApi } from '../../../src/api/items';
+import { showAlert } from '../../../src/components/AppAlert';
 import { EmptyState } from '../../../src/components/EmptyState';
 import { ItemCard } from '../../../src/components/ItemCard';
 import { RestockDialog } from '../../../src/components/RestockDialog';
@@ -12,7 +14,7 @@ import { SectionTitle } from '../../../src/components/SectionTitle';
 import { useStorageLocations } from '../../../src/hooks/useStorageLocations';
 import { COLORS } from '../../../src/theme/colors';
 import { webCentered } from '../../../src/theme/responsive';
-import type { Item } from '../../../src/types';
+import type { Item, ItemInput } from '../../../src/types';
 
 export default function StockScreen() {
   const router = useRouter();
@@ -44,12 +46,33 @@ export default function StockScreen() {
   });
 
   const adjustMutation = useMutation({
-    mutationFn: ({ id, delta, expirationDate, clearExpirationDate }: { id: string; delta: number; expirationDate?: string | null; clearExpirationDate?: boolean }) =>
-      itemsApi.adjustQuantity(id, { delta, expirationDate: expirationDate ?? undefined, clearExpirationDate }),
+    mutationFn: ({
+      id,
+      delta,
+      expirationDate,
+      clearExpirationDate,
+      hideFromShoppingList,
+    }: {
+      id: string;
+      delta: number;
+      expirationDate?: string | null;
+      clearExpirationDate?: boolean;
+      hideFromShoppingList?: boolean;
+    }) => itemsApi.adjustQuantity(id, { delta, expirationDate: expirationDate ?? undefined, clearExpirationDate, hideFromShoppingList }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       setRestockTarget(null);
     },
+    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+  });
+
+  const newBatchMutation = useMutation({
+    mutationFn: (input: ItemInput) => itemsApi.create(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+      setRestockTarget(null);
+    },
+    onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
 
   function handleAdjust(item: Item, delta: number) {
@@ -57,6 +80,15 @@ export default function StockScreen() {
       setRestockTarget(item);
       return;
     }
+
+    if (item.quantity + delta <= 0) {
+      showAlert('Scorta finita', `"${item.name}" è finita. Vuoi aggiungerla alla lista della spesa?`, [
+        { text: 'No', style: 'cancel', onPress: () => adjustMutation.mutate({ id: item.id, delta, hideFromShoppingList: true }) },
+        { text: 'Sì', onPress: () => adjustMutation.mutate({ id: item.id, delta, hideFromShoppingList: false }) },
+      ]);
+      return;
+    }
+
     adjustMutation.mutate({ id: item.id, delta });
   }
 
@@ -126,9 +158,20 @@ export default function StockScreen() {
         itemName={restockTarget?.name ?? ''}
         currentExpirationDate={restockTarget?.expirationDate ?? null}
         onCancel={() => setRestockTarget(null)}
-        onConfirm={({ expirationDate, clearExpirationDate }) => {
+        onConfirm={({ mode, expirationDate }) => {
           if (!restockTarget) return;
-          adjustMutation.mutate({ id: restockTarget.id, delta: 1, expirationDate, clearExpirationDate });
+          if (mode === 'same') {
+            adjustMutation.mutate({ id: restockTarget.id, delta: 1 });
+          } else {
+            newBatchMutation.mutate({
+              name: restockTarget.name,
+              storageLocationId: restockTarget.storageLocationId,
+              category: restockTarget.category,
+              unit: restockTarget.unit,
+              quantity: 1,
+              expirationDate,
+            });
+          }
         }}
       />
     </SafeAreaView>

@@ -81,11 +81,14 @@ export interface AdjustQuantityInput {
   delta: number;
   expirationDate?: string | null;
   clearExpirationDate?: boolean;
+  hideFromShoppingList?: boolean;
 }
 
 export interface ShoppingNote {
   id: string;
   text: string;
+  category: Category | null;
+  checked: boolean;
   addedByUserId: string;
   createdAt: string;
 }

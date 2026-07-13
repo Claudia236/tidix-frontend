@@ -134,6 +134,7 @@ export interface ExpenseSplit {
   userName: string;
   percentage: number;
   amount: number;
+  paid: boolean;
 }
 
 export interface Expense {
@@ -160,6 +161,7 @@ export interface UserBalance {
   userName: string;
   totalPaid: number;
   totalShare: number;
+  outstandingShare: number;
   netBalance: number;
 }
 

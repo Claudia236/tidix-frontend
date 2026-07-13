@@ -102,6 +102,13 @@ export default function ExpensesScreen() {
     onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
 
+  const setSplitPaidMutation = useMutation({
+    mutationFn: ({ expenseId, userId, paid }: { expenseId: string; userId: string; paid: boolean }) =>
+      expensesApi.setSplitPaid(expenseId, userId, paid),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expenses'] }),
+    onError: (e) => showAlert('Errore', getErrorMessage(e)),
+  });
+
   function toggleParticipant(id: string) {
     setParticipantIds((prev) => {
       const next = new Set(prev);
@@ -196,6 +203,9 @@ export default function ExpensesScreen() {
                 <Text style={styles.balanceName}>{b.userId === user?.id ? 'Tu' : b.userName}</Text>
                 <Text style={styles.balanceDetail}>
                   pagato {b.totalPaid.toFixed(2)} € · quota {b.totalShare.toFixed(2)} €
+                  {b.outstandingShare > 0.01 && b.outstandingShare < b.totalShare - 0.01
+                    ? ` (${b.outstandingShare.toFixed(2)} € da saldare)`
+                    : ''}
                 </Text>
                 <Text
                   style={[
@@ -330,21 +340,53 @@ export default function ExpensesScreen() {
           }
           renderItem={({ item }) => (
             <View style={styles.expenseCard}>
-              <Pressable style={styles.expenseCardInfo} onPress={() => openEditForm(item)}>
-                <View style={styles.expenseHeader}>
-                  <Text style={styles.expenseDescription}>{item.description}</Text>
-                  <Text style={styles.expenseAmount}>{item.amount.toFixed(2)} €</Text>
-                </View>
-                <Text style={styles.expenseMeta}>
-                  {item.paidByUserId === user?.id ? 'Tu' : item.paidByName} · {item.date}
-                </Text>
-                <Text style={styles.expenseSplits} numberOfLines={1}>
-                  {item.splits.map((s) => `${s.userId === user?.id ? 'Tu' : s.userName} ${s.percentage.toFixed(0)}%`).join(' · ')}
-                </Text>
-              </Pressable>
-              <Pressable onPress={() => confirmDelete(item.id)} hitSlop={8}>
-                <Ionicons name="trash-outline" size={16} color={COLORS.inkSoft} />
-              </Pressable>
+              <View style={styles.expenseTopRow}>
+                <Pressable style={styles.expenseCardInfo} onPress={() => openEditForm(item)}>
+                  <View style={styles.expenseHeader}>
+                    <Text style={styles.expenseDescription}>{item.description}</Text>
+                    <Text style={styles.expenseAmount}>{item.amount.toFixed(2)} €</Text>
+                  </View>
+                  <Text style={styles.expenseMeta}>
+                    {item.paidByUserId === user?.id ? 'Tu' : item.paidByName} · {item.date}
+                  </Text>
+                </Pressable>
+                <Pressable onPress={() => confirmDelete(item.id)} hitSlop={8}>
+                  <Ionicons name="trash-outline" size={16} color={COLORS.inkSoft} />
+                </Pressable>
+              </View>
+
+              <View style={styles.splitsList}>
+                {item.splits.map((s) => {
+                  const isPayer = s.userId === item.paidByUserId;
+                  return (
+                    <View key={s.userId} style={styles.splitRow}>
+                      {isPayer ? (
+                        <Ionicons name="wallet-outline" size={16} color={COLORS.inkSoft} />
+                      ) : (
+                        <Pressable
+                          onPress={() => setSplitPaidMutation.mutate({ expenseId: item.id, userId: s.userId, paid: !s.paid })}
+                          hitSlop={8}
+                        >
+                          <Ionicons
+                            name={s.paid ? 'checkmark-circle' : 'ellipse-outline'}
+                            size={16}
+                            color={s.paid ? COLORS.brand : COLORS.inkSoft}
+                          />
+                        </Pressable>
+                      )}
+                      <Text style={styles.splitName}>{s.userId === user?.id ? 'Tu' : s.userName}</Text>
+                      <Text style={styles.splitAmount}>
+                        {s.percentage.toFixed(0)}% · {s.amount.toFixed(2)} €
+                      </Text>
+                      {!isPayer ? (
+                        <Text style={[styles.splitStatus, s.paid && styles.splitStatusPaid]}>
+                          {s.paid ? 'Saldato' : 'Da saldare'}
+                        </Text>
+                      ) : null}
+                    </View>
+                  );
+                })}
+              </View>
             </View>
           )}
         />
@@ -421,19 +463,23 @@ const styles = StyleSheet.create({
   formActions: { flexDirection: 'row', gap: 10 },
   list: { gap: 10 },
   expenseCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
     backgroundColor: COLORS.white,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.line,
     padding: 14,
+    gap: 10,
   },
+  expenseTopRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   expenseCardInfo: { flex: 1, gap: 4 },
   expenseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   expenseDescription: { fontSize: 14, fontWeight: '700', color: COLORS.ink, flexShrink: 1 },
   expenseAmount: { fontSize: 14, fontWeight: '800', color: COLORS.ink },
   expenseMeta: { fontSize: 12, color: COLORS.inkSoft },
-  expenseSplits: { fontSize: 11, color: COLORS.inkSoft },
+  splitsList: { gap: 6, borderTopWidth: 1, borderColor: COLORS.line, paddingTop: 10 },
+  splitRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  splitName: { flex: 1, fontSize: 12, fontWeight: '600', color: COLORS.ink },
+  splitAmount: { fontSize: 11, color: COLORS.inkSoft },
+  splitStatus: { fontSize: 10, fontWeight: '700', color: COLORS.danger, minWidth: 60, textAlign: 'right' },
+  splitStatusPaid: { color: COLORS.brand },
 });

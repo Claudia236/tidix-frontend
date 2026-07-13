@@ -33,15 +33,17 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   const [expirationDate, setExpirationDate] = useState<string | null>(initial?.expirationDate ?? null);
   const [addingLocation, setAddingLocation] = useState(false);
   const [newLocationName, setNewLocationName] = useState('');
+  const [newLocationEmoji, setNewLocationEmoji] = useState('');
 
   const effectiveLocationId = storageLocationId || locations[0]?.id || '';
 
   const createLocationMutation = useMutation({
-    mutationFn: (name2: string) => storageLocationsApi.create({ name: name2 }),
+    mutationFn: () => storageLocationsApi.create({ name: newLocationName.trim(), emoji: newLocationEmoji.trim() || undefined }),
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ['storage-locations'] });
       setStorageLocationId(created.id);
       setNewLocationName('');
+      setNewLocationEmoji('');
       setAddingLocation(false);
     },
   });
@@ -61,9 +63,8 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   }
 
   function handleCreateLocation() {
-    const trimmed = newLocationName.trim();
-    if (!trimmed) return;
-    createLocationMutation.mutate(trimmed);
+    if (!newLocationName.trim()) return;
+    createLocationMutation.mutate();
   }
 
   return (
@@ -95,6 +96,14 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
 
         {addingLocation ? (
           <View style={styles.newLocationRow}>
+            <TextInput
+              value={newLocationEmoji}
+              onChangeText={setNewLocationEmoji}
+              placeholder="📦"
+              placeholderTextColor={COLORS.inkSoft}
+              style={styles.newLocationEmojiInput}
+              maxLength={4}
+            />
             <TextInput
               value={newLocationName}
               onChangeText={setNewLocationName}
@@ -206,6 +215,17 @@ const styles = StyleSheet.create({
   addLocationChip: { borderColor: COLORS.brand, borderStyle: 'dashed', backgroundColor: COLORS.white },
   chipText: { fontWeight: '600', fontSize: 13 },
   newLocationRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 8 },
+  newLocationEmojiInput: {
+    width: 44,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    fontSize: 16,
+    textAlign: 'center',
+    backgroundColor: COLORS.white,
+  },
   newLocationInput: {
     flex: 1,
     borderWidth: 1,

@@ -57,7 +57,6 @@ export default function ShoppingScreen() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
       setQuickText('');
-      setQuickCategory(null);
     },
     onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
@@ -131,7 +130,7 @@ export default function ShoppingScreen() {
           value={quickText}
           onChangeText={setQuickText}
           onSubmitEditing={handleAddNote}
-          placeholder="Aggiungi cosa comprare..."
+          placeholder={quickCategory ? `Aggiungi a ${categoryInfo(quickCategory).label}...` : 'Aggiungi cosa comprare...'}
           placeholderTextColor={COLORS.inkSoft}
           style={styles.quickAddInput}
           returnKeyType="done"
@@ -141,6 +140,9 @@ export default function ShoppingScreen() {
         </Pressable>
       </View>
 
+      <Text style={styles.categoryLabel}>
+        Categoria della prossima voce (opzionale){quickCategory ? `: ${categoryInfo(quickCategory).label}` : ''}
+      </Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll} contentContainerStyle={styles.categoryRow}>
         {CATEGORIES.map((cat) => {
           const active = quickCategory === cat.key;
@@ -308,6 +310,7 @@ const styles = StyleSheet.create({
   categoryChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
   categoryChipText: { fontSize: 11, fontWeight: '600', color: COLORS.ink },
   categoryChipTextActive: { color: COLORS.white },
+  categoryLabel: { fontSize: 11, color: COLORS.inkSoft, marginTop: 2 },
   categoryHeader: {
     fontSize: 11,
     fontWeight: '700',

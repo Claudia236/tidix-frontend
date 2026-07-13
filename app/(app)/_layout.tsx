@@ -30,6 +30,10 @@ export default function AppLayout() {
         name="expenses"
         options={{ title: 'Spese', headerStyle: { backgroundColor: COLORS.bg } }}
       />
+      <Stack.Screen
+        name="locations"
+        options={{ title: 'Posizioni', headerStyle: { backgroundColor: COLORS.bg } }}
+      />
     </Stack>
   );
 }

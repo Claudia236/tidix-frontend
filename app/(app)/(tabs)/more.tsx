@@ -11,6 +11,7 @@ const ENTRIES: { icon: keyof typeof Ionicons.glyphMap; label: string; subtitle: 
   { icon: 'sparkles-outline', label: 'Pulizia', subtitle: 'Ambienti ed elettrodomestici', path: '/(app)/cleaning' },
   { icon: 'trash-outline', label: 'Rifiuti', subtitle: 'Raccolta differenziata giornaliera', path: '/(app)/waste' },
   { icon: 'cash-outline', label: 'Spese', subtitle: 'Chi ha pagato cosa, riepilogo mensile', path: '/(app)/expenses' },
+  { icon: 'cube-outline', label: 'Posizioni', subtitle: 'Frigorifero, freezer, dispensa e altre', path: '/(app)/locations' },
   { icon: 'people-outline', label: 'Famiglia', subtitle: 'Membri e codice invito', path: '/(app)/household' },
 ];
 

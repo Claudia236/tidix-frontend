@@ -7,5 +7,8 @@ export const storageLocationsApi = {
   create: (input: StorageLocationInput) =>
     apiClient.post<StorageLocation>('/api/storage-locations', input).then((r) => r.data),
 
+  update: (id: string, input: StorageLocationInput) =>
+    apiClient.put<StorageLocation>(`/api/storage-locations/${id}`, input).then((r) => r.data),
+
   remove: (id: string) => apiClient.delete(`/api/storage-locations/${id}`).then(() => undefined),
 };

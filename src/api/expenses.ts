@@ -11,6 +11,9 @@ export const expensesApi = {
 
   remove: (id: string) => apiClient.delete(`/api/expenses/${id}`).then(() => undefined),
 
+  setSplitPaid: (id: string, userId: string, paid: boolean) =>
+    apiClient.patch<Expense>(`/api/expenses/${id}/splits/${userId}`, { paid }).then((r) => r.data),
+
   summary: (month?: string) =>
     apiClient
       .get<ExpenseSummary>('/api/expenses/summary', { params: month ? { month } : undefined })

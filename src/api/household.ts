@@ -9,4 +9,7 @@ export const householdApi = {
     apiClient.post<HouseholdResponse>('/api/households/join', { inviteCode }).then((r) => r.data),
 
   me: () => apiClient.get<HouseholdResponse>('/api/households/me').then((r) => r.data),
+
+  rename: (name: string) =>
+    apiClient.put<HouseholdResponse>('/api/households/me', { name }).then((r) => r.data),
 };

@@ -201,12 +201,7 @@ export default function ExpensesScreen() {
             {summary.byUser.map((b) => (
               <View key={b.userId} style={styles.balanceRow}>
                 <Text style={styles.balanceName}>{b.userId === user?.id ? 'Tu' : b.userName}</Text>
-                <Text style={styles.balanceDetail}>
-                  pagato {b.totalPaid.toFixed(2)} € · quota {b.totalShare.toFixed(2)} €
-                  {b.outstandingShare > 0.01 && b.outstandingShare < b.totalShare - 0.01
-                    ? ` (${b.outstandingShare.toFixed(2)} € da saldare)`
-                    : ''}
-                </Text>
+                <Text style={styles.balanceDetail}>pagato {b.totalPaid.toFixed(2)} €</Text>
                 <Text
                   style={[
                     styles.balanceNet,

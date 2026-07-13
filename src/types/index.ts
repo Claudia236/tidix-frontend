@@ -162,8 +162,6 @@ export interface UserBalance {
   userId: string;
   userName: string;
   totalPaid: number;
-  totalShare: number;
-  outstandingShare: number;
   netBalance: number;
 }
 

@@ -435,13 +435,6 @@ const ENTRIES: Record<string, EntryTriple> = {
   'household.themeLight': { it: 'Chiaro', en: 'Light', es: 'Claro' },
   'household.themeDark': { it: 'Scuro', en: 'Dark', es: 'Oscuro' },
   'household.themeSystem': { it: 'Sistema', en: 'System', es: 'Sistema' },
-  'household.accentColorLabel': { it: 'Colore principale', en: 'Main color', es: 'Color principal' },
-  'color.green': { it: 'Verde', en: 'Green', es: 'Verde' },
-  'color.blue': { it: 'Blu', en: 'Blue', es: 'Azul' },
-  'color.purple': { it: 'Viola', en: 'Purple', es: 'Morado' },
-  'color.orange': { it: 'Arancione', en: 'Orange', es: 'Naranja' },
-  'color.teal': { it: 'Verde acqua', en: 'Teal', es: 'Turquesa' },
-  'color.pink': { it: 'Rosa', en: 'Pink', es: 'Rosa' },
 
   // Locations
   'locations.addToggle': { it: 'Aggiungi posizione', en: 'Add location', es: 'Añadir ubicación' },

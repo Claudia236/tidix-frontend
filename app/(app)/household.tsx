@@ -9,18 +9,17 @@ import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { useAuth } from '../../src/context/AuthContext';
 import { useI18n } from '../../src/i18n/I18nContext';
 import type { Language } from '../../src/i18n/translations';
-import { ACCENTS, type AccentKey, type ColorPalette } from '../../src/theme/colors';
+import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme, type ThemeMode } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
 
 const LANGUAGES: Language[] = ['it', 'en', 'es'];
 const LANGUAGE_NATIVE_LABELS: Record<Language, string> = { it: 'Italiano', en: 'English', es: 'Español' };
-const ACCENT_KEYS: AccentKey[] = ['green', 'blue', 'purple', 'orange', 'teal', 'pink'];
 
 export default function HouseholdScreen() {
   const { user, logout, refreshUser } = useAuth();
   const queryClient = useQueryClient();
-  const { colors, mode, setMode, accent, setAccent, scheme } = useTheme();
+  const { colors, mode, setMode } = useTheme();
   const { t, language, setLanguage } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const householdQuery = useQuery({ queryKey: ['household', 'me'], queryFn: householdApi.me });
@@ -205,26 +204,6 @@ export default function HouseholdScreen() {
             })}
           </View>
         </View>
-
-        <View style={styles.settingsField}>
-          <Text style={styles.settingsFieldLabel}>{t('household.accentColorLabel')}</Text>
-          <View style={styles.chipRow}>
-            {ACCENT_KEYS.map((key) => {
-              const active = accent === key;
-              const swatchColor = ACCENTS[key][scheme];
-              return (
-                <Pressable
-                  key={key}
-                  onPress={() => setAccent(key)}
-                  style={[styles.colorChip, active && { borderColor: swatchColor }]}
-                >
-                  <View style={[styles.colorSwatch, { backgroundColor: swatchColor }]} />
-                  <Text style={styles.chipText}>{t(`color.${key}`)}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
       </View>
 
       <PrimaryButton label={t('household.leaveFamily')} variant="secondary" onPress={handleLeavePress} />
@@ -292,17 +271,5 @@ function createStyles(COLORS: ColorPalette) {
     chipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
     chipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
     chipTextActive: { color: COLORS.white },
-    colorChip: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-      borderWidth: 2,
-      borderColor: 'transparent',
-      backgroundColor: COLORS.card,
-      borderRadius: 999,
-      paddingHorizontal: 10,
-      paddingVertical: 6,
-    },
-    colorSwatch: { width: 14, height: 14, borderRadius: 7 },
   });
 }

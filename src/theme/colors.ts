@@ -19,16 +19,9 @@ export interface ColorPalette {
   white: string;
 }
 
-export type AccentKey = 'green' | 'blue' | 'purple' | 'orange' | 'teal' | 'pink';
-
-export const ACCENTS: Record<AccentKey, { light: string; dark: string; label: string }> = {
-  green: { light: '#4F6B47', dark: '#9CC08F', label: 'Verde' },
-  blue: { light: '#2F6FA8', dark: '#7AB6E8', label: 'Blu' },
-  purple: { light: '#6B4FA0', dark: '#B79BE0', label: 'Viola' },
-  orange: { light: '#B8621D', dark: '#E8A560', label: 'Arancione' },
-  teal: { light: '#227A7A', dark: '#5FC2C2', label: 'Verde acqua' },
-  pink: { light: '#A83E6E', dark: '#E080AC', label: 'Rosa' },
-};
+// Colore principale fisso dell'app (verde salvia): non e' piu' scelto
+// dall'utente, quindi cambia solo in base al tema chiaro/scuro.
+const BRAND = { light: '#4F6B47', dark: '#9CC08F' };
 
 export type ColorScheme = 'light' | 'dark';
 
@@ -51,8 +44,8 @@ function mix(hex: string, withHex: string, amount: number): string {
   return `#${[r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
 }
 
-export function buildPalette(scheme: ColorScheme, accent: AccentKey): ColorPalette {
-  const brand = ACCENTS[accent][scheme];
+export function buildPalette(scheme: ColorScheme): ColorPalette {
+  const brand = BRAND[scheme];
 
   if (scheme === 'dark') {
     return {
@@ -99,5 +92,5 @@ export function buildPalette(scheme: ColorScheme, accent: AccentKey): ColorPalet
   };
 }
 
-/** Default light/green palette, used only as a static fallback where a React context is not available. */
-export const COLORS: ColorPalette = buildPalette('light', 'green');
+/** Default light palette, used only as a static fallback where a React context is not available. */
+export const COLORS: ColorPalette = buildPalette('light');

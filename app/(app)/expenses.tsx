@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { getErrorMessage } from '../../src/api/client';
 import { expensesApi } from '../../src/api/expenses';
@@ -53,6 +53,38 @@ function equalPercentages(userIds: string[]): Record<string, number> {
   return result;
 }
 
+function SplitPaidAmountInput({
+  amount,
+  onSave,
+}: {
+  amount: number;
+  onSave: (value: number) => void;
+}) {
+  const [value, setValue] = useState(amount ? String(amount) : '');
+
+  useEffect(() => {
+    setValue(amount ? String(amount) : '');
+  }, [amount]);
+
+  function commit() {
+    const num = Math.max(0, Number(value.replace(',', '.')) || 0);
+    if (num !== amount) onSave(num);
+  }
+
+  return (
+    <TextInput
+      value={value}
+      onChangeText={setValue}
+      onEndEditing={commit}
+      onBlur={commit}
+      keyboardType="numeric"
+      placeholder="0.00"
+      placeholderTextColor={COLORS.inkSoft}
+      style={styles.paidAmountInput}
+    />
+  );
+}
+
 export default function ExpensesScreen() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -72,7 +104,7 @@ export default function ExpensesScreen() {
   const [participantIds, setParticipantIds] = useState<Set<string>>(() => new Set(members.map((m) => m.id)));
   const [equalSplit, setEqualSplit] = useState(true);
   const [customPercentages, setCustomPercentages] = useState<Record<string, string>>({});
-  const [paidUserIds, setPaidUserIds] = useState<Set<string>>(new Set());
+  const [paidAmounts, setPaidAmounts] = useState<Record<string, string>>({});
 
   const effectivePaidBy = paidByUserId || user?.id || members[0]?.id || '';
 
@@ -104,23 +136,14 @@ export default function ExpensesScreen() {
   });
 
   const setSplitPaidMutation = useMutation({
-    mutationFn: ({ expenseId, userId, paid }: { expenseId: string; userId: string; paid: boolean }) =>
-      expensesApi.setSplitPaid(expenseId, userId, paid),
+    mutationFn: ({ expenseId, userId, paidAmount }: { expenseId: string; userId: string; paidAmount: number }) =>
+      expensesApi.setSplitPaidAmount(expenseId, userId, paidAmount),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expenses'] }),
     onError: (e) => showAlert('Errore', getErrorMessage(e)),
   });
 
   function toggleParticipant(id: string) {
     setParticipantIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  function togglePaidUser(id: string) {
-    setPaidUserIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -137,7 +160,7 @@ export default function ExpensesScreen() {
     setParticipantIds(new Set(members.map((m) => m.id)));
     setEqualSplit(true);
     setCustomPercentages({});
-    setPaidUserIds(new Set());
+    setPaidAmounts({});
     setAdding(true);
   }
 
@@ -151,11 +174,15 @@ export default function ExpensesScreen() {
     const percentages = expense.splits.map((s) => s.percentage);
     setEqualSplit(percentages.every((p) => Math.abs(p - percentages[0]) < 0.5));
     const custom: Record<string, string> = {};
+    const paid: Record<string, string> = {};
     expense.splits.forEach((s) => {
       custom[s.userId] = String(s.percentage);
+      if (s.userId !== expense.paidByUserId) {
+        paid[s.userId] = s.paidAmount ? String(s.paidAmount) : '';
+      }
     });
     setCustomPercentages(custom);
-    setPaidUserIds(new Set(expense.splits.filter((s) => s.paid).map((s) => s.userId)));
+    setPaidAmounts(paid);
     setAdding(true);
   }
 
@@ -171,12 +198,16 @@ export default function ExpensesScreen() {
     if (ids.length > 0) {
       if (equalSplit) {
         const pct = equalPercentages(ids);
-        splits = ids.map((id) => ({ userId: id, percentage: pct[id], paid: paidUserIds.has(id) }));
+        splits = ids.map((id) => ({
+          userId: id,
+          percentage: pct[id],
+          paidAmount: Number((paidAmounts[id] ?? '0').replace(',', '.')) || 0,
+        }));
       } else {
         splits = ids.map((id) => ({
           userId: id,
           percentage: Number((customPercentages[id] ?? '0').replace(',', '.')) || 0,
-          paid: paidUserIds.has(id),
+          paidAmount: Number((paidAmounts[id] ?? '0').replace(',', '.')) || 0,
         }));
         const sum = splits.reduce((s, sp) => s + sp.percentage, 0);
         if (Math.abs(sum - 100) > 0.5) {
@@ -299,25 +330,28 @@ export default function ExpensesScreen() {
               {Array.from(participantIds).filter((id) => id !== effectivePaidBy).length > 0 ? (
                 <View style={styles.field}>
                   <Text style={styles.label}>Chi ha già dato la sua parte</Text>
-                  <View style={styles.chipRow}>
-                    {Array.from(participantIds)
-                      .filter((id) => id !== effectivePaidBy)
-                      .map((id) => {
-                        const m = members.find((mm) => mm.id === id);
-                        const active = paidUserIds.has(id);
-                        return (
-                          <Pressable
-                            key={id}
-                            onPress={() => togglePaidUser(id)}
-                            style={[styles.chip, active && styles.chipActive]}
-                          >
-                            <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                              {id === user?.id ? 'Tu' : m?.name ?? id}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
-                  </View>
+                  <Text style={styles.helperText}>
+                    Indica quanto ognuno ha già versato in contanti, anche se non corrisponde esattamente alla quota.
+                  </Text>
+                  {Array.from(participantIds)
+                    .filter((id) => id !== effectivePaidBy)
+                    .map((id) => {
+                      const m = members.find((mm) => mm.id === id);
+                      return (
+                        <View key={id} style={styles.percentRow}>
+                          <Text style={styles.percentName}>{id === user?.id ? 'Tu' : m?.name ?? id}</Text>
+                          <TextInput
+                            value={paidAmounts[id] ?? ''}
+                            onChangeText={(v) => setPaidAmounts((prev) => ({ ...prev, [id]: v }))}
+                            keyboardType="numeric"
+                            placeholder="0.00"
+                            placeholderTextColor={COLORS.inkSoft}
+                            style={styles.percentInput}
+                          />
+                          <Text style={styles.percentSign}>€</Text>
+                        </View>
+                      );
+                    })}
                 </View>
               ) : null}
 
@@ -394,30 +428,29 @@ export default function ExpensesScreen() {
               <View style={styles.splitsList}>
                 {item.splits.map((s) => {
                   const isPayer = s.userId === item.paidByUserId;
+                  const settled = !isPayer && s.paidAmount >= s.amount - 0.01;
+                  const partial = !isPayer && s.paidAmount > 0.01 && !settled;
                   return (
                     <View key={s.userId} style={styles.splitRow}>
-                      {isPayer ? (
-                        <Ionicons name="wallet-outline" size={16} color={COLORS.inkSoft} />
-                      ) : (
-                        <Pressable
-                          onPress={() => setSplitPaidMutation.mutate({ expenseId: item.id, userId: s.userId, paid: !s.paid })}
-                          hitSlop={8}
-                        >
-                          <Ionicons
-                            name={s.paid ? 'checkmark-circle' : 'ellipse-outline'}
-                            size={16}
-                            color={s.paid ? COLORS.brand : COLORS.inkSoft}
-                          />
-                        </Pressable>
-                      )}
+                      <Ionicons
+                        name={isPayer ? 'wallet-outline' : settled ? 'checkmark-circle' : partial ? 'remove-circle' : 'ellipse-outline'}
+                        size={16}
+                        color={isPayer ? COLORS.inkSoft : settled ? COLORS.brand : partial ? COLORS.warn : COLORS.inkSoft}
+                      />
                       <Text style={styles.splitName}>{s.userId === user?.id ? 'Tu' : s.userName}</Text>
                       <Text style={styles.splitAmount}>
                         {s.percentage.toFixed(0)}% · {s.amount.toFixed(2)} €
                       </Text>
                       {!isPayer ? (
-                        <Text style={[styles.splitStatus, s.paid && styles.splitStatusPaid]}>
-                          {s.paid ? 'Saldato' : 'Da saldare'}
-                        </Text>
+                        <View style={styles.paidAmountRow}>
+                          <SplitPaidAmountInput
+                            amount={s.paidAmount}
+                            onSave={(value) =>
+                              setSplitPaidMutation.mutate({ expenseId: item.id, userId: s.userId, paidAmount: value })
+                            }
+                          />
+                          <Text style={styles.paidAmountSuffix}>€ dati</Text>
+                        </View>
                       ) : null}
                     </View>
                   );
@@ -496,6 +529,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   percentSign: { fontSize: 13, color: COLORS.inkSoft },
+  helperText: { fontSize: 11, color: COLORS.inkSoft, marginTop: -4 },
   formActions: { flexDirection: 'row', gap: 10 },
   list: { gap: 10 },
   expenseCard: {
@@ -516,6 +550,17 @@ const styles = StyleSheet.create({
   splitRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   splitName: { flex: 1, fontSize: 12, fontWeight: '600', color: COLORS.ink },
   splitAmount: { fontSize: 11, color: COLORS.inkSoft },
-  splitStatus: { fontSize: 10, fontWeight: '700', color: COLORS.danger, minWidth: 60, textAlign: 'right' },
-  splitStatusPaid: { color: COLORS.brand },
+  paidAmountRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  paidAmountInput: {
+    width: 52,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    fontSize: 11,
+    color: COLORS.ink,
+    textAlign: 'right',
+  },
+  paidAmountSuffix: { fontSize: 10, color: COLORS.inkSoft },
 });

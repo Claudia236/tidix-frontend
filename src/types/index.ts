@@ -129,7 +129,7 @@ export interface WasteSchedule {
 export interface ExpenseSplitInput {
   userId: string;
   percentage: number;
-  paid?: boolean;
+  paidAmount?: number;
 }
 
 export interface ExpenseSplit {
@@ -137,7 +137,7 @@ export interface ExpenseSplit {
   userName: string;
   percentage: number;
   amount: number;
-  paid: boolean;
+  paidAmount: number;
 }
 
 export interface Expense {

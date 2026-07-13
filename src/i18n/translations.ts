@@ -213,9 +213,9 @@ const ENTRIES: Record<string, EntryTriple> = {
     es: (v) => (v.n === 1 ? `${v.n} producto para comprar` : `${v.n} productos para comprar`),
   },
   'overview.wasteTomorrow': {
-    it: (v) => `Ehi! Domani è l'ora di buttare ${v.types} 🗑️ Non dimenticare di mettere fuori il secchio stasera!`,
-    en: (v) => `Hey! Tomorrow it's time to take out ${v.types} 🗑️ Don't forget to put the bin out tonight!`,
-    es: (v) => `¡Oye! Mañana toca sacar ${v.types} 🗑️ ¡No olvides sacar el cubo esta noche!`,
+    it: (v) => `Ehi! Domani è l'ora di buttare ${v.types} 🗑️\nNon dimenticare di mettere fuori il secchio stasera!`,
+    en: (v) => `Hey! Tomorrow it's time to take out ${v.types} 🗑️\nDon't forget to put the bin out tonight!`,
+    es: (v) => `¡Oye! Mañana toca sacar ${v.types} 🗑️\n¡No olvides sacar el cubo esta noche!`,
   },
 
   // Expiry status labels (used on item cards and the expiring-products overview card)

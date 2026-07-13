@@ -159,7 +159,7 @@ export default function OverviewScreen() {
 
         {wasteTomorrow.length > 0 ? (
           <Pressable style={styles.wasteBanner} onPress={() => router.push('/(app)/waste')}>
-            <Ionicons name="trash-outline" size={18} color={colors.warn} />
+            <Ionicons name="trash-outline" size={18} color={colors.danger} />
             <Text style={styles.wasteBannerText}>
               {t('overview.wasteTomorrow', {
                 types: wasteTomorrow.map((w) => t(`wasteNotif.${w}`)).join(', '),
@@ -323,7 +323,7 @@ function createStyles(COLORS: ColorPalette) {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 10,
-      backgroundColor: COLORS.warnBg,
+      backgroundColor: COLORS.dangerBg,
       borderRadius: 14,
       padding: 14,
     },

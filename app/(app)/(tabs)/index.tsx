@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { cleaningApi } from '../../../src/api/cleaning';
 import { getErrorMessage } from '../../../src/api/client';
@@ -149,7 +149,7 @@ export default function OverviewScreen() {
         refreshControl={<RefreshControl refreshing={summaryQuery.isFetching} onRefresh={refresh} />}
       >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Tidix</Text>
+          <Image source={require('../../../assets/logo-mark.png')} style={styles.headerLogo} resizeMode="contain" />
           <Pressable onPress={() => router.push('/(app)/household')} style={styles.familyButton} hitSlop={8}>
             <Ionicons name="home-outline" size={22} color={colors.inkSoft} />
           </Pressable>
@@ -315,7 +315,7 @@ function createStyles(COLORS: ColorPalette) {
     safeArea: { flex: 1, backgroundColor: COLORS.bg },
     container: { padding: 20, gap: 16, paddingBottom: 120, ...webCentered },
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    headerTitle: { fontSize: 17, fontWeight: '800', color: COLORS.ink },
+    headerLogo: { width: 34, height: 34 },
     familyButton: { padding: 2 },
     wasteBanner: {
       flexDirection: 'row',

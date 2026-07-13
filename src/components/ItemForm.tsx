@@ -34,6 +34,10 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   const [purchaseDate, setPurchaseDate] = useState<string | null>(
     initial?.purchaseDate ?? new Date().toISOString().slice(0, 10)
   );
+  const [opened, setOpened] = useState(initial?.opened ?? false);
+  const [openedDate, setOpenedDate] = useState<string | null>(
+    initial?.openedDate ?? new Date().toISOString().slice(0, 10)
+  );
   const [addingLocation, setAddingLocation] = useState(false);
   const [newLocationName, setNewLocationName] = useState('');
   const [newLocationEmoji, setNewLocationEmoji] = useState('');
@@ -63,6 +67,8 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
       unit,
       expirationDate,
       purchaseDate,
+      opened,
+      openedDate: opened ? openedDate : null,
     });
   }
 
@@ -188,6 +194,19 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
         <DatePickerField value={expirationDate} onChange={setExpirationDate} />
       </View>
 
+      <View style={styles.field}>
+        <Pressable onPress={() => setOpened((v) => !v)} style={styles.openedToggle}>
+          <Ionicons name={opened ? 'checkbox' : 'square-outline'} size={18} color={COLORS.brand} />
+          <Text style={styles.openedToggleText}>Confezione già aperta</Text>
+        </Pressable>
+        {opened ? (
+          <>
+            <Text style={styles.label}>Aperta il</Text>
+            <DatePickerField value={openedDate} onChange={setOpenedDate} allowClear={false} />
+          </>
+        ) : null}
+      </View>
+
       <View style={styles.actions}>
         {onDelete ? (
           <PrimaryButton label="Elimina" variant="danger" onPress={onDelete} loading={deleting} style={{ flex: 0 }} />
@@ -287,5 +306,7 @@ const styles = StyleSheet.create({
   },
   unitChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
   unitChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
+  openedToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  openedToggleText: { fontSize: 13, color: COLORS.ink },
   actions: { flexDirection: 'row', gap: 12, marginTop: 8 },
 });

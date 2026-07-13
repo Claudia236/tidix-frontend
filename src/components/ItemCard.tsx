@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { categoryInfo, EXPIRY_STATUS_COLORS, locationCode, locationColor } from '../constants/domain';
 import { COLORS } from '../theme/colors';
 import type { Item, StorageLocation } from '../types';
-import { getExpiryInfo } from '../utils/expiry';
+import { formatShortDate, getExpiryInfo } from '../utils/expiry';
 
 interface Props {
   item: Item;
@@ -47,8 +47,16 @@ export function ItemCard({ item, location, onAdjust, onPress }: Props) {
                   <Text style={[styles.zoneBadgeText, { color: locationFg }]}>{locationCode(location.name)}</Text>
                 </View>
               ) : null}
+              {item.opened ? (
+                <View style={styles.openedBadge}>
+                  <Ionicons name="lock-open-outline" size={10} color={COLORS.gold} />
+                </View>
+              ) : null}
             </View>
             {noteText ? <Text style={[styles.note, { color: noteColor }]}>{noteText}</Text> : null}
+            {item.opened && item.openedDate ? (
+              <Text style={styles.openedNote}>Aperto il {formatShortDate(item.openedDate)}</Text>
+            ) : null}
           </View>
         </Pressable>
         <View style={styles.stepper}>
@@ -94,7 +102,16 @@ const styles = StyleSheet.create({
   name: { fontWeight: '700', fontSize: 14, color: COLORS.ink, flexShrink: 1 },
   zoneBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
   zoneBadgeText: { fontSize: 10, fontWeight: '700' },
+  openedBadge: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: COLORS.goldBg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   note: { fontSize: 12, fontWeight: '600', marginTop: 2 },
+  openedNote: { fontSize: 11, color: COLORS.gold, marginTop: 2 },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   stepperButton: {
     width: 28,

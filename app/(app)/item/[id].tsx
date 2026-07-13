@@ -62,6 +62,8 @@ export default function EditItemScreen() {
           unit: item.unit,
           expirationDate: item.expirationDate,
           purchaseDate: item.purchaseDate,
+          opened: item.opened,
+          openedDate: item.openedDate,
         }}
         submitLabel="Salva modifiche"
         submitting={updateMutation.isPending}

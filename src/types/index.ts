@@ -66,6 +66,8 @@ export interface Item {
   expirationDate: string | null;
   daysUntilExpiration: number | null;
   purchaseDate: string | null;
+  opened: boolean;
+  openedDate: string | null;
   addedByUserId: string;
   createdAt: string;
   updatedAt: string | null;
@@ -79,6 +81,8 @@ export interface ItemInput {
   unit: Unit;
   expirationDate: string | null;
   purchaseDate?: string | null;
+  opened?: boolean;
+  openedDate?: string | null;
 }
 
 export interface AdjustQuantityInput {

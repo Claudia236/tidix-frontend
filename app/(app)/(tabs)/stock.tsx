@@ -23,6 +23,7 @@ export default function StockScreen() {
   const { locations, byId } = useStorageLocations();
   const [filterLocationId, setFilterLocationId] = useState<string>('TUTTI');
   const [search, setSearch] = useState('');
+  const [onlyOpened, setOnlyOpened] = useState(false);
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
 
   const filters = useMemo(
@@ -92,7 +93,11 @@ export default function StockScreen() {
     adjustMutation.mutate({ id: item.id, delta });
   }
 
-  const items = itemsQuery.data ?? [];
+  const items = useMemo(() => {
+    const list = itemsQuery.data ?? [];
+    return onlyOpened ? list.filter((i) => i.opened) : list;
+  }, [itemsQuery.data, onlyOpened]);
+  const openedCount = useMemo(() => (itemsQuery.data ?? []).filter((i) => i.opened).length, [itemsQuery.data]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -129,6 +134,17 @@ export default function StockScreen() {
               </Pressable>
             );
           })}
+          {openedCount > 0 && (
+            <Pressable
+              onPress={() => setOnlyOpened((v) => !v)}
+              style={[styles.filterChip, onlyOpened && styles.filterChipActive]}
+            >
+              <Ionicons name="lock-open-outline" size={12} color={onlyOpened ? COLORS.white : COLORS.gold} />
+              <Text style={[styles.filterChipText, onlyOpened && styles.filterChipTextActive]}>
+                Aperti ({openedCount})
+              </Text>
+            </Pressable>
+          )}
         </ScrollView>
 
         <FlatList

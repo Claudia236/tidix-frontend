@@ -191,6 +191,10 @@ const ENTRIES: Record<string, EntryTriple> = {
 
   // Overview (Panoramica)
   'overview.title': { it: 'Panoramica', en: 'Overview', es: 'Resumen' },
+  'overview.fab.addStockItem': { it: 'Prodotto in scorte', en: 'Stock item', es: 'Producto en existencias' },
+  'overview.fab.addShoppingNote': { it: 'Prodotto in lista spesa', en: 'Shopping list item', es: 'Producto en lista de compra' },
+  'overview.fab.addCleaningTask': { it: 'Ambiente da pulire', en: 'Room to clean', es: 'Zona a limpiar' },
+  'overview.fab.addExpense': { it: 'Spesa condivisa', en: 'Shared expense', es: 'Gasto compartido' },
   'overview.emptyTitle': { it: 'Inizia ad aggiungere i tuoi prodotti', en: 'Start adding your products', es: 'Empieza a añadir tus productos' },
   'overview.emptySubtitle': {
     it: 'Tocca il pulsante + per registrare cosa hai in frigo, freezer, dispensa e nelle altre posizioni.',

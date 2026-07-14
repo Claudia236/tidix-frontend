@@ -111,11 +111,6 @@ export default function ShoppingScreen() {
       <ScrollView contentContainerStyle={[styles.container, webCentered]}>
       <SectionTitle>{t('shopping.title')}</SectionTitle>
 
-      <Pressable style={styles.addProductButton} onPress={() => router.push('/(app)/shopping-note/new')}>
-        <Ionicons name="add-circle-outline" size={18} color={colors.brand} />
-        <Text style={styles.addProductButtonText}>{t('shopping.addProductButton')}</Text>
-      </Pressable>
-
       <FlatList
         data={toBuyRows}
         keyExtractor={(row) => row.key}
@@ -233,13 +228,6 @@ function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: COLORS.bg },
     container: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 120, gap: 12 },
-    addProductButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-      alignSelf: 'flex-start',
-    },
-    addProductButtonText: { fontSize: 14, fontWeight: '700', color: COLORS.brand },
     categoryTag: {
       width: 26,
       height: 26,

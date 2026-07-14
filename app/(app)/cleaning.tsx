@@ -1,11 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cleaningApi } from '../../src/api/cleaning';
 import { getErrorMessage } from '../../src/api/client';
 import { showAlert } from '../../src/components/AppAlert';
+import { AddFab } from '../../src/components/AddFab';
 import { DatePickerField } from '../../src/components/DatePickerField';
 import { EmptyState } from '../../src/components/EmptyState';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
@@ -20,6 +22,8 @@ import type { CleaningTask } from '../../src/types';
 
 export default function CleaningScreen() {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const params = useLocalSearchParams<{ openForm?: string }>();
   const { colors } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -37,6 +41,12 @@ export default function CleaningScreen() {
     if (Platform.OS === 'web' || !tasksQuery.data) return;
     syncCleaningReminders(tasksQuery.data, t);
   }, [tasksQuery.data, t]);
+
+  useEffect(() => {
+    if (params.openForm !== '1') return;
+    router.setParams({ openForm: undefined });
+    openAddForm();
+  }, [params.openForm]);
 
   const saveMutation = useMutation({
     mutationFn: () => {
@@ -104,11 +114,6 @@ export default function CleaningScreen() {
   return (
     <View style={styles.container}>
       <View style={[styles.topSection, webCentered]}>
-        <Pressable onPress={() => (formOpen ? closeForm() : openAddForm())} style={styles.addToggle}>
-          <Ionicons name={formOpen ? 'remove-circle-outline' : 'add-circle-outline'} size={18} color={colors.brand} />
-          <Text style={styles.addToggleText}>{formOpen ? t('common.cancel') : t('cleaning.addToggle')}</Text>
-        </Pressable>
-
         {formOpen ? (
           <View style={styles.form}>
             <TextField
@@ -199,6 +204,12 @@ export default function CleaningScreen() {
           </View>
         )}
       />
+
+      <AddFab
+        icon={formOpen ? 'close' : 'add'}
+        onPress={() => (formOpen ? closeForm() : openAddForm())}
+        bottom={24 + insets.bottom}
+      />
     </View>
   );
 }
@@ -207,8 +218,6 @@ function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: COLORS.bg, paddingTop: 16 },
     topSection: { paddingHorizontal: 20, gap: 12 },
-    addToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    addToggleText: { fontSize: 14, fontWeight: '700', color: COLORS.brand },
     form: {
       gap: 14,
       backgroundColor: COLORS.card,

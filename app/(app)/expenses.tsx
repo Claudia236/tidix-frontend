@@ -1,12 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useMemo, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { expensesApi } from '../../src/api/expenses';
 import { householdApi } from '../../src/api/household';
 import { showAlert } from '../../src/components/AppAlert';
+import { AddFab } from '../../src/components/AddFab';
 import { DatePickerField } from '../../src/components/DatePickerField';
 import { EmptyState } from '../../src/components/EmptyState';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
@@ -54,6 +56,8 @@ function equalPercentages(userIds: string[]): Record<string, number> {
 
 export default function ExpensesScreen() {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const params = useLocalSearchParams<{ openForm?: string }>();
   const { colors } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -155,6 +159,12 @@ export default function ExpensesScreen() {
     setEditingId(null);
   }
 
+  useEffect(() => {
+    if (params.openForm !== '1') return;
+    router.setParams({ openForm: undefined });
+    openAddForm();
+  }, [params.openForm]);
+
   function handleSubmit() {
     if (!description.trim() || !amount.trim()) return;
     const ids = Array.from(participantIds);
@@ -230,10 +240,6 @@ export default function ExpensesScreen() {
         ) : null}
 
         <View style={styles.addSection}>
-          <Pressable onPress={() => (adding ? closeForm() : openAddForm())} style={styles.addToggle}>
-            <Ionicons name={adding ? 'remove-circle-outline' : 'add-circle-outline'} size={18} color={colors.brand} />
-            <Text style={styles.addToggleText}>{adding ? t('common.cancel') : t('expenses.addToggleAdd')}</Text>
-          </Pressable>
 
           {adding ? (
             <View style={styles.form}>
@@ -414,6 +420,12 @@ export default function ExpensesScreen() {
           )}
         />
       </ScrollView>
+
+      <AddFab
+        icon={adding ? 'close' : 'add'}
+        onPress={() => (adding ? closeForm() : openAddForm())}
+        bottom={24 + insets.bottom}
+      />
     </View>
   );
 }
@@ -437,8 +449,6 @@ function createStyles(COLORS: ColorPalette) {
     balanceName: { fontSize: 13, fontWeight: '700', color: COLORS.ink },
     balanceNet: { fontSize: 12, fontWeight: '700' },
     addSection: { gap: 12 },
-    addToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    addToggleText: { fontSize: 14, fontWeight: '700', color: COLORS.brand },
     form: {
       gap: 14,
       backgroundColor: COLORS.card,

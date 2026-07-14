@@ -95,6 +95,7 @@ export interface AdjustQuantityInput {
 export interface ShoppingNote {
   id: string;
   text: string;
+  detail: string | null;
   category: Category | null;
   checked: boolean;
   checkedAt: string | null;
@@ -109,6 +110,7 @@ export interface ZoneSummary {
   count: number;
   hasExpired: boolean;
   hasExpiring: boolean;
+  hasOpened: boolean;
 }
 
 export interface CleaningTask {

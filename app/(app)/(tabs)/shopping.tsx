@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../../src/api/client';
 import { itemsApi } from '../../../src/api/items';
@@ -34,7 +34,6 @@ export default function ShoppingScreen() {
   const { byId } = useStorageLocations();
   const categories = useCategories();
   const getLocationColor = useLocationColor();
-  const [quickText, setQuickText] = useState('');
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
   const [categoryPickerNoteId, setCategoryPickerNoteId] = useState<string | null>(null);
 
@@ -60,15 +59,6 @@ export default function ShoppingScreen() {
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
-  const addNoteMutation = useMutation({
-    mutationFn: () => shoppingNotesApi.create(quickText.trim()),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
-      setQuickText('');
-    },
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
-  });
-
   const setCategoryMutation = useMutation({
     mutationFn: ({ id, category }: { id: string; category: Category }) => shoppingNotesApi.setCategory(id, category),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
@@ -77,12 +67,6 @@ export default function ShoppingScreen() {
 
   const checkNoteMutation = useMutation({
     mutationFn: (id: string) => shoppingNotesApi.check(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
-  });
-
-  const uncheckNoteMutation = useMutation({
-    mutationFn: (id: string) => shoppingNotesApi.uncheck(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
@@ -120,44 +104,17 @@ export default function ShoppingScreen() {
     return rows;
   }, [shoppingQuery.data, notesQuery.data, categories]);
 
-  const checkedNotes = useMemo(() => (notesQuery.data ?? []).filter((n) => n.checked), [notesQuery.data]);
-
-  function handleAddNote() {
-    if (!quickText.trim()) return;
-    addNoteMutation.mutate();
-  }
-
-  function goAddToStock(note: ShoppingNote) {
-    router.push({
-      pathname: '/(app)/item/new',
-      params: {
-        name: note.text,
-        category: note.category ?? undefined,
-        sourceNoteId: note.id,
-        purchaseDate: note.checkedAt ? note.checkedAt.slice(0, 10) : undefined,
-      },
-    });
-  }
+  const purchasedCount = useMemo(() => (notesQuery.data ?? []).filter((n) => n.checked).length, [notesQuery.data]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={[styles.container, webCentered]}>
       <SectionTitle>{t('shopping.title')}</SectionTitle>
 
-      <View style={styles.quickAddRow}>
-        <TextInput
-          value={quickText}
-          onChangeText={setQuickText}
-          onSubmitEditing={handleAddNote}
-          placeholder={t('shopping.addPlaceholder')}
-          placeholderTextColor={colors.inkSoft}
-          style={styles.quickAddInput}
-          returnKeyType="done"
-        />
-        <Pressable onPress={handleAddNote} style={styles.quickAddButton} hitSlop={8}>
-          <Ionicons name="add" size={18} color={colors.white} />
-        </Pressable>
-      </View>
+      <Pressable style={styles.addProductButton} onPress={() => router.push('/(app)/shopping-note/new')}>
+        <Ionicons name="add-circle-outline" size={18} color={colors.brand} />
+        <Text style={styles.addProductButtonText}>{t('shopping.addProductButton')}</Text>
+      </Pressable>
 
       <FlatList
         data={toBuyRows}
@@ -186,7 +143,10 @@ export default function ShoppingScreen() {
             return (
               <View style={styles.row}>
                 <Pressable onPress={() => checkNoteMutation.mutate(note.id)} style={styles.checkbox} hitSlop={8} />
-                <Text style={styles.rowName} numberOfLines={1}>{note.text}</Text>
+                <View style={styles.rowTextInfo}>
+                  <Text style={styles.rowNameStacked} numberOfLines={1}>{note.text}</Text>
+                  {note.detail ? <Text style={styles.rowDetail} numberOfLines={1}>{note.detail}</Text> : null}
+                </View>
                 <Pressable onPress={() => setCategoryPickerNoteId(note.id)} style={styles.categoryTag} hitSlop={8}>
                   <Text style={{ fontSize: 13 }}>{note.category ? findCategoryInfo(categories, note.category).emoji : '🏷️'}</Text>
                 </Pressable>
@@ -221,30 +181,14 @@ export default function ShoppingScreen() {
         }}
       />
 
-      {checkedNotes.length > 0 ? (
-        <View style={styles.checkedSection}>
-          <SectionTitle small>{t('shopping.purchasedSection')}</SectionTitle>
-          <FlatList
-            data={checkedNotes}
-            keyExtractor={(n) => n.id}
-            scrollEnabled={false}
-            contentContainerStyle={styles.list}
-            renderItem={({ item: note }) => (
-              <View style={styles.checkedRow}>
-                <Text style={styles.rowName} numberOfLines={1}>{note.text}</Text>
-                <Pressable onPress={() => uncheckNoteMutation.mutate(note.id)} hitSlop={8}>
-                  <Ionicons name="arrow-undo-outline" size={16} color={colors.inkSoft} />
-                </Pressable>
-                <Pressable onPress={() => goAddToStock(note)} style={styles.addToStockButton} hitSlop={8}>
-                  <Text style={styles.addToStockText}>{t('shopping.addToStock')}</Text>
-                </Pressable>
-                <Pressable onPress={() => removeNoteMutation.mutate(note.id)} hitSlop={8}>
-                  <Ionicons name="trash-outline" size={16} color={colors.inkSoft} />
-                </Pressable>
-              </View>
-            )}
-          />
-        </View>
+      {purchasedCount > 0 ? (
+        <Pressable style={styles.purchasedBanner} onPress={() => router.push('/(app)/shopping-purchased')}>
+          <View style={styles.purchasedBannerLeft}>
+            <Ionicons name="bag-check-outline" size={18} color={colors.brand} />
+            <Text style={styles.purchasedBannerText}>{t('shopping.purchasedBanner', { n: purchasedCount })}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
+        </Pressable>
       ) : null}
 
       </ScrollView>
@@ -288,26 +232,13 @@ function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: COLORS.bg },
     container: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 120, gap: 12 },
-    quickAddRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-    quickAddInput: {
-      flex: 1,
-      borderWidth: 1,
-      borderColor: COLORS.line,
-      backgroundColor: COLORS.card,
-      borderRadius: 10,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      fontSize: 13,
-      color: COLORS.ink,
-    },
-    quickAddButton: {
-      width: 34,
-      height: 34,
-      borderRadius: 17,
-      backgroundColor: COLORS.brand,
+    addProductButton: {
+      flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
+      gap: 8,
+      alignSelf: 'flex-start',
     },
+    addProductButtonText: { fontSize: 14, fontWeight: '700', color: COLORS.brand },
     categoryTag: {
       width: 26,
       height: 26,
@@ -339,26 +270,25 @@ function createStyles(COLORS: ColorPalette) {
     },
     checkbox: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: COLORS.brand },
     rowInfo: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0 },
+    rowTextInfo: { flex: 1, minWidth: 0 },
     rowName: { flex: 1, fontSize: 14, fontWeight: '600', color: COLORS.ink },
+    rowNameStacked: { fontSize: 14, fontWeight: '600', color: COLORS.ink },
+    rowDetail: { fontSize: 12, color: COLORS.inkSoft, marginTop: 1 },
     zoneBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
     zoneBadgeText: { fontSize: 10, fontWeight: '700' },
-    checkedSection: { gap: 8, marginTop: 12 },
-    checkedRow: {
+    purchasedBanner: {
       flexDirection: 'row',
+      justifyContent: 'space-between',
       alignItems: 'center',
-      gap: 10,
-      backgroundColor: COLORS.okBg,
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      borderRadius: 10,
-      marginBottom: 6,
+      backgroundColor: COLORS.card,
+      borderRadius: 14,
+      borderTopWidth: 2,
+      borderStyle: 'dashed' as const,
+      borderColor: COLORS.line,
+      padding: 16,
+      marginTop: 8,
     },
-    addToStockButton: {
-      backgroundColor: COLORS.brand,
-      borderRadius: 999,
-      paddingHorizontal: 10,
-      paddingVertical: 6,
-    },
-    addToStockText: { fontSize: 11, fontWeight: '700', color: COLORS.white },
+    purchasedBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    purchasedBannerText: { fontSize: 13, fontWeight: '600', color: COLORS.ink },
   });
 }

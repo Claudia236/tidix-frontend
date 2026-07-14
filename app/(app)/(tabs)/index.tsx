@@ -21,7 +21,7 @@ import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import { webCentered } from '../../../src/theme/responsive';
 import type { Item, ZoneSummary } from '../../../src/types';
-import { getExpiryInfo } from '../../../src/utils/expiry';
+import { formatShortDate, getExpiryInfo } from '../../../src/utils/expiry';
 
 export default function OverviewScreen() {
   const router = useRouter();
@@ -36,6 +36,7 @@ export default function OverviewScreen() {
   const shoppingQuery = useQuery({ queryKey: ['items', 'shopping-list'], queryFn: itemsApi.shoppingList });
   const cleaningQuery = useQuery({ queryKey: ['cleaning-tasks'], queryFn: cleaningApi.list });
   const wasteSchedulesQuery = useQuery({ queryKey: ['waste-schedules'], queryFn: wasteApi.list });
+  const allItemsQuery = useQuery({ queryKey: ['items', 'list', 'TUTTI', ''], queryFn: () => itemsApi.list({}) });
 
   const [addingZone, setAddingZone] = useState(false);
   const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
@@ -110,6 +111,8 @@ export default function OverviewScreen() {
     return combined.sort((a, b) => (a.daysUntilExpiration ?? 0) - (b.daysUntilExpiration ?? 0));
   }, [expiredQuery.data, expiringQuery.data]);
 
+  const openedItems = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.opened), [allItemsQuery.data]);
+
   const wasteTomorrow = useMemo(() => {
     if (Platform.OS !== 'web' || !wasteSchedulesQuery.data) return [];
     const tomorrow = jsWeekdayToDay((new Date().getDay() + 1) % 7);
@@ -132,6 +135,7 @@ export default function OverviewScreen() {
     expiringQuery.refetch();
     shoppingQuery.refetch();
     cleaningQuery.refetch();
+    allItemsQuery.refetch();
   }
 
   function goToItem(item: Item) {
@@ -178,6 +182,29 @@ export default function OverviewScreen() {
           />
         ) : (
           <>
+            <View style={styles.detailCard}>
+              <View style={styles.detailCardHeader}>
+                <Text style={styles.detailCardTitle}>{t('overview.openedCard.title')}</Text>
+                <Text style={styles.detailCardCount}>{openedItems.length}</Text>
+              </View>
+              {openedItems.length === 0 ? (
+                <Text style={styles.detailCardEmpty}>{t('overview.openedCard.allGood')}</Text>
+              ) : (
+                <View style={styles.detailCardList}>
+                  {openedItems.map((item) => (
+                    <Pressable key={item.id} style={styles.detailRow} onPress={() => goToItem(item)}>
+                      <Text style={styles.detailRowText} numberOfLines={1}>{item.name}</Text>
+                      {item.openedDate ? (
+                        <Text style={styles.detailRowMeta}>
+                          {t('itemCard.openedOn', { date: formatShortDate(item.openedDate, language) })}
+                        </Text>
+                      ) : null}
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </View>
+
             <View style={styles.detailCard}>
               <View style={styles.detailCardHeader}>
                 <Text style={styles.detailCardTitle}>{t('overview.expiringCard.title')}</Text>
@@ -248,8 +275,13 @@ export default function OverviewScreen() {
                 <Text style={styles.zoneEmoji}>{zone.emoji}</Text>
                 <Text style={styles.zoneName} numberOfLines={1}>{zone.name}</Text>
                 <Text style={styles.zoneCount}>{zone.count}</Text>
-                {(zone.hasExpired || zone.hasExpiring) && (
-                  <View style={[styles.zoneDot, { backgroundColor: colors.danger }]} />
+                {(zone.hasOpened || zone.hasExpired || zone.hasExpiring) && (
+                  <View style={styles.zoneDots}>
+                    {zone.hasOpened && <View style={[styles.zoneDot, { backgroundColor: colors.gold }]} />}
+                    {(zone.hasExpired || zone.hasExpiring) && (
+                      <View style={[styles.zoneDot, { backgroundColor: colors.danger }]} />
+                    )}
+                  </View>
                 )}
               </Pressable>
               <Pressable
@@ -379,7 +411,8 @@ function createStyles(COLORS: ColorPalette) {
     zoneEmoji: { fontSize: 22 },
     zoneName: { fontSize: 12, fontWeight: '700', color: COLORS.ink, maxWidth: '100%' },
     zoneCount: { fontSize: 11, color: COLORS.inkSoft },
-    zoneDot: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: 4 },
+    zoneDots: { position: 'absolute', top: 8, right: 8, flexDirection: 'row', gap: 4 },
+    zoneDot: { width: 8, height: 8, borderRadius: 4 },
     zoneEditButton: {
       position: 'absolute',
       top: 6,

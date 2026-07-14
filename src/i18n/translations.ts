@@ -201,6 +201,12 @@ const ENTRIES: Record<string, EntryTriple> = {
     es: (v) => (v.n === 1 ? `Limpiado hace ${v.n} día` : `Limpiado hace ${v.n} días`),
   },
   'overview.cleaningCard.allGood': { it: 'Tutto pulito! ✨', en: 'All clean! ✨', es: '¡Todo limpio! ✨' },
+  'overview.openedCard.title': { it: 'Prodotti aperti', en: 'Opened products', es: 'Productos abiertos' },
+  'overview.openedCard.allGood': {
+    it: 'Nessun prodotto aperto al momento',
+    en: 'No products opened right now',
+    es: 'Ningún producto abierto por ahora',
+  },
   'overview.expiringCard.title': { it: 'Prodotti in scadenza', en: 'Expiring products', es: 'Productos por caducar' },
   'overview.expiringCard.allGood': {
     it: 'Nessun prodotto in scadenza! 🎉',
@@ -253,6 +259,28 @@ const ENTRIES: Record<string, EntryTriple> = {
   'shopping.purchasedSection': { it: 'Acquistato · da aggiungere alle scorte', en: 'Purchased · to add to stock', es: 'Comprado · para añadir al inventario' },
   'shopping.addToStock': { it: 'Aggiungi a scorte', en: 'Add to stock', es: 'Añadir al inventario' },
   'shopping.categoryPickerTitle': { it: 'Categoria della voce', en: 'Item category', es: 'Categoría del artículo' },
+  'shopping.addProductButton': { it: 'Aggiungi prodotto', en: 'Add product', es: 'Añadir producto' },
+  'shopping.purchasedBanner': {
+    it: (v) => (v.n === 1 ? '1 prodotto acquistato da aggiungere alle scorte' : `${v.n} prodotti acquistati da aggiungere alle scorte`),
+    en: (v) => (v.n === 1 ? '1 purchased product to add to stock' : `${v.n} purchased products to add to stock`),
+    es: (v) => (v.n === 1 ? '1 producto comprado para añadir al inventario' : `${v.n} productos comprados para añadir al inventario`),
+  },
+
+  'shoppingNote.new.title': { it: 'Nuovo prodotto', en: 'New product', es: 'Nuevo producto' },
+  'shoppingNote.new.nameLabel': { it: 'Nome', en: 'Name', es: 'Nombre' },
+  'shoppingNote.new.namePlaceholder': { it: 'Es. Latte', en: 'E.g. Milk', es: 'Ej. Leche' },
+  'shoppingNote.new.detailLabel': { it: 'Quantità / dettagli', en: 'Quantity / details', es: 'Cantidad / detalles' },
+  'shoppingNote.new.detailPlaceholder': { it: 'Es. UHT 2l, 2 confezioni...', en: 'E.g. UHT 2l, 2 packs...', es: 'Ej. UHT 2l, 2 paquetes...' },
+  'shoppingNote.new.categoryLabel': { it: 'Categoria (opzionale)', en: 'Category (optional)', es: 'Categoría (opcional)' },
+  'shoppingNote.new.saveButton': { it: 'Aggiungi alla lista', en: 'Add to list', es: 'Añadir a la lista' },
+
+  'purchased.title': { it: 'Acquistati', en: 'Purchased', es: 'Comprados' },
+  'purchased.emptyTitle': { it: 'Nessun prodotto acquistato', en: 'No purchased products', es: 'Ningún producto comprado' },
+  'purchased.emptySubtitle': {
+    it: 'Quando spunti una voce nella lista della spesa la trovi qui, pronta per essere aggiunta alle scorte.',
+    en: 'When you check off an item in the shopping list you\'ll find it here, ready to be added to stock.',
+    es: 'Cuando marques un artículo en la lista de la compra lo encontrarás aquí, listo para añadir al inventario.',
+  },
 
   // Cleaning
   'cleaning.addToggle': { it: 'Aggiungi ambiente', en: 'Add room', es: 'Añadir espacio' },
@@ -330,12 +358,23 @@ const ENTRIES: Record<string, EntryTriple> = {
   'more.locations.label': { it: 'Posizioni', en: 'Locations', es: 'Ubicaciones' },
   'more.locations.subtitle': { it: 'Frigorifero, freezer, dispensa e altre', en: 'Fridge, freezer, pantry and more', es: 'Nevera, congelador, despensa y más' },
   'more.household.label': { it: 'Famiglia', en: 'Household', es: 'Familia' },
-  'more.household.subtitle': { it: 'Membri e codice invito', en: 'Members and invite code', es: 'Miembros y código de invitación' },
+  'more.household.subtitle': {
+    it: 'Membri, codice invito e impostazioni',
+    en: 'Members, invite code and settings',
+    es: 'Miembros, código de invitación y ajustes',
+  },
+  'more.purchased.label': { it: 'Acquistati', en: 'Purchased', es: 'Comprados' },
+  'more.purchased.subtitle': {
+    it: 'Prodotti comprati da aggiungere alle scorte',
+    en: 'Purchased products to add to stock',
+    es: 'Productos comprados para añadir al inventario',
+  },
 
   // App layout (stack screen titles)
   'appLayout.newProduct': { it: 'Nuovo prodotto', en: 'New product', es: 'Nuevo producto' },
   'appLayout.editProduct': { it: 'Modifica prodotto', en: 'Edit product', es: 'Editar producto' },
   'appLayout.household': { it: 'La tua famiglia', en: 'Your household', es: 'Tu familia' },
+  'appLayout.purchased': { it: 'Acquistati', en: 'Purchased', es: 'Comprados' },
 
   // Expenses
   'month.1': { it: 'Gennaio', en: 'January', es: 'Enero' },
@@ -434,6 +473,24 @@ const ENTRIES: Record<string, EntryTriple> = {
   'household.themeLabel': { it: 'Aspetto', en: 'Appearance', es: 'Apariencia' },
   'household.themeLight': { it: 'Chiaro', en: 'Light', es: 'Claro' },
   'household.themeDark': { it: 'Scuro', en: 'Dark', es: 'Oscuro' },
+  'household.notificationsLabel': { it: 'Notifiche', en: 'Notifications', es: 'Notificaciones' },
+  'household.notificationsGranted': { it: 'Attive ✓', en: 'Enabled ✓', es: 'Activadas ✓' },
+  'household.notificationsUndetermined': {
+    it: 'Non ancora attivate',
+    en: 'Not enabled yet',
+    es: 'Aún no activadas',
+  },
+  'household.notificationsDenied': {
+    it: 'Disattivate: i promemoria di scadenze, pulizie e rifiuti non arriveranno',
+    en: 'Disabled: expiry, cleaning and waste reminders will not arrive',
+    es: 'Desactivadas: los avisos de caducidad, limpieza y basura no llegarán',
+  },
+  'household.notificationsEnableButton': { it: 'Attiva notifiche', en: 'Enable notifications', es: 'Activar notificaciones' },
+  'household.notificationsOpenSettingsButton': {
+    it: 'Apri impostazioni del telefono',
+    en: 'Open phone settings',
+    es: 'Abrir ajustes del teléfono',
+  },
 
   // Locations
   'locations.addToggle': { it: 'Aggiungi posizione', en: 'Add location', es: 'Añadir ubicación' },

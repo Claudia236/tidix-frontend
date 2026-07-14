@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { ActivityIndicator, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { getErrorMessage } from '../../src/api/client';
 import { householdApi } from '../../src/api/household';
 import { showAlert } from '../../src/components/AppAlert';
@@ -9,6 +10,11 @@ import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { useAuth } from '../../src/context/AuthContext';
 import { useI18n } from '../../src/i18n/I18nContext';
 import type { Language } from '../../src/i18n/translations';
+import {
+  ensureNotificationPermissions,
+  getNotificationPermissionStatus,
+  type NotificationPermissionStatus,
+} from '../../src/notifications/core';
 import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme, type ThemeMode } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
@@ -26,6 +32,23 @@ export default function HouseholdScreen() {
 
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
+  const [notifStatus, setNotifStatus] = useState<NotificationPermissionStatus>('undetermined');
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'web') return;
+      getNotificationPermissionStatus().then(setNotifStatus);
+    }, [])
+  );
+
+  async function handleEnableNotifications() {
+    if (notifStatus === 'denied') {
+      Linking.openSettings();
+      return;
+    }
+    await ensureNotificationPermissions();
+    setNotifStatus(await getNotificationPermissionStatus());
+  }
 
   const renameMutation = useMutation({
     mutationFn: (name: string) => householdApi.rename(name),
@@ -204,6 +227,26 @@ export default function HouseholdScreen() {
             })}
           </View>
         </View>
+
+        {Platform.OS !== 'web' ? (
+          <View style={styles.settingsField}>
+            <Text style={styles.settingsFieldLabel}>{t('household.notificationsLabel')}</Text>
+            <Text style={[styles.notifStatusText, notifStatus === 'denied' && { color: colors.danger }]}>
+              {notifStatus === 'granted'
+                ? t('household.notificationsGranted')
+                : notifStatus === 'denied'
+                  ? t('household.notificationsDenied')
+                  : t('household.notificationsUndetermined')}
+            </Text>
+            {notifStatus !== 'granted' ? (
+              <PrimaryButton
+                label={notifStatus === 'denied' ? t('household.notificationsOpenSettingsButton') : t('household.notificationsEnableButton')}
+                onPress={handleEnableNotifications}
+                variant="secondary"
+              />
+            ) : null}
+          </View>
+        ) : null}
       </View>
 
       <PrimaryButton label={t('household.leaveFamily')} variant="secondary" onPress={handleLeavePress} />
@@ -259,6 +302,7 @@ function createStyles(COLORS: ColorPalette) {
     removeMemberButton: { padding: 4, marginRight: 8 },
     settingsField: { gap: 8 },
     settingsFieldLabel: { fontSize: 12, fontWeight: '700', color: COLORS.ink },
+    notifStatusText: { fontSize: 12, color: COLORS.inkSoft },
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     chip: {
       borderWidth: 1,

@@ -20,6 +20,25 @@ export async function ensureNotificationPermissions(): Promise<boolean> {
   return requested.granted;
 }
 
+export type NotificationPermissionStatus = 'granted' | 'denied' | 'undetermined' | 'unsupported';
+
+/**
+ * Le notifiche vengono programmate solo se il permesso e' gia' stato concesso
+ * (ensureNotificationPermissions chiede il permesso solo la prima volta: se
+ * l'utente lo nega, expo-notifications non lo richiede piu' automaticamente
+ * e da quel momento le notifiche smettono silenziosamente di arrivare). Le
+ * impostazioni Famiglia usano questo stato per mostrare all'utente se le
+ * notifiche sono davvero attive e permettergli di riprovare o aprire le
+ * impostazioni di sistema.
+ */
+export async function getNotificationPermissionStatus(): Promise<NotificationPermissionStatus> {
+  if (Platform.OS === 'web') return 'unsupported';
+  const current = await Notifications.getPermissionsAsync();
+  if (current.granted) return 'granted';
+  if (current.canAskAgain === false) return 'denied';
+  return 'undetermined';
+}
+
 export async function ensureChannel(channelName: string) {
   if (Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync(CHANNEL_ID, {

@@ -19,6 +19,7 @@ export default function MoreScreen() {
     { icon: 'sparkles-outline', label: t('more.cleaning.label'), subtitle: t('more.cleaning.subtitle'), path: '/(app)/cleaning' },
     { icon: 'trash-outline', label: t('more.waste.label'), subtitle: t('more.waste.subtitle'), path: '/(app)/waste' },
     { icon: 'cash-outline', label: t('more.expenses.label'), subtitle: t('more.expenses.subtitle'), path: '/(app)/expenses' },
+    { icon: 'bag-check-outline', label: t('more.purchased.label'), subtitle: t('more.purchased.subtitle'), path: '/(app)/shopping-purchased' },
     { icon: 'people-outline', label: t('more.household.label'), subtitle: t('more.household.subtitle'), path: '/(app)/household' },
   ];
 

@@ -2,9 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useRouter, usePathname } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
 import { AddFab } from '../../../src/components/AddFab';
-import { itemsApi } from '../../../src/api/items';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import { webCentered } from '../../../src/theme/responsive';
@@ -17,12 +15,6 @@ export default function TabsLayout() {
   const isOverview = pathname === '/';
   const isStock = pathname.endsWith('/stock');
   const isShopping = pathname.endsWith('/shopping');
-
-  const { data: shoppingList } = useQuery({
-    queryKey: ['items', 'shopping-list'],
-    queryFn: itemsApi.shoppingList,
-  });
-  const shoppingCount = shoppingList?.length ?? 0;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -54,7 +46,6 @@ export default function TabsLayout() {
             options={{
               title: t('nav.shopping'),
               tabBarIcon: ({ color, size }) => <Ionicons name="cart-outline" color={color} size={size} />,
-              tabBarBadge: shoppingCount > 0 ? shoppingCount : undefined,
             }}
           />
           <Tabs.Screen

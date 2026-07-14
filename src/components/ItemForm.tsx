@@ -3,14 +3,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { storageLocationsApi } from '../api/storageLocations';
-import { useSelectableCategories, useLocationColor, useUnitLabel, UNITS } from '../constants/domain';
+import { CONSUME_WITHIN_DAYS_CATEGORIES, useSelectableCategories, useLocationColor, useUnitLabel, UNITS } from '../constants/domain';
 import { useStorageLocations } from '../hooks/useStorageLocations';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
 import { webCentered } from '../theme/responsive';
 import type { Category, ItemInput, Unit } from '../types';
-import { todayLocalISODate } from '../utils/expiry';
+import { daysUntil, toLocalISODate, todayLocalISODate } from '../utils/expiry';
 import { DatePickerField } from './DatePickerField';
 import { PrimaryButton } from './PrimaryButton';
 import { TextField } from './TextField';
@@ -40,6 +40,10 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   const [quantity, setQuantity] = useState(String(initial?.quantity ?? 1));
   const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'PZ');
   const [expirationDate, setExpirationDate] = useState<string | null>(initial?.expirationDate ?? null);
+  const [consumeWithinDays, setConsumeWithinDays] = useState<string>(() => {
+    if (!initial?.expirationDate || !CONSUME_WITHIN_DAYS_CATEGORIES.has(initial?.category ?? 'ALTRO')) return '';
+    return String(Math.max(0, daysUntil(initial.expirationDate)));
+  });
   const [purchaseDate, setPurchaseDate] = useState<string | null>(
     initial?.purchaseDate ?? todayLocalISODate()
   );
@@ -65,16 +69,28 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   });
 
   const canSubmit = name.trim().length > 0 && !!effectiveLocationId;
+  const usesConsumeWithinDays = CONSUME_WITHIN_DAYS_CATEGORIES.has(category);
 
   function handleSubmit() {
     if (!canSubmit) return;
+    let resolvedExpirationDate = expirationDate;
+    if (usesConsumeWithinDays) {
+      const days = Number(consumeWithinDays.trim());
+      if (consumeWithinDays.trim() && Number.isFinite(days) && days >= 0) {
+        const date = new Date();
+        date.setDate(date.getDate() + days);
+        resolvedExpirationDate = toLocalISODate(date);
+      } else {
+        resolvedExpirationDate = null;
+      }
+    }
     onSubmit({
       name: name.trim(),
       storageLocationId: effectiveLocationId,
       category,
       quantity: Math.max(0, Number(quantity.replace(',', '.')) || 0),
       unit,
-      expirationDate,
+      expirationDate: resolvedExpirationDate,
       purchaseDate,
       opened,
       openedDate: opened ? openedDate : null,
@@ -199,8 +215,23 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
       </View>
 
       <View style={styles.field}>
-        <Text style={styles.label}>{t('itemForm.expirationDate.label')}</Text>
-        <DatePickerField value={expirationDate} onChange={setExpirationDate} />
+        {usesConsumeWithinDays ? (
+          <>
+            <TextField
+              label={t('itemForm.consumeWithinDays.label')}
+              placeholder={t('itemForm.consumeWithinDays.placeholder')}
+              keyboardType="numeric"
+              value={consumeWithinDays}
+              onChangeText={setConsumeWithinDays}
+            />
+            <Text style={styles.consumeWithinDaysHint}>{t('itemForm.consumeWithinDays.hint')}</Text>
+          </>
+        ) : (
+          <>
+            <Text style={styles.label}>{t('itemForm.expirationDate.label')}</Text>
+            <DatePickerField value={expirationDate} onChange={setExpirationDate} />
+          </>
+        )}
       </View>
 
       <View style={styles.field}>
@@ -316,6 +347,7 @@ function createStyles(COLORS: ColorPalette) {
     },
     unitChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
     unitChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
+    consumeWithinDaysHint: { fontSize: 11, color: COLORS.inkSoft, marginTop: -4 },
     openedToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     openedToggleText: { fontSize: 13, color: COLORS.ink },
     actions: { flexDirection: 'row', gap: 12, marginTop: 8 },

@@ -14,12 +14,18 @@ export interface CategoryInfo {
 }
 
 const CATEGORY_KEYS: Category[] = [
-  'ORTOFRUTTA', 'PASTA_CEREALI', 'LEGUMI', 'CARNE_PESCE', 'LATTICINI_UOVA', 'SOSTITUTI_VEGETALI',
+  'AVANZI', 'ORTOFRUTTA', 'PASTA_CEREALI', 'LEGUMI', 'CARNE_PESCE', 'LATTICINI_UOVA', 'SOSTITUTI_VEGETALI',
   'CONSERVE', 'CONDIMENTI', 'DOLCI', 'SNACK_SALATI', 'FORNO_PASTICCERIA', 'BEVANDE',
   'IGIENE', 'CASA_PULIZIA', 'ANIMALI', 'BEBE', 'FARMACIA', 'ALTRO',
 ];
 
+// Categorie senza una data di scadenza stampata: nel form prodotto viene
+// chiesto "consumare entro N giorni" invece della data, che viene poi
+// convertita in expirationDate = oggi + N giorni.
+export const CONSUME_WITHIN_DAYS_CATEGORIES: ReadonlySet<Category> = new Set(['AVANZI', 'ORTOFRUTTA']);
+
 const CATEGORY_EMOJI: Record<Category, string> = {
+  AVANZI: '🥡',
   ORTOFRUTTA: '🥦',
   PASTA_CEREALI: '🍝',
   LEGUMI: '🫘',

@@ -1,9 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
+
+// Altezza approssimativa della tab bar in basso: il backdrop sfocato deve
+// fermarsi qui sopra, cosi' la barra di navigazione e il pulsante + restano
+// nitidi e utilizzabili mentre il contenuto sotto viene sfocato.
+const TAB_BAR_HEIGHT = 58;
 
 export interface FabMenuAction {
   key: string;
@@ -24,14 +31,25 @@ interface Props {
 
 export function AddFab({ onPress, icon = 'add', actions, bottom = 116 }: Props) {
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
+  const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [open, setOpen] = useState(false);
 
   if (actions && actions.length > 0) {
+    const backdropBottom = TAB_BAR_HEIGHT + insets.bottom;
     return (
       <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-        {open ? <Pressable style={styles.backdrop} onPress={() => setOpen(false)} /> : null}
+        {open ? (
+          <>
+            <BlurView
+              intensity={35}
+              tint={scheme === 'dark' ? 'dark' : 'light'}
+              style={[styles.backdrop, { bottom: backdropBottom }]}
+            />
+            <Pressable style={[styles.backdrop, { bottom: backdropBottom }]} onPress={() => setOpen(false)} />
+          </>
+        ) : null}
         {open
           ? actions.map((action, i) => (
               <Pressable

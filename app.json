@@ -32,6 +32,12 @@
       "expo-splash-screen",
       "expo-notifications",
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9a1ad499-f252-46f1-8647-fb1c2231814d"
+      }
+    }
   }
 }

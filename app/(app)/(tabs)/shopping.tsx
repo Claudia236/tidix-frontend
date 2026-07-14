@@ -104,7 +104,7 @@ export default function ShoppingScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={[styles.container, webCentered]}>
-      <SectionTitle>{t('shopping.title')}</SectionTitle>
+      <SectionTitle logo>{t('shopping.title')}</SectionTitle>
 
       <FlatList
         data={toBuyRows}

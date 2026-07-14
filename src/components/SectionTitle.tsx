@@ -1,12 +1,32 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
 
-export function SectionTitle({ children, small }: { children: React.ReactNode; small?: boolean }) {
-  const { colors } = useTheme();
+interface Props {
+  children: React.ReactNode;
+  small?: boolean;
+  logo?: boolean;
+}
+
+export function SectionTitle({ children, small, logo }: Props) {
+  const { colors, scheme } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  return <Text style={[styles.title, small && styles.small]}>{children}</Text>;
+
+  const text = <Text style={[styles.title, small && styles.small]}>{children}</Text>;
+
+  if (!logo) return text;
+
+  return (
+    <View style={styles.row}>
+      <Image
+        source={scheme === 'dark' ? require('../../assets/logo-mark-white.png') : require('../../assets/logo-mark.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+      {text}
+    </View>
+  );
 }
 
 function createStyles(COLORS: ColorPalette) {
@@ -19,5 +39,7 @@ function createStyles(COLORS: ColorPalette) {
       color: COLORS.ink,
     },
     small: { fontSize: 12 },
+    row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    logo: { width: 22, height: 22 },
   });
 }

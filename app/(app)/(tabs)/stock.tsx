@@ -166,7 +166,7 @@ export default function StockScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
-        <SectionTitle>{t('stock.title')}</SectionTitle>
+        <SectionTitle logo>{t('stock.title')}</SectionTitle>
 
         <View style={styles.searchBox}>
           <Ionicons name="search" size={16} color={colors.inkSoft} />

@@ -149,6 +149,17 @@ export default function StockScreen() {
           style={styles.filtersScroll}
           contentContainerStyle={styles.filters}
         >
+          {openedCount > 0 && (
+            <Pressable
+              onPress={() => setOnlyOpened((v) => !v)}
+              style={[styles.filterChip, onlyOpened && styles.filterChipActive]}
+            >
+              <Ionicons name="lock-open-outline" size={12} color={onlyOpened ? colors.white : colors.gold} />
+              <Text style={[styles.filterChipText, onlyOpened && styles.filterChipTextActive]}>
+                {t('stock.openedFilter', { n: openedCount })}
+              </Text>
+            </Pressable>
+          )}
           {filters.map((f) => {
             const active = filterLocationId === f.key;
             return (
@@ -162,17 +173,6 @@ export default function StockScreen() {
               </Pressable>
             );
           })}
-          {openedCount > 0 && (
-            <Pressable
-              onPress={() => setOnlyOpened((v) => !v)}
-              style={[styles.filterChip, onlyOpened && styles.filterChipActive]}
-            >
-              <Ionicons name="lock-open-outline" size={12} color={onlyOpened ? colors.white : colors.gold} />
-              <Text style={[styles.filterChipText, onlyOpened && styles.filterChipTextActive]}>
-                {t('stock.openedFilter', { n: openedCount })}
-              </Text>
-            </Pressable>
-          )}
         </ScrollView>
 
         <FlatList
@@ -201,6 +201,7 @@ export default function StockScreen() {
         visible={restockTarget !== null}
         itemName={restockTarget?.name ?? ''}
         currentExpirationDate={restockTarget?.expirationDate ?? null}
+        submitting={adjustMutation.isPending || newBatchMutation.isPending}
         onCancel={() => setRestockTarget(null)}
         onConfirm={({ mode, expirationDate }) => {
           if (!restockTarget) return;

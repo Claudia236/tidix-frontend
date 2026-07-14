@@ -1,4 +1,6 @@
+import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import { householdApi } from '../api/household';
 import { useI18n, type TranslateFn } from '../i18n/I18nContext';
 import type { ColorPalette, ColorScheme } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
@@ -12,23 +14,29 @@ export interface CategoryInfo {
 }
 
 const CATEGORY_KEYS: Category[] = [
-  'LATTICINI', 'CARNE', 'FRUTTA_VERDURA', 'CEREALI', 'CONSERVE', 'CONDIMENTI',
-  'BEVANDE', 'PIATTI_PRONTI', 'DOLCI', 'PULIZIA', 'BUCATO', 'IGIENE', 'ALTRO',
+  'ORTOFRUTTA', 'PASTA_CEREALI', 'LEGUMI', 'CARNE_PESCE', 'LATTICINI_UOVA', 'SOSTITUTI_VEGETALI',
+  'CONSERVE', 'CONDIMENTI', 'DOLCI', 'SNACK_SALATI', 'FORNO_PASTICCERIA', 'BEVANDE',
+  'IGIENE', 'CASA_PULIZIA', 'ANIMALI', 'BEBE', 'FARMACIA', 'ALTRO',
 ];
 
 const CATEGORY_EMOJI: Record<Category, string> = {
-  LATTICINI: '🥛',
-  CARNE: '🥩',
-  FRUTTA_VERDURA: '🥦',
-  CEREALI: '🍝',
+  ORTOFRUTTA: '🥦',
+  PASTA_CEREALI: '🍝',
+  LEGUMI: '🫘',
+  CARNE_PESCE: '🥩',
+  LATTICINI_UOVA: '🥛',
+  SOSTITUTI_VEGETALI: '🌱',
   CONSERVE: '🥫',
   CONDIMENTI: '🧂',
-  BEVANDE: '🥤',
-  PIATTI_PRONTI: '🍱',
   DOLCI: '🍪',
-  PULIZIA: '🧹',
-  BUCATO: '🧺',
+  SNACK_SALATI: '🥨',
+  FORNO_PASTICCERIA: '🥐',
+  BEVANDE: '🥤',
   IGIENE: '🧴',
+  CASA_PULIZIA: '🧹',
+  ANIMALI: '🐾',
+  BEBE: '🍼',
+  FARMACIA: '💊',
   ALTRO: '📌',
 };
 
@@ -53,6 +61,23 @@ export function useCategories(): CategoryInfo[] {
 export function useCategoryInfo(key: Category): CategoryInfo {
   const categories = useCategories();
   return findCategoryInfo(categories, key);
+}
+
+/**
+ * Come useCategories(), ma esclude le categorie disattivate dalla famiglia
+ * corrente: da usare nei selettori (ItemForm, lista spesa, filtri) cosi' le
+ * categorie disattivate non sono piu' scelte per nuovi elementi. ALTRO non
+ * e' mai disattivabile, quindi resta sempre come categoria di fallback.
+ */
+export function useSelectableCategories(): CategoryInfo[] {
+  const categories = useCategories();
+  const householdQuery = useQuery({ queryKey: ['household', 'me'], queryFn: householdApi.me });
+  const disabled = householdQuery.data?.disabledCategories;
+  return useMemo(() => {
+    if (!disabled || disabled.length === 0) return categories;
+    const disabledSet = new Set(disabled);
+    return categories.filter((c) => !disabledSet.has(c.key));
+  }, [categories, disabled]);
 }
 
 export const UNITS: Unit[] = ['PZ', 'KG', 'G', 'L', 'ML', 'CONF'];

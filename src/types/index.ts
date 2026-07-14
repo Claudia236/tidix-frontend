@@ -1,16 +1,21 @@
 export type Category =
-  | 'LATTICINI'
-  | 'CARNE'
-  | 'FRUTTA_VERDURA'
-  | 'CEREALI'
+  | 'ORTOFRUTTA'
+  | 'PASTA_CEREALI'
+  | 'LEGUMI'
+  | 'CARNE_PESCE'
+  | 'LATTICINI_UOVA'
+  | 'SOSTITUTI_VEGETALI'
   | 'CONSERVE'
   | 'CONDIMENTI'
-  | 'BEVANDE'
-  | 'PIATTI_PRONTI'
   | 'DOLCI'
-  | 'PULIZIA'
-  | 'BUCATO'
+  | 'SNACK_SALATI'
+  | 'FORNO_PASTICCERIA'
+  | 'BEVANDE'
   | 'IGIENE'
+  | 'CASA_PULIZIA'
+  | 'ANIMALI'
+  | 'BEBE'
+  | 'FARMACIA'
   | 'ALTRO';
 
 export type Unit = 'PZ' | 'KG' | 'G' | 'L' | 'ML' | 'CONF';
@@ -43,6 +48,7 @@ export interface HouseholdResponse {
   inviteCode: string;
   ownerId: string;
   members: HouseholdMember[];
+  disabledCategories: Category[];
 }
 
 export interface StorageLocation {

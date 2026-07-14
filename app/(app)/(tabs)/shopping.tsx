@@ -197,6 +197,7 @@ export default function ShoppingScreen() {
         visible={restockTarget !== null}
         itemName={restockTarget?.name ?? ''}
         currentExpirationDate={restockTarget?.expirationDate ?? null}
+        submitting={adjustMutation.isPending || newBatchMutation.isPending}
         onCancel={() => setRestockTarget(null)}
         onConfirm={({ mode, expirationDate }) => {
           if (!restockTarget) return;

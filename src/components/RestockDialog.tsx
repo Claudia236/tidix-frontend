@@ -3,6 +3,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
+import { formatFullDate } from '../utils/expiry';
 import { DatePickerField } from './DatePickerField';
 import { PrimaryButton } from './PrimaryButton';
 
@@ -15,13 +16,14 @@ interface Props {
   visible: boolean;
   itemName: string;
   currentExpirationDate: string | null;
+  submitting?: boolean;
   onConfirm: (result: RestockResult) => void;
   onCancel: () => void;
 }
 
-export function RestockDialog({ visible, itemName, currentExpirationDate, onConfirm, onCancel }: Props) {
+export function RestockDialog({ visible, itemName, currentExpirationDate, submitting, onConfirm, onCancel }: Props) {
   const { colors } = useTheme();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [choosingNewDate, setChoosingNewDate] = useState(false);
   const [newDate, setNewDate] = useState<string | null>(currentExpirationDate);
@@ -51,15 +53,16 @@ export function RestockDialog({ visible, itemName, currentExpirationDate, onConf
             <>
               <Text style={styles.subtitle}>
                 {t('restock.sameDatePrefix')}
-                {currentExpirationDate ? ` (${currentExpirationDate})` : t('restock.noExpirySet')}
+                {currentExpirationDate ? ` (${formatFullDate(currentExpirationDate, language)})` : t('restock.noExpirySet')}
                 {t('restock.orChanged')}
               </Text>
               <View style={styles.actions}>
-                <PrimaryButton label={t('restock.same')} onPress={handleSame} style={{ flex: 1 }} />
+                <PrimaryButton label={t('restock.same')} onPress={handleSame} loading={submitting} style={{ flex: 1 }} />
                 <PrimaryButton
                   label={t('restock.newDate')}
                   variant="secondary"
                   onPress={() => setChoosingNewDate(true)}
+                  disabled={submitting}
                   style={{ flex: 1 }}
                 />
               </View>
@@ -68,7 +71,7 @@ export function RestockDialog({ visible, itemName, currentExpirationDate, onConf
             <>
               <Text style={styles.subtitle}>{t('restock.newBatchHint')}</Text>
               <DatePickerField value={newDate} onChange={setNewDate} />
-              <PrimaryButton label={t('common.confirm')} onPress={handleConfirmNewDate} />
+              <PrimaryButton label={t('common.confirm')} onPress={handleConfirmNewDate} loading={submitting} />
             </>
           )}
 

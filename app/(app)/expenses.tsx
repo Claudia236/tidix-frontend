@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { expensesApi } from '../../src/api/expenses';
 import { householdApi } from '../../src/api/household';
@@ -56,6 +57,7 @@ export default function ExpensesScreen() {
   const { colors } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const [month, setMonth] = useState(currentMonth());
   const [adding, setAdding] = useState(false);
@@ -193,7 +195,7 @@ export default function ExpensesScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={[styles.scroll, webCentered]}>
+      <ScrollView contentContainerStyle={[styles.scroll, webCentered, { paddingBottom: 60 + insets.bottom }]}>
         <View style={styles.monthRow}>
           <Pressable onPress={() => setMonth((m) => shiftMonth(m, -1))} hitSlop={8}>
             <Ionicons name="chevron-back" size={20} color={colors.ink} />

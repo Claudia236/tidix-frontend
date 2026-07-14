@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { storageLocationsApi } from '../api/storageLocations';
-import { useCategories, useLocationColor, useUnitLabel, UNITS } from '../constants/domain';
+import { useSelectableCategories, useLocationColor, useUnitLabel, UNITS } from '../constants/domain';
 import { useStorageLocations } from '../hooks/useStorageLocations';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
@@ -30,7 +30,7 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   const styles = useMemo(() => createStyles(colors), [colors]);
   const queryClient = useQueryClient();
   const { locations } = useStorageLocations();
-  const categories = useCategories();
+  const categories = useSelectableCategories();
   const unitLabel = useUnitLabel();
   const getLocationColor = useLocationColor();
 

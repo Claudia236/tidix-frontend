@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { shoppingNotesApi } from '../../src/api/shoppingNotes';
 import { showAlert } from '../../src/components/AppAlert';
@@ -19,6 +20,7 @@ export default function ShoppingPurchasedScreen() {
   const { colors } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
 
   const notesQuery = useQuery({ queryKey: ['shopping-notes'], queryFn: shoppingNotesApi.list });
   const checkedNotes = useMemo(() => (notesQuery.data ?? []).filter((n) => n.checked), [notesQuery.data]);
@@ -52,7 +54,7 @@ export default function ShoppingPurchasedScreen() {
       <FlatList
         data={checkedNotes}
         keyExtractor={(n) => n.id}
-        contentContainerStyle={[styles.list, webCentered]}
+        contentContainerStyle={[styles.list, webCentered, { paddingBottom: 20 + insets.bottom }]}
         ListEmptyComponent={
           <EmptyState icon="checkmark-done-outline" title={t('purchased.emptyTitle')} subtitle={t('purchased.emptySubtitle')} />
         }

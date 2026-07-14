@@ -2,22 +2,27 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { householdApi } from '../../src/api/household';
 import { showAlert } from '../../src/components/AppAlert';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { useCategories } from '../../src/constants/domain';
 import { useAuth } from '../../src/context/AuthContext';
 import { useI18n } from '../../src/i18n/I18nContext';
 import type { Language } from '../../src/i18n/translations';
 import {
   ensureNotificationPermissions,
   getNotificationPermissionStatus,
+  getNotificationsEnabledPref,
+  setNotificationsEnabledPref,
   type NotificationPermissionStatus,
 } from '../../src/notifications/core';
 import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme, type ThemeMode } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
+import type { Category } from '../../src/types';
 
 const LANGUAGES: Language[] = ['it', 'en', 'es'];
 const LANGUAGE_NATIVE_LABELS: Record<Language, string> = { it: 'Italiano', en: 'English', es: 'Español' };
@@ -27,17 +32,21 @@ export default function HouseholdScreen() {
   const queryClient = useQueryClient();
   const { colors, mode, setMode } = useTheme();
   const { t, language, setLanguage } = useI18n();
+  const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const householdQuery = useQuery({ queryKey: ['household', 'me'], queryFn: householdApi.me });
+  const categories = useCategories();
 
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [notifStatus, setNotifStatus] = useState<NotificationPermissionStatus>('undetermined');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
       if (Platform.OS === 'web') return;
       getNotificationPermissionStatus().then(setNotifStatus);
+      getNotificationsEnabledPref().then(setNotificationsEnabled);
     }, [])
   );
 
@@ -48,6 +57,23 @@ export default function HouseholdScreen() {
     }
     await ensureNotificationPermissions();
     setNotifStatus(await getNotificationPermissionStatus());
+  }
+
+  async function handleToggleNotifications(next: boolean) {
+    if (next) {
+      let status = notifStatus;
+      if (status !== 'granted') {
+        await ensureNotificationPermissions();
+        status = await getNotificationPermissionStatus();
+        setNotifStatus(status);
+        if (status !== 'granted') return;
+      }
+      await setNotificationsEnabledPref(true);
+      setNotificationsEnabled(true);
+    } else {
+      await setNotificationsEnabledPref(false);
+      setNotificationsEnabled(false);
+    }
   }
 
   const renameMutation = useMutation({
@@ -73,6 +99,26 @@ export default function HouseholdScreen() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['household', 'me'] }),
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
+
+  const transferOwnershipMutation = useMutation({
+    mutationFn: (memberId: string) => householdApi.transferOwnership(memberId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['household', 'me'] }),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+  });
+
+  const updateCategoriesMutation = useMutation({
+    mutationFn: (disabledCategories: Category[]) => householdApi.updateDisabledCategories(disabledCategories),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['household', 'me'] }),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+  });
+
+  function toggleCategoryEnabled(key: Category) {
+    if (!householdQuery.data || key === 'ALTRO') return;
+    const current = new Set(householdQuery.data.disabledCategories);
+    if (current.has(key)) current.delete(key);
+    else current.add(key);
+    updateCategoriesMutation.mutate(Array.from(current));
+  }
 
   async function shareInviteCode() {
     if (!householdQuery.data) return;
@@ -118,6 +164,13 @@ export default function HouseholdScreen() {
     ]);
   }
 
+  function handleMakeAdmin(memberId: string, memberName: string) {
+    showAlert(t('household.makeAdminTitle'), t('household.makeAdminMessage', { name: memberName }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('household.makeAdminButton'), onPress: () => transferOwnershipMutation.mutate(memberId) },
+    ]);
+  }
+
   if (householdQuery.isLoading || !householdQuery.data) {
     return (
       <View style={styles.loading}>
@@ -130,7 +183,7 @@ export default function HouseholdScreen() {
   const isOwner = household.ownerId === user?.id;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingBottom: 48 + insets.bottom }]}>
       {editingName ? (
         <View style={styles.nameEditRow}>
           <TextInput
@@ -179,13 +232,22 @@ export default function HouseholdScreen() {
                 <Text style={styles.memberEmail}>{member.email}</Text>
               </View>
               {isOwner && member.id !== user?.id ? (
-                <Pressable
-                  onPress={() => handleRemoveMember(member.id, member.name)}
-                  hitSlop={8}
-                  style={styles.removeMemberButton}
-                >
-                  <Ionicons name="trash-outline" size={18} color={colors.danger} />
-                </Pressable>
+                <View style={styles.memberActions}>
+                  <Pressable
+                    onPress={() => handleMakeAdmin(member.id, member.name)}
+                    hitSlop={8}
+                    style={styles.removeMemberButton}
+                  >
+                    <Ionicons name="ribbon-outline" size={18} color={colors.brand} />
+                  </Pressable>
+                  <Pressable
+                    onPress={() => handleRemoveMember(member.id, member.name)}
+                    hitSlop={8}
+                    style={styles.removeMemberButton}
+                  >
+                    <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                  </Pressable>
+                </View>
               ) : null}
             </View>
           </View>
@@ -230,23 +292,59 @@ export default function HouseholdScreen() {
 
         {Platform.OS !== 'web' ? (
           <View style={styles.settingsField}>
-            <Text style={styles.settingsFieldLabel}>{t('household.notificationsLabel')}</Text>
+            <View style={styles.notifHeaderRow}>
+              <Text style={styles.settingsFieldLabel}>{t('household.notificationsLabel')}</Text>
+              <Switch
+                value={notifStatus === 'granted' && notificationsEnabled}
+                onValueChange={handleToggleNotifications}
+                disabled={notifStatus === 'denied'}
+                trackColor={{ false: colors.line, true: colors.brand }}
+                thumbColor={colors.white}
+              />
+            </View>
             <Text style={[styles.notifStatusText, notifStatus === 'denied' && { color: colors.danger }]}>
-              {notifStatus === 'granted'
-                ? t('household.notificationsGranted')
-                : notifStatus === 'denied'
-                  ? t('household.notificationsDenied')
+              {notifStatus === 'denied'
+                ? t('household.notificationsDenied')
+                : notifStatus === 'granted'
+                  ? notificationsEnabled
+                    ? t('household.notificationsGranted')
+                    : t('household.notificationsDisabledByUser')
                   : t('household.notificationsUndetermined')}
             </Text>
-            {notifStatus !== 'granted' ? (
+            {notifStatus === 'denied' ? (
               <PrimaryButton
-                label={notifStatus === 'denied' ? t('household.notificationsOpenSettingsButton') : t('household.notificationsEnableButton')}
+                label={t('household.notificationsOpenSettingsButton')}
                 onPress={handleEnableNotifications}
                 variant="secondary"
               />
             ) : null}
           </View>
         ) : null}
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardLabel}>{t('household.categoriesTitle')}</Text>
+        <Text style={styles.cardHint}>{t('household.categoriesHint')}</Text>
+        <View style={styles.categoryList}>
+          {categories.map((cat) => {
+            const isAltro = cat.key === 'ALTRO';
+            const enabled = isAltro || !(householdQuery.data.disabledCategories ?? []).includes(cat.key);
+            return (
+              <View key={cat.key} style={styles.categoryRow}>
+                <Text style={styles.categoryRowLabel}>
+                  {cat.emoji} {cat.label}
+                </Text>
+                <Switch
+                  value={enabled}
+                  onValueChange={() => toggleCategoryEnabled(cat.key)}
+                  disabled={isAltro}
+                  trackColor={{ false: colors.line, true: colors.brand }}
+                  thumbColor={colors.white}
+                />
+              </View>
+            );
+          })}
+        </View>
       </View>
 
       <PrimaryButton label={t('household.leaveFamily')} variant="secondary" onPress={handleLeavePress} />
@@ -299,10 +397,22 @@ function createStyles(COLORS: ColorPalette) {
     memberInfo: { flex: 1 },
     memberName: { fontSize: 14, fontWeight: '700', color: COLORS.ink },
     memberEmail: { fontSize: 12, color: COLORS.inkSoft },
+    memberActions: { flexDirection: 'row', alignItems: 'center' },
     removeMemberButton: { padding: 4, marginRight: 8 },
     settingsField: { gap: 8 },
     settingsFieldLabel: { fontSize: 12, fontWeight: '700', color: COLORS.ink },
+    notifHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     notifStatusText: { fontSize: 12, color: COLORS.inkSoft },
+    categoryList: { gap: 2 },
+    categoryRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderTopWidth: 1,
+      borderColor: COLORS.line,
+      paddingVertical: 10,
+    },
+    categoryRowLabel: { fontSize: 13, color: COLORS.ink, flex: 1, marginRight: 8 },
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     chip: {
       borderWidth: 1,

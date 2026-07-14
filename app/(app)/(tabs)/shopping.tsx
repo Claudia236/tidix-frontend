@@ -9,7 +9,6 @@ import { itemsApi } from '../../../src/api/items';
 import { shoppingNotesApi } from '../../../src/api/shoppingNotes';
 import { showAlert } from '../../../src/components/AppAlert';
 import { useCategories, findCategoryInfo, useLocationColor, locationCode } from '../../../src/constants/domain';
-import { CategoryPickerModal } from '../../../src/components/CategoryPickerModal';
 import { EmptyState } from '../../../src/components/EmptyState';
 import { RestockDialog } from '../../../src/components/RestockDialog';
 import { SectionTitle } from '../../../src/components/SectionTitle';
@@ -35,7 +34,6 @@ export default function ShoppingScreen() {
   const categories = useCategories();
   const getLocationColor = useLocationColor();
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
-  const [categoryPickerNoteId, setCategoryPickerNoteId] = useState<string | null>(null);
 
   const shoppingQuery = useQuery({ queryKey: ['items', 'shopping-list'], queryFn: itemsApi.shoppingList });
   const notesQuery = useQuery({ queryKey: ['shopping-notes'], queryFn: shoppingNotesApi.list });
@@ -56,12 +54,6 @@ export default function ShoppingScreen() {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       setRestockTarget(null);
     },
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
-  });
-
-  const setCategoryMutation = useMutation({
-    mutationFn: ({ id, category }: { id: string; category: Category }) => shoppingNotesApi.setCategory(id, category),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
@@ -138,11 +130,18 @@ export default function ShoppingScreen() {
             return (
               <View style={styles.row}>
                 <Pressable onPress={() => checkNoteMutation.mutate(note.id)} style={styles.checkbox} hitSlop={8} />
-                <View style={styles.rowTextInfo}>
+                <Pressable
+                  style={styles.rowTextInfo}
+                  onPress={() => router.push({ pathname: '/(app)/shopping-note/[id]', params: { id: note.id } })}
+                >
                   <Text style={styles.rowNameStacked} numberOfLines={1}>{note.text}</Text>
                   {note.detail ? <Text style={styles.rowDetail} numberOfLines={1}>{note.detail}</Text> : null}
-                </View>
-                <Pressable onPress={() => setCategoryPickerNoteId(note.id)} style={styles.categoryTag} hitSlop={8}>
+                </Pressable>
+                <Pressable
+                  onPress={() => router.push({ pathname: '/(app)/shopping-note/[id]', params: { id: note.id } })}
+                  style={styles.categoryTag}
+                  hitSlop={8}
+                >
                   <Text style={{ fontSize: 13 }}>{note.category ? findCategoryInfo(categories, note.category).emoji : '🏷️'}</Text>
                 </Pressable>
                 <Pressable onPress={() => removeNoteMutation.mutate(note.id)} hitSlop={8}>
@@ -208,16 +207,6 @@ export default function ShoppingScreen() {
               expirationDate,
             });
           }
-        }}
-      />
-
-      <CategoryPickerModal
-        visible={categoryPickerNoteId !== null}
-        title={t('shopping.categoryPickerTitle')}
-        onClose={() => setCategoryPickerNoteId(null)}
-        onSelect={(category) => {
-          if (categoryPickerNoteId) setCategoryMutation.mutate({ id: categoryPickerNoteId, category });
-          setCategoryPickerNoteId(null);
         }}
       />
     </SafeAreaView>

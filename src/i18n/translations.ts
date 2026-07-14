@@ -60,6 +60,8 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
 
   // categories
+  'category.AVANZI.label': { it: 'Avanzi', en: 'Leftovers', es: 'Sobras' },
+  'category.AVANZI.short': { it: 'Avanzi', en: 'Leftovers', es: 'Sobras' },
   'category.ORTOFRUTTA.label': { it: 'Ortofrutta', en: 'Fruit and vegetables', es: 'Fruta y verdura' },
   'category.ORTOFRUTTA.short': { it: 'Ortofrutta', en: 'Fruit/Veg', es: 'Fruta/Verdura' },
   'category.PASTA_CEREALI.label': { it: 'Pasta e cereali', en: 'Pasta and grains', es: 'Pasta y cereales' },
@@ -186,6 +188,17 @@ const ENTRIES: Record<string, EntryTriple> = {
   'itemForm.unit.label': { it: 'Unità', en: 'Unit', es: 'Unidad' },
   'itemForm.purchaseDate.label': { it: 'Data di acquisto', en: 'Purchase date', es: 'Fecha de compra' },
   'itemForm.expirationDate.label': { it: 'Scadenza (opzionale)', en: 'Expiry date (optional)', es: 'Caducidad (opcional)' },
+  'itemForm.consumeWithinDays.label': {
+    it: 'Consumare entro (giorni, opzionale)',
+    en: 'Consume within (days, optional)',
+    es: 'Consumir en (días, opcional)',
+  },
+  'itemForm.consumeWithinDays.placeholder': { it: 'Es. 5', en: 'E.g. 5', es: 'Ej. 5' },
+  'itemForm.consumeWithinDays.hint': {
+    it: 'Prodotto senza data di scadenza stampata: indica dopo quanti giorni consumarlo, verrà usato come promemoria.',
+    en: "Product without a printed expiry date: enter how many days until it should be consumed, it'll be used as a reminder.",
+    es: 'Producto sin fecha de caducidad impresa: indica en cuántos días debe consumirse, se usará como recordatorio.',
+  },
   'itemForm.openedToggle': { it: 'Confezione già aperta', en: 'Package already opened', es: 'Paquete ya abierto' },
   'itemForm.openedDate.label': { it: 'Aperta il', en: 'Opened on', es: 'Abierto el' },
 
@@ -281,12 +294,19 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
 
   'shoppingNote.new.title': { it: 'Nuovo prodotto', en: 'New product', es: 'Nuevo producto' },
+  'shoppingNote.edit.title': { it: 'Modifica prodotto', en: 'Edit product', es: 'Editar producto' },
   'shoppingNote.new.nameLabel': { it: 'Nome', en: 'Name', es: 'Nombre' },
   'shoppingNote.new.namePlaceholder': { it: 'Es. Latte', en: 'E.g. Milk', es: 'Ej. Leche' },
   'shoppingNote.new.detailLabel': { it: 'Quantità / dettagli', en: 'Quantity / details', es: 'Cantidad / detalles' },
   'shoppingNote.new.detailPlaceholder': { it: 'Es. UHT 2l, 2 confezioni...', en: 'E.g. UHT 2l, 2 packs...', es: 'Ej. UHT 2l, 2 paquetes...' },
   'shoppingNote.new.categoryLabel': { it: 'Categoria (opzionale)', en: 'Category (optional)', es: 'Categoría (opcional)' },
   'shoppingNote.new.saveButton': { it: 'Aggiungi alla lista', en: 'Add to list', es: 'Añadir a la lista' },
+  'shoppingNote.confirmDeleteTitle': { it: 'Rimuovi prodotto', en: 'Remove product', es: 'Eliminar producto' },
+  'shoppingNote.confirmDeleteMessage': {
+    it: 'Rimuovere questo prodotto dalla lista della spesa?',
+    en: 'Remove this product from the shopping list?',
+    es: '¿Eliminar este producto de la lista de compra?',
+  },
 
   'purchased.title': { it: 'Acquistati', en: 'Purchased', es: 'Comprados' },
   'purchased.emptyTitle': { it: 'Nessun prodotto acquistato', en: 'No purchased products', es: 'Ningún producto comprado' },

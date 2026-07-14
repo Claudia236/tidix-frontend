@@ -1,4 +1,5 @@
 export type Category =
+  | 'AVANZI'
   | 'ORTOFRUTTA'
   | 'PASTA_CEREALI'
   | 'LEGUMI'

@@ -26,7 +26,7 @@ import { formatShortDate, getExpiryInfo } from '../../../src/utils/expiry';
 export default function OverviewScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const { t, language } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -156,7 +156,18 @@ export default function OverviewScreen() {
         refreshControl={<RefreshControl refreshing={summaryQuery.isFetching} onRefresh={refresh} />}
       >
         <View style={styles.header}>
-          <Image source={require('../../../assets/logo-mark.png')} style={styles.headerLogo} resizeMode="contain" />
+          <View style={styles.brandRow}>
+            <Image
+              source={scheme === 'dark' ? require('../../../assets/logo-mark-white.png') : require('../../../assets/logo-mark.png')}
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
+            <Image
+              source={scheme === 'dark' ? require('../../../assets/wordmark-white.png') : require('../../../assets/wordmark-green.png')}
+              style={styles.headerWordmark}
+              resizeMode="contain"
+            />
+          </View>
           <Pressable onPress={() => router.push('/(app)/household')} style={styles.familyButton} hitSlop={8}>
             <Ionicons name="home-outline" size={22} color={colors.inkSoft} />
           </Pressable>
@@ -354,7 +365,9 @@ function createStyles(COLORS: ColorPalette) {
     flex: { flex: 1 },
     container: { padding: 20, gap: 16, paddingBottom: 120, ...webCentered },
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    headerLogo: { width: 34, height: 34 },
+    brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    headerLogo: { width: 30, height: 30 },
+    headerWordmark: { width: 88, height: 26 },
     familyButton: { padding: 2 },
     wasteBanner: {
       flexDirection: 'row',

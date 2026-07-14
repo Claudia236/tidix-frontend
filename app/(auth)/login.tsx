@@ -13,7 +13,7 @@ import { webCentered } from '../../src/theme/responsive';
 
 export default function LoginScreen() {
   const { login } = useAuth();
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [email, setEmail] = useState('');
@@ -37,8 +37,16 @@ export default function LoginScreen() {
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <View style={styles.brand}>
-          <Image source={require('../../assets/logo-mark.png')} style={styles.brandLogo} resizeMode="contain" />
-          <Text style={styles.logo}>Tidix</Text>
+          <Image
+            source={scheme === 'dark' ? require('../../assets/logo-mark-white.png') : require('../../assets/logo-mark.png')}
+            style={styles.brandLogo}
+            resizeMode="contain"
+          />
+          <Image
+            source={scheme === 'dark' ? require('../../assets/wordmark-white.png') : require('../../assets/wordmark-green.png')}
+            style={styles.brandWordmark}
+            resizeMode="contain"
+          />
         </View>
         <Text style={styles.subtitle}>{t('auth.login.subtitle')}</Text>
 
@@ -77,8 +85,8 @@ function createStyles(COLORS: ColorPalette) {
     flex: { flex: 1, backgroundColor: COLORS.bg },
     container: { flexGrow: 1, justifyContent: 'center', padding: 24, gap: 24, ...webCentered },
     brand: { alignItems: 'center', gap: 8 },
-    brandLogo: { width: 64, height: 64 },
-    logo: { fontSize: 24, fontWeight: '800', color: COLORS.ink, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 0.5 },
+    brandLogo: { width: 72, height: 72 },
+    brandWordmark: { width: 176, height: 55 },
     subtitle: { fontSize: 14, color: COLORS.inkSoft, textAlign: 'center' },
     form: { gap: 16 },
     error: { color: COLORS.danger, fontSize: 13 },

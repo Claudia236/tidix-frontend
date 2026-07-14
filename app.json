@@ -24,7 +24,10 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "bundler": "metro"
+      "bundler": "metro",
+      "lang": "it",
+      "themeColor": "#EDEFE9",
+      "description": "Gestione scorte, lista della spesa, pulizie e spese di casa"
     },
     "plugins": [
       "expo-router",

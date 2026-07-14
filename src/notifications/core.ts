@@ -1,7 +1,9 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import { secureStorage } from '../api/secureStorage';
 
 export const CHANNEL_ID = 'reminders';
+const ENABLED_PREF_KEY = 'notificationsEnabledPref';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -37,6 +39,24 @@ export async function getNotificationPermissionStatus(): Promise<NotificationPer
   if (current.granted) return 'granted';
   if (current.canAskAgain === false) return 'denied';
   return 'undetermined';
+}
+
+/**
+ * Preferenza locale (separata dal permesso di sistema) che permette
+ * all'utente di disattivare i promemoria dall'app pur avendo concesso il
+ * permesso: di default sono attivi.
+ */
+export async function getNotificationsEnabledPref(): Promise<boolean> {
+  if (Platform.OS === 'web') return false;
+  const value = await secureStorage.getItemAsync(ENABLED_PREF_KEY);
+  return value !== 'false';
+}
+
+export async function setNotificationsEnabledPref(enabled: boolean): Promise<void> {
+  await secureStorage.setItemAsync(ENABLED_PREF_KEY, enabled ? 'true' : 'false');
+  if (!enabled) {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+  }
 }
 
 export async function ensureChannel(channelName: string) {

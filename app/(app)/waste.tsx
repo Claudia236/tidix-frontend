@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useMemo } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { wasteApi } from '../../src/api/waste';
 import { showAlert } from '../../src/components/AppAlert';
@@ -17,6 +18,7 @@ export default function WasteScreen() {
   const { colors } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const wasteTypes = useWasteTypes();
   const daysOfWeek = useDaysOfWeek();
   const schedulesQuery = useQuery({ queryKey: ['waste-schedules'], queryFn: wasteApi.list });
@@ -46,7 +48,10 @@ export default function WasteScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={[styles.content, webCentered]}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[styles.content, webCentered, { paddingBottom: 60 + insets.bottom }]}
+    >
       <Text style={styles.intro}>{t('waste.intro')}</Text>
 
       {wasteTypes.map((w) => {

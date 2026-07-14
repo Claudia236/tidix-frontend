@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cleaningApi } from '../../src/api/cleaning';
 import { getErrorMessage } from '../../src/api/client';
 import { showAlert } from '../../src/components/AppAlert';
@@ -22,6 +23,7 @@ export default function CleaningScreen() {
   const { colors } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const cleaningSuggestions = useCleaningSuggestions();
   const tasksQuery = useQuery({ queryKey: ['cleaning-tasks'], queryFn: cleaningApi.list });
 
@@ -161,7 +163,7 @@ export default function CleaningScreen() {
       <FlatList
         data={tasks}
         keyExtractor={(task) => task.id}
-        contentContainerStyle={[styles.list, webCentered]}
+        contentContainerStyle={[styles.list, webCentered, { paddingBottom: 20 + insets.bottom }]}
         ListEmptyComponent={
           <EmptyState
             icon="sparkles-outline"

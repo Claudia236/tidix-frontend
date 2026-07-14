@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useCategories } from '../constants/domain';
+import { useSelectableCategories } from '../constants/domain';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
@@ -16,7 +16,7 @@ interface Props {
 export function CategoryPickerModal({ visible, title, onSelect, onClose }: Props) {
   const { colors } = useTheme();
   const { t } = useI18n();
-  const categories = useCategories();
+  const categories = useSelectableCategories();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Image, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { cleaningApi } from '../../../src/api/cleaning';
 import { getErrorMessage } from '../../../src/api/client';
@@ -150,6 +150,7 @@ export default function OverviewScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={<RefreshControl refreshing={summaryQuery.isFetching} onRefresh={refresh} />}
@@ -185,7 +186,9 @@ export default function OverviewScreen() {
             <View style={styles.detailCard}>
               <View style={styles.detailCardHeader}>
                 <Text style={styles.detailCardTitle}>{t('overview.openedCard.title')}</Text>
-                <Text style={styles.detailCardCount}>{openedItems.length}</Text>
+                <Text style={[styles.detailCardCount, openedItems.length > 0 && { color: colors.gold }]}>
+                  {openedItems.length}
+                </Text>
               </View>
               {openedItems.length === 0 ? (
                 <Text style={styles.detailCardEmpty}>{t('overview.openedCard.allGood')}</Text>
@@ -232,7 +235,7 @@ export default function OverviewScreen() {
             <View style={styles.detailCard}>
               <View style={styles.detailCardHeader}>
                 <Text style={styles.detailCardTitle}>{t('overview.cleaningDueSection')}</Text>
-                <Text style={[styles.detailCardCount, overdueCleaning.length > 0 && { color: colors.danger }]}>
+                <Text style={[styles.detailCardCount, overdueCleaning.length > 0 && { color: colors.info }]}>
                   {overdueCleaning.length}
                 </Text>
               </View>
@@ -340,6 +343,7 @@ export default function OverviewScreen() {
           </View>
         ) : null}
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -347,6 +351,7 @@ export default function OverviewScreen() {
 function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: COLORS.bg },
+    flex: { flex: 1 },
     container: { padding: 20, gap: 16, paddingBottom: 120, ...webCentered },
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     headerLogo: { width: 34, height: 34 },

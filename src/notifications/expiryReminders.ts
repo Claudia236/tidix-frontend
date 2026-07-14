@@ -2,7 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import type { TranslateFn } from '../i18n/I18nContext';
 import type { Item } from '../types';
-import { CHANNEL_ID, cancelByPrefix, ensureChannel, ensureNotificationPermissions } from './core';
+import { CHANNEL_ID, cancelByPrefix, ensureChannel, ensureNotificationPermissions, getNotificationsEnabledPref } from './core';
 
 const REMINDER_HOUR = 9;
 const REMINDER_MINUTE = 0;
@@ -17,6 +17,7 @@ export async function syncExpiryReminders(items: Item[], t: TranslateFn): Promis
 
   const granted = await ensureNotificationPermissions();
   if (!granted) return;
+  if (!(await getNotificationsEnabledPref())) return;
 
   await ensureChannel(t('notif.channelName'));
   await cancelByPrefix(PREFIX);

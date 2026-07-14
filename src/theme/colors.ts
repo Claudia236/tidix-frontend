@@ -14,6 +14,8 @@ export interface ColorPalette {
   dangerBg: string;
   gold: string;
   goldBg: string;
+  info: string;
+  infoBg: string;
   okBg: string;
   line: string;
   white: string;
@@ -64,6 +66,8 @@ export function buildPalette(scheme: ColorScheme): ColorPalette {
       dangerBg: '#3A211D',
       gold: '#D9B463',
       goldBg: '#3A311D',
+      info: '#7AB6E8',
+      infoBg: '#1C2C3A',
       okBg: '#232B26',
       line: '#3A4448',
       white: '#FFFFFF',
@@ -86,6 +90,8 @@ export function buildPalette(scheme: ColorScheme): ColorPalette {
     dangerBg: '#F6E2DE',
     gold: '#B98A2E',
     goldBg: '#F5EAD3',
+    info: '#2F6FA8',
+    infoBg: '#E1EDF5',
     okBg: '#E4E7DF',
     line: '#DCDFD6',
     white: '#FFFFFF',

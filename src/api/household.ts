@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { HouseholdResponse } from '../types';
+import type { Category, HouseholdResponse } from '../types';
 
 export const householdApi = {
   create: (name: string) =>
@@ -17,4 +17,10 @@ export const householdApi = {
 
   removeMember: (memberId: string) =>
     apiClient.delete(`/api/households/members/${memberId}`).then(() => undefined),
+
+  transferOwnership: (memberId: string) =>
+    apiClient.put<HouseholdResponse>('/api/households/owner', { memberId }).then((r) => r.data),
+
+  updateDisabledCategories: (disabledCategories: Category[]) =>
+    apiClient.put<HouseholdResponse>('/api/households/categories', { disabledCategories }).then((r) => r.data),
 };

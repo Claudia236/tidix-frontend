@@ -8,7 +8,7 @@ import { shoppingNotesApi } from '../../../src/api/shoppingNotes';
 import { showAlert } from '../../../src/components/AppAlert';
 import { PrimaryButton } from '../../../src/components/PrimaryButton';
 import { TextField } from '../../../src/components/TextField';
-import { useCategories } from '../../../src/constants/domain';
+import { useSelectableCategories } from '../../../src/constants/domain';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
@@ -21,7 +21,7 @@ export default function NewShoppingNoteScreen() {
   const { colors } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const categories = useCategories();
+  const categories = useSelectableCategories();
 
   const [name, setName] = useState('');
   const [detail, setDetail] = useState('');

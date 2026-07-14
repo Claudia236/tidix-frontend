@@ -26,7 +26,7 @@ export default function MoreScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={styles.container}>
-        <SectionTitle>{t('more.title')}</SectionTitle>
+        <SectionTitle logo>{t('more.title')}</SectionTitle>
 
         <View style={styles.list}>
           {entries.map((entry) => (

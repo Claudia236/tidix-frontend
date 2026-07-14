@@ -85,10 +85,13 @@ export default function ShoppingScreen() {
       byCategory.get(cat)!.push({ key: `note-${note.id}`, type: 'note', data: note });
     }
 
+    const rowName = (row: ToBuyRow) => (row.type === 'item' ? row.data.name : row.type === 'note' ? row.data.text : '');
+
     const rows: ToBuyRow[] = [];
     for (const cat of categories) {
       const group = byCategory.get(cat.key);
       if (group && group.length > 0) {
+        group.sort((a, b) => rowName(a).localeCompare(rowName(b), undefined, { sensitivity: 'base' }));
         rows.push({ key: `header-${cat.key}`, type: 'header', category: cat.key });
         rows.push(...group);
       }

@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../../src/api/client';
 import { itemsApi } from '../../../src/api/items';
 import { showAlert } from '../../../src/components/AppAlert';
+import { useCategories, findCategoryInfo } from '../../../src/constants/domain';
 import { EmptyState } from '../../../src/components/EmptyState';
 import { ItemCard } from '../../../src/components/ItemCard';
 import { RestockDialog } from '../../../src/components/RestockDialog';
@@ -16,7 +17,9 @@ import { useI18n } from '../../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import { webCentered } from '../../../src/theme/responsive';
-import type { Item, ItemInput } from '../../../src/types';
+import type { Category, Item, ItemInput } from '../../../src/types';
+
+type StockRow = { key: string; type: 'header'; category: Category; count: number } | { key: string; type: 'item'; data: Item };
 
 export default function StockScreen() {
   const router = useRouter();
@@ -26,10 +29,21 @@ export default function StockScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const params = useLocalSearchParams<{ storageLocationId?: string }>();
   const { locations, byId } = useStorageLocations();
+  const categories = useCategories();
   const [filterLocationId, setFilterLocationId] = useState<string>('TUTTI');
   const [search, setSearch] = useState('');
   const [onlyOpened, setOnlyOpened] = useState(false);
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<Category>>(new Set());
+
+  function toggleCategoryCollapsed(category: Category) {
+    setCollapsedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(category)) next.delete(category);
+      else next.add(category);
+      return next;
+    });
+  }
 
   const filters = useMemo(
     () => [{ key: 'TUTTI', label: t('stock.filterAll'), emoji: '📋' }, ...locations.map((l) => ({ key: l.id, label: l.name, emoji: l.emoji }))],
@@ -127,6 +141,28 @@ export default function StockScreen() {
   }, [itemsQuery.data, onlyOpened]);
   const openedCount = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.opened).length, [allItemsQuery.data]);
 
+  // Il backend restituisce gia' gli item ordinati per nome: qui li raggruppiamo
+  // solo per categoria (nell'ordine delle categorie) senza toccare l'ordine
+  // alfabetico all'interno di ciascun gruppo.
+  const stockRows: StockRow[] = useMemo(() => {
+    const byCategory = new Map<Category, Item[]>();
+    for (const item of items) {
+      if (!byCategory.has(item.category)) byCategory.set(item.category, []);
+      byCategory.get(item.category)!.push(item);
+    }
+
+    const rows: StockRow[] = [];
+    for (const cat of categories) {
+      const group = byCategory.get(cat.key);
+      if (!group || group.length === 0) continue;
+      rows.push({ key: `header-${cat.key}`, type: 'header', category: cat.key, count: group.length });
+      if (!collapsedCategories.has(cat.key)) {
+        rows.push(...group.map((item) => ({ key: `item-${item.id}`, type: 'item' as const, data: item })));
+      }
+    }
+    return rows;
+  }, [items, categories, collapsedCategories]);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
@@ -176,8 +212,8 @@ export default function StockScreen() {
         </ScrollView>
 
         <FlatList
-          data={items}
-          keyExtractor={(item) => item.id}
+          data={stockRows}
+          keyExtractor={(row) => row.key}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             <EmptyState
@@ -186,14 +222,30 @@ export default function StockScreen() {
               subtitle={t('stock.emptySubtitle')}
             />
           }
-          renderItem={({ item }) => (
-            <ItemCard
-              item={item}
-              location={byId.get(item.storageLocationId)}
-              onAdjust={(delta) => handleAdjust(item, delta)}
-              onPress={() => router.push({ pathname: '/(app)/item/[id]', params: { id: item.id } })}
-            />
-          )}
+          renderItem={({ item: row }) => {
+            if (row.type === 'header') {
+              const info = findCategoryInfo(categories, row.category);
+              const collapsed = collapsedCategories.has(row.category);
+              return (
+                <Pressable style={styles.categoryHeader} onPress={() => toggleCategoryCollapsed(row.category)}>
+                  <Text style={styles.categoryHeaderText}>
+                    {info.emoji} {info.label} ({row.count})
+                  </Text>
+                  <Ionicons name={collapsed ? 'chevron-down' : 'chevron-up'} size={16} color={colors.inkSoft} />
+                </Pressable>
+              );
+            }
+
+            const item = row.data;
+            return (
+              <ItemCard
+                item={item}
+                location={byId.get(item.storageLocationId)}
+                onAdjust={(delta) => handleAdjust(item, delta)}
+                onPress={() => router.push({ pathname: '/(app)/item/[id]', params: { id: item.id } })}
+              />
+            );
+          }}
         />
       </View>
 
@@ -257,5 +309,20 @@ function createStyles(COLORS: ColorPalette) {
     filterChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
     filterChipTextActive: { color: COLORS.white },
     list: { paddingBottom: 120, paddingTop: 4 },
+    categoryHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: 10,
+      marginBottom: 6,
+      paddingVertical: 2,
+    },
+    categoryHeaderText: {
+      fontSize: 12,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
+      color: COLORS.inkSoft,
+    },
   });
 }

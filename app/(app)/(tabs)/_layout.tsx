@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs, usePathname } from 'expo-router';
+import { Tabs, useRouter, usePathname } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
@@ -11,9 +11,12 @@ import { webCentered } from '../../../src/theme/responsive';
 
 export default function TabsLayout() {
   const pathname = usePathname();
+  const router = useRouter();
   const { colors } = useTheme();
   const { t } = useI18n();
-  const showFab = pathname === '/' || pathname.endsWith('/stock');
+  const isOverview = pathname === '/';
+  const isStock = pathname.endsWith('/stock');
+  const isShopping = pathname.endsWith('/shopping');
 
   const { data: shoppingList } = useQuery({
     queryKey: ['items', 'shopping-list'],
@@ -62,7 +65,42 @@ export default function TabsLayout() {
             }}
           />
         </Tabs>
-        {showFab ? <AddFab /> : null}
+        {isStock ? <AddFab onPress={() => router.push('/(app)/item/new')} /> : null}
+        {isShopping ? <AddFab onPress={() => router.push('/(app)/shopping-note/new')} /> : null}
+        {isOverview ? (
+          <AddFab
+            actions={[
+              {
+                key: 'stock',
+                icon: 'cube-outline',
+                label: t('overview.fab.addStockItem'),
+                color: colors.brand,
+                onPress: () => router.push('/(app)/item/new'),
+              },
+              {
+                key: 'shopping',
+                icon: 'cart-outline',
+                label: t('overview.fab.addShoppingNote'),
+                color: '#3E7FBF',
+                onPress: () => router.push('/(app)/shopping-note/new'),
+              },
+              {
+                key: 'cleaning',
+                icon: 'sparkles-outline',
+                label: t('overview.fab.addCleaningTask'),
+                color: '#C4571F',
+                onPress: () => router.push({ pathname: '/(app)/cleaning', params: { openForm: '1' } }),
+              },
+              {
+                key: 'expense',
+                icon: 'cash-outline',
+                label: t('overview.fab.addExpense'),
+                color: '#3F6B52',
+                onPress: () => router.push({ pathname: '/(app)/expenses', params: { openForm: '1' } }),
+              },
+            ]}
+          />
+        ) : null}
       </View>
     </View>
   );

@@ -7,7 +7,11 @@ export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080
 
 export const TOKEN_KEY = 'ld_auth_token';
 
-export const apiClient = axios.create({ baseURL: API_URL });
+// Timeout generoso: il backend su Render (piano free) puo' impiegare svariate
+// decine di secondi a "risvegliarsi" dopo un periodo di inattivita'. Senza un
+// timeout la richiesta resterebbe appesa a tempo indeterminato, lasciando la
+// schermata di caricamento iniziale bloccata sullo schermo vuoto.
+export const apiClient = axios.create({ baseURL: API_URL, timeout: 45000 });
 
 let currentToken: string | null = null;
 

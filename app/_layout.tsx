@@ -3,6 +3,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { queryClient } from '../src/api/queryClient';
@@ -40,6 +41,7 @@ function ThemedStatusBar() {
 
 function RootNavigator() {
   const { user, loading } = useAuth();
+  const { colors } = useTheme();
 
   useEffect(() => {
     if (!loading) {
@@ -47,7 +49,17 @@ function RootNavigator() {
     }
   }, [loading]);
 
-  if (loading) return null;
+  if (loading) {
+    // Non lasciare mai lo schermo completamente vuoto: se lo splash screen
+    // nativo si nasconde da solo prima che la richiesta iniziale (che puo'
+    // impiegare parecchi secondi se il backend su Render si sta "risvegliando")
+    // sia completata, mostriamo comunque un indicatore invece di nulla.
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
+        <ActivityIndicator color={colors.brand} />
+      </View>
+    );
+  }
 
   const isLoggedIn = !!user;
   const hasHousehold = !!user?.householdId;

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
@@ -29,12 +29,13 @@ interface Props {
   bottom?: number;
 }
 
-export function AddFab({ onPress, icon = 'add', actions, bottom = 116 }: Props) {
+export function AddFab({ onPress, icon = 'add', actions, bottom }: Props) {
   const router = useRouter();
   const { colors, scheme } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [open, setOpen] = useState(false);
+  const resolvedBottom = bottom ?? 116 + insets.bottom;
 
   if (actions && actions.length > 0) {
     const backdropBottom = TAB_BAR_HEIGHT + insets.bottom;
@@ -45,6 +46,7 @@ export function AddFab({ onPress, icon = 'add', actions, bottom = 116 }: Props) 
             <BlurView
               intensity={35}
               tint={scheme === 'dark' ? 'dark' : 'light'}
+              blurMethod={Platform.OS === 'android' ? 'dimezisBlurView' : undefined}
               style={[styles.backdrop, { bottom: backdropBottom }]}
             />
             <Pressable style={[styles.backdrop, { bottom: backdropBottom }]} onPress={() => setOpen(false)} />
@@ -54,7 +56,7 @@ export function AddFab({ onPress, icon = 'add', actions, bottom = 116 }: Props) 
           ? actions.map((action, i) => (
               <Pressable
                 key={action.key}
-                style={[styles.menuAction, { bottom: bottom + 58 * (i + 1), right: 20 }]}
+                style={[styles.menuAction, { bottom: resolvedBottom + 58 * (i + 1), right: 20 }]}
                 onPress={() => {
                   setOpen(false);
                   action.onPress();
@@ -67,7 +69,7 @@ export function AddFab({ onPress, icon = 'add', actions, bottom = 116 }: Props) 
               </Pressable>
             ))
           : null}
-        <Pressable style={[styles.fab, { bottom, right: 20 }]} onPress={() => setOpen((v) => !v)}>
+        <Pressable style={[styles.fab, { bottom: resolvedBottom, right: 20 }]} onPress={() => setOpen((v) => !v)}>
           <Ionicons name={open ? 'close' : 'add'} size={22} color={colors.white} />
         </Pressable>
       </View>
@@ -76,7 +78,7 @@ export function AddFab({ onPress, icon = 'add', actions, bottom = 116 }: Props) 
 
   return (
     <Pressable
-      style={[styles.fab, { bottom, right: 20 }]}
+      style={[styles.fab, { bottom: resolvedBottom, right: 20 }]}
       onPress={onPress ?? (() => router.push('/(app)/item/new'))}
     >
       <Ionicons name={icon} size={22} color={colors.white} />

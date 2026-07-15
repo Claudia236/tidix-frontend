@@ -186,98 +186,96 @@ export default function OverviewScreen() {
 
         <SectionTitle>{t('overview.title')}</SectionTitle>
 
-        {totalCount === 0 ? (
+        <View style={styles.detailCard}>
+          <View style={styles.detailCardHeader}>
+            <Text style={styles.detailCardTitle}>{t('overview.openedCard.title')}</Text>
+            <Text style={[styles.detailCardCount, openedItems.length > 0 && { color: colors.gold }]}>
+              {openedItems.length}
+            </Text>
+          </View>
+          {openedItems.length === 0 ? (
+            <Text style={styles.detailCardEmpty}>{t('overview.openedCard.allGood')}</Text>
+          ) : (
+            <View style={styles.detailCardList}>
+              {openedItems.map((item) => (
+                <Pressable key={item.id} style={styles.detailRow} onPress={() => goToItem(item)}>
+                  <Text style={styles.detailRowText} numberOfLines={1}>{item.name}</Text>
+                  {item.openedDate ? (
+                    <Text style={styles.detailRowMeta}>
+                      {t('itemCard.openedOn', { date: formatShortDate(item.openedDate, language) })}
+                    </Text>
+                  ) : null}
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.detailCard}>
+          <View style={styles.detailCardHeader}>
+            <Text style={styles.detailCardTitle}>{t('overview.expiringCard.title')}</Text>
+            <Text style={[styles.detailCardCount, expiringItems.length > 0 && { color: colors.danger }]}>
+              {expiringItems.length}
+            </Text>
+          </View>
+          {expiringItems.length === 0 ? (
+            <Text style={styles.detailCardEmpty}>{t('overview.expiringCard.allGood')}</Text>
+          ) : (
+            <View style={styles.detailCardList}>
+              {expiringItems.map((item) => {
+                const info = getExpiryInfo(item.expirationDate, t, language);
+                return (
+                  <Pressable key={item.id} style={styles.detailRow} onPress={() => goToItem(item)}>
+                    <Text style={styles.detailRowText} numberOfLines={1}>{item.name}</Text>
+                    {info ? <Text style={styles.detailRowMeta}>{info.label}</Text> : null}
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.detailCard}>
+          <View style={styles.detailCardHeader}>
+            <Text style={styles.detailCardTitle}>{t('overview.cleaningDueSection')}</Text>
+            <Text style={[styles.detailCardCount, overdueCleaning.length > 0 && { color: colors.info }]}>
+              {overdueCleaning.length}
+            </Text>
+          </View>
+          {overdueCleaning.length === 0 ? (
+            <Text style={styles.detailCardEmpty}>{t('overview.cleaningCard.allGood')}</Text>
+          ) : (
+            <View style={styles.detailCardList}>
+              {overdueCleaning.map((task) => (
+                <Pressable key={task.id} style={styles.detailRow} onPress={() => router.push('/(app)/cleaning')}>
+                  <Text style={styles.detailRowText} numberOfLines={1}>{task.name}</Text>
+                  <Text style={styles.detailRowMeta}>
+                    {task.daysSinceCleaned === null
+                      ? t('overview.cleaningNeverCleaned')
+                      : t('overview.cleaningCleanedDaysAgo', { n: task.daysSinceCleaned })}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </View>
+
+        {shoppingCount > 0 && (
+          <Pressable style={styles.shoppingLink} onPress={() => router.push('/(app)/(tabs)/shopping')}>
+            <View style={styles.shoppingLinkLeft}>
+              <Ionicons name="cart-outline" size={18} color={colors.brand} />
+              <Text style={styles.shoppingLinkText}>{t('overview.shoppingLink', { n: shoppingCount })}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
+          </Pressable>
+        )}
+
+        {totalCount === 0 && (
           <EmptyState
             icon="cube-outline"
             title={t('overview.emptyTitle')}
             subtitle={t('overview.emptySubtitle')}
           />
-        ) : (
-          <>
-            <View style={styles.detailCard}>
-              <View style={styles.detailCardHeader}>
-                <Text style={styles.detailCardTitle}>{t('overview.openedCard.title')}</Text>
-                <Text style={[styles.detailCardCount, openedItems.length > 0 && { color: colors.gold }]}>
-                  {openedItems.length}
-                </Text>
-              </View>
-              {openedItems.length === 0 ? (
-                <Text style={styles.detailCardEmpty}>{t('overview.openedCard.allGood')}</Text>
-              ) : (
-                <View style={styles.detailCardList}>
-                  {openedItems.map((item) => (
-                    <Pressable key={item.id} style={styles.detailRow} onPress={() => goToItem(item)}>
-                      <Text style={styles.detailRowText} numberOfLines={1}>{item.name}</Text>
-                      {item.openedDate ? (
-                        <Text style={styles.detailRowMeta}>
-                          {t('itemCard.openedOn', { date: formatShortDate(item.openedDate, language) })}
-                        </Text>
-                      ) : null}
-                    </Pressable>
-                  ))}
-                </View>
-              )}
-            </View>
-
-            <View style={styles.detailCard}>
-              <View style={styles.detailCardHeader}>
-                <Text style={styles.detailCardTitle}>{t('overview.expiringCard.title')}</Text>
-                <Text style={[styles.detailCardCount, expiringItems.length > 0 && { color: colors.danger }]}>
-                  {expiringItems.length}
-                </Text>
-              </View>
-              {expiringItems.length === 0 ? (
-                <Text style={styles.detailCardEmpty}>{t('overview.expiringCard.allGood')}</Text>
-              ) : (
-                <View style={styles.detailCardList}>
-                  {expiringItems.map((item) => {
-                    const info = getExpiryInfo(item.expirationDate, t, language);
-                    return (
-                      <Pressable key={item.id} style={styles.detailRow} onPress={() => goToItem(item)}>
-                        <Text style={styles.detailRowText} numberOfLines={1}>{item.name}</Text>
-                        {info ? <Text style={styles.detailRowMeta}>{info.label}</Text> : null}
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              )}
-            </View>
-
-            <View style={styles.detailCard}>
-              <View style={styles.detailCardHeader}>
-                <Text style={styles.detailCardTitle}>{t('overview.cleaningDueSection')}</Text>
-                <Text style={[styles.detailCardCount, overdueCleaning.length > 0 && { color: colors.info }]}>
-                  {overdueCleaning.length}
-                </Text>
-              </View>
-              {overdueCleaning.length === 0 ? (
-                <Text style={styles.detailCardEmpty}>{t('overview.cleaningCard.allGood')}</Text>
-              ) : (
-                <View style={styles.detailCardList}>
-                  {overdueCleaning.map((task) => (
-                    <Pressable key={task.id} style={styles.detailRow} onPress={() => router.push('/(app)/cleaning')}>
-                      <Text style={styles.detailRowText} numberOfLines={1}>{task.name}</Text>
-                      <Text style={styles.detailRowMeta}>
-                        {task.daysSinceCleaned === null
-                          ? t('overview.cleaningNeverCleaned')
-                          : t('overview.cleaningCleanedDaysAgo', { n: task.daysSinceCleaned })}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              )}
-            </View>
-
-            {shoppingCount > 0 && (
-              <Pressable style={styles.shoppingLink} onPress={() => router.push('/(app)/(tabs)/shopping')}>
-                <View style={styles.shoppingLinkLeft}>
-                  <Ionicons name="cart-outline" size={18} color={colors.brand} />
-                  <Text style={styles.shoppingLinkText}>{t('overview.shoppingLink', { n: shoppingCount })}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
-              </Pressable>
-            )}
-          </>
         )}
 
         <SectionTitle small>{t('zone.title')}</SectionTitle>

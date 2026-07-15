@@ -6,15 +6,19 @@ import { useTheme } from '../theme/ThemeContext';
 interface Props extends TextInputProps {
   label: string;
   error?: string;
+  labelExtra?: React.ReactNode;
 }
 
-export function TextField({ label, error, style, ...rest }: Props) {
+export function TextField({ label, error, labelExtra, style, ...rest }: Props) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <View style={styles.labelRow}>
+        <Text style={styles.label}>{label}</Text>
+        {labelExtra}
+      </View>
       <TextInput
         placeholderTextColor={colors.inkSoft}
         style={[styles.input, error ? styles.inputError : null, style]}
@@ -28,13 +32,13 @@ export function TextField({ label, error, style, ...rest }: Props) {
 function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
     container: { width: '100%' },
+    labelRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
     label: {
       fontSize: 12,
       fontWeight: '700',
       textTransform: 'uppercase',
       letterSpacing: 0.4,
       color: COLORS.inkSoft,
-      marginBottom: 6,
     },
     input: {
       borderWidth: 1,

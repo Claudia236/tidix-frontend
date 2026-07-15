@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { storageLocationsApi } from '../api/storageLocations';
 import { CONSUME_WITHIN_DAYS_CATEGORIES, useSelectableCategories, useLocationColor, useUnitLabel, UNITS } from '../constants/domain';
 import { useStorageLocations } from '../hooks/useStorageLocations';
@@ -11,6 +12,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { webCentered } from '../theme/responsive';
 import type { Category, ItemInput, Unit } from '../types';
 import { daysUntil, toLocalISODate, todayLocalISODate } from '../utils/expiry';
+import { showAlert } from './AppAlert';
 import { DatePickerField } from './DatePickerField';
 import { PrimaryButton } from './PrimaryButton';
 import { TextField } from './TextField';
@@ -27,6 +29,7 @@ interface Props {
 export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete, deleting }: Props) {
   const { colors } = useTheme();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const queryClient = useQueryClient();
   const { locations } = useStorageLocations();
@@ -103,7 +106,10 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      contentContainerStyle={[styles.container, { paddingBottom: 40 + insets.bottom }]}
+      keyboardShouldPersistTaps="handled"
+    >
       <TextField label={t('itemForm.name.label')} placeholder={t('itemForm.name.placeholder')} value={name} onChangeText={setName} autoFocus />
 
       <View style={styles.field}>
@@ -219,6 +225,16 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
           <>
             <TextField
               label={t('itemForm.consumeWithinDays.label')}
+              labelExtra={
+                <Pressable
+                  hitSlop={8}
+                  onPress={() =>
+                    showAlert(t('itemForm.consumeWithinDays.guideTitle'), t(`itemForm.consumeWithinDays.guide.${category}`))
+                  }
+                >
+                  <Ionicons name="information-circle-outline" size={16} color={colors.brand} />
+                </Pressable>
+              }
               placeholder={t('itemForm.consumeWithinDays.placeholder')}
               keyboardType="numeric"
               value={consumeWithinDays}

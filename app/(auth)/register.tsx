@@ -1,6 +1,6 @@
 import { Link } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { getErrorMessage } from '../../src/api/client';
 import { PasswordField } from '../../src/components/PasswordField';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
@@ -13,7 +13,7 @@ import { webCentered } from '../../src/theme/responsive';
 
 export default function RegisterScreen() {
   const { register } = useAuth();
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [name, setName] = useState('');
@@ -37,6 +37,11 @@ export default function RegisterScreen() {
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <Image
+          source={scheme === 'dark' ? require('../../assets/logo-mark-white.png') : require('../../assets/logo-mark.png')}
+          style={styles.brandLogo}
+          resizeMode="contain"
+        />
         <Text style={styles.logo}>{t('auth.register.title')}</Text>
         <Text style={styles.subtitle}>{t('auth.register.subtitle')}</Text>
 
@@ -77,6 +82,7 @@ function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
     flex: { flex: 1, backgroundColor: COLORS.bg },
     container: { flexGrow: 1, justifyContent: 'center', padding: 24, gap: 24, ...webCentered },
+    brandLogo: { width: 64, height: 64, alignSelf: 'center', marginBottom: -12 },
     logo: { fontSize: 22, fontWeight: '800', color: COLORS.ink, textAlign: 'center' },
     subtitle: { fontSize: 14, color: COLORS.inkSoft, textAlign: 'center' },
     form: { gap: 16 },

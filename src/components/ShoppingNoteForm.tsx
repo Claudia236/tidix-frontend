@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelectableCategories } from '../constants/domain';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
@@ -28,6 +29,7 @@ interface Props {
 export function ShoppingNoteForm({ initial, submitLabel, submitting, onSubmit, onDelete, deleting }: Props) {
   const { colors } = useTheme();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const categories = useSelectableCategories();
 
@@ -36,7 +38,11 @@ export function ShoppingNoteForm({ initial, submitLabel, submitting, onSubmit, o
   const [category, setCategory] = useState<Category | null>(initial?.category ?? null);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[styles.content, { paddingBottom: 48 + insets.bottom }]}
+      keyboardShouldPersistTaps="handled"
+    >
       <TextField
         label={t('shoppingNote.new.nameLabel')}
         placeholder={t('shoppingNote.new.namePlaceholder')}

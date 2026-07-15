@@ -179,7 +179,7 @@ const ENTRIES: Record<string, EntryTriple> = {
 
   // ItemForm
   'itemForm.name.label': { it: 'Nome prodotto', en: 'Product name', es: 'Nombre del producto' },
-  'itemForm.name.placeholder': { it: 'Es. Latte intero', en: 'e.g. Whole milk', es: 'ej. Leche entera' },
+  'itemForm.name.placeholder': { it: 'Es. Ceci', en: 'e.g. Chickpeas', es: 'ej. Garbanzos' },
   'itemForm.location.label': { it: 'Dove si trova', en: 'Where is it', es: 'Dónde está' },
   'itemForm.newLocation': { it: 'Nuova posizione', en: 'New location', es: 'Nueva ubicación' },
   'itemForm.newLocation.namePlaceholder': { it: 'Es. Cantina', en: 'e.g. Cellar', es: 'ej. Bodega' },
@@ -199,15 +199,30 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: "Product without a printed expiry date: enter how many days until it should be consumed, it'll be used as a reminder.",
     es: 'Producto sin fecha de caducidad impresa: indica en cuántos días debe consumirse, se usará como recordatorio.',
   },
+  'itemForm.consumeWithinDays.guideTitle': {
+    it: 'Quanto si conserva?',
+    en: 'How long does it keep?',
+    es: '¿Cuánto se conserva?',
+  },
+  'itemForm.consumeWithinDays.guide.ORTOFRUTTA': {
+    it: '🥬 Verdura a foglia (insalata, spinaci): 3-5 giorni in frigo\n🍎 Frutta matura (mele, banane, agrumi): 5-7 giorni\n🥕 Ortaggi robusti (carote, zucchine, peperoni): 1-2 settimane in frigo\n🌿 Erbe fresche: 3-5 giorni in frigo\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
+    en: '🥬 Leafy greens (lettuce, spinach): 3-5 days in the fridge\n🍎 Ripe fruit (apples, bananas, citrus): 5-7 days\n🥕 Sturdy vegetables (carrots, zucchini, peppers): 1-2 weeks in the fridge\n🌿 Fresh herbs: 3-5 days in the fridge\n\nThese are indicative values: adjust them based on the product\'s condition.',
+    es: '🥬 Verduras de hoja (lechuga, espinacas): 3-5 días en la nevera\n🍎 Fruta madura (manzanas, plátanos, cítricos): 5-7 días\n🥕 Verduras robustas (zanahorias, calabacines, pimientos): 1-2 semanas en la nevera\n🌿 Hierbas frescas: 3-5 días en la nevera\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
+  },
+  'itemForm.consumeWithinDays.guide.AVANZI': {
+    it: '🍝 Piatti cotti (pasta, riso, carne, pesce): 3-4 giorni in frigo\n🍲 Zuppe e minestre: 3-5 giorni in frigo\n❄️ Se congelati: fino a 2-3 mesi\n\nConserva sempre gli avanzi in un contenitore chiuso e raffreddali entro 2 ore dalla cottura.',
+    en: '🍝 Cooked dishes (pasta, rice, meat, fish): 3-4 days in the fridge\n🍲 Soups and stews: 3-5 days in the fridge\n❄️ If frozen: up to 2-3 months\n\nAlways store leftovers in a closed container and let them cool down within 2 hours of cooking.',
+    es: '🍝 Platos cocinados (pasta, arroz, carne, pescado): 3-4 días en la nevera\n🍲 Sopas y guisos: 3-5 días en la nevera\n❄️ Si están congelados: hasta 2-3 meses\n\nGuarda siempre las sobras en un recipiente cerrado y déjalas enfriar en un plazo de 2 horas tras cocinar.',
+  },
   'itemForm.openedToggle': { it: 'Confezione già aperta', en: 'Package already opened', es: 'Paquete ya abierto' },
   'itemForm.openedDate.label': { it: 'Aperta il', en: 'Opened on', es: 'Abierto el' },
 
   // Overview (Panoramica)
   'overview.title': { it: 'Panoramica', en: 'Overview', es: 'Resumen' },
-  'overview.fab.addStockItem': { it: 'Prodotto in scorte', en: 'Stock item', es: 'Producto en existencias' },
-  'overview.fab.addShoppingNote': { it: 'Prodotto in lista spesa', en: 'Shopping list item', es: 'Producto en lista de compra' },
-  'overview.fab.addCleaningTask': { it: 'Ambiente da pulire', en: 'Room to clean', es: 'Zona a limpiar' },
-  'overview.fab.addExpense': { it: 'Spesa condivisa', en: 'Shared expense', es: 'Gasto compartido' },
+  'overview.fab.addStockItem': { it: 'Aggiungi a scorte', en: 'Add to stock', es: 'Añadir a existencias' },
+  'overview.fab.addShoppingNote': { it: 'Aggiungi a lista spesa', en: 'Add to shopping list', es: 'Añadir a lista de compra' },
+  'overview.fab.addCleaningTask': { it: 'Nuova pulizia', en: 'New cleaning task', es: 'Nueva limpieza' },
+  'overview.fab.addExpense': { it: 'Nuova spesa', en: 'New expense', es: 'Nuevo gasto' },
   'overview.emptyTitle': { it: 'Inizia ad aggiungere i tuoi prodotti', en: 'Start adding your products', es: 'Empieza a añadir tus productos' },
   'overview.emptySubtitle': {
     it: 'Tocca il pulsante + per registrare cosa hai in frigo, freezer, dispensa e nelle altre posizioni.',
@@ -296,9 +311,9 @@ const ENTRIES: Record<string, EntryTriple> = {
   'shoppingNote.new.title': { it: 'Nuovo prodotto', en: 'New product', es: 'Nuevo producto' },
   'shoppingNote.edit.title': { it: 'Modifica prodotto', en: 'Edit product', es: 'Editar producto' },
   'shoppingNote.new.nameLabel': { it: 'Nome', en: 'Name', es: 'Nombre' },
-  'shoppingNote.new.namePlaceholder': { it: 'Es. Latte', en: 'E.g. Milk', es: 'Ej. Leche' },
+  'shoppingNote.new.namePlaceholder': { it: 'Es. Ceci', en: 'E.g. Chickpeas', es: 'Ej. Garbanzos' },
   'shoppingNote.new.detailLabel': { it: 'Quantità / dettagli', en: 'Quantity / details', es: 'Cantidad / detalles' },
-  'shoppingNote.new.detailPlaceholder': { it: 'Es. UHT 2l, 2 confezioni...', en: 'E.g. UHT 2l, 2 packs...', es: 'Ej. UHT 2l, 2 paquetes...' },
+  'shoppingNote.new.detailPlaceholder': { it: 'Es. 2 confezioni...', en: 'E.g. 2 packs...', es: 'Ej. 2 paquetes...' },
   'shoppingNote.new.categoryLabel': { it: 'Categoria (opzionale)', en: 'Category (optional)', es: 'Categoría (opcional)' },
   'shoppingNote.new.saveButton': { it: 'Aggiungi alla lista', en: 'Add to list', es: 'Añadir a la lista' },
   'shoppingNote.confirmDeleteTitle': { it: 'Rimuovi prodotto', en: 'Remove product', es: 'Eliminar producto' },

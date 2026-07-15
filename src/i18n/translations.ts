@@ -223,12 +223,6 @@ const ENTRIES: Record<string, EntryTriple> = {
   'overview.fab.addShoppingNote': { it: 'Aggiungi a lista spesa', en: 'Add to shopping list', es: 'Añadir a lista de compra' },
   'overview.fab.addCleaningTask': { it: 'Nuova pulizia', en: 'New cleaning task', es: 'Nueva limpieza' },
   'overview.fab.addExpense': { it: 'Nuova spesa', en: 'New expense', es: 'Nuevo gasto' },
-  'overview.emptyTitle': { it: 'Inizia ad aggiungere i tuoi prodotti', en: 'Start adding your products', es: 'Empieza a añadir tus productos' },
-  'overview.emptySubtitle': {
-    it: 'Tocca il pulsante + per registrare cosa hai in frigo, freezer, dispensa e nelle altre posizioni.',
-    en: 'Tap the + button to record what you have in the fridge, freezer, pantry and other locations.',
-    es: 'Toca el botón + para registrar lo que tienes en la nevera, el congelador, la despensa y otras ubicaciones.',
-  },
   'overview.statProducts': { it: (v) => (v.n === 1 ? 'prodotto' : 'prodotti'), en: (v) => (v.n === 1 ? 'product' : 'products'), es: (v) => (v.n === 1 ? 'producto' : 'productos') },
   'overview.allGood': {
     it: 'Nessuna scadenza imminente. Tutto sotto controllo.',

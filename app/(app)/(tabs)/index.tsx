@@ -10,7 +10,6 @@ import { itemsApi } from '../../../src/api/items';
 import { storageLocationsApi } from '../../../src/api/storageLocations';
 import { wasteApi } from '../../../src/api/waste';
 import { showAlert } from '../../../src/components/AppAlert';
-import { EmptyState } from '../../../src/components/EmptyState';
 import { PrimaryButton } from '../../../src/components/PrimaryButton';
 import { SectionTitle } from '../../../src/components/SectionTitle';
 import { jsWeekdayToDay, wasteTypesCollectedOn } from '../../../src/constants/domain';
@@ -95,11 +94,6 @@ export default function OverviewScreen() {
       { text: t('common.delete'), style: 'destructive', onPress: () => removeZoneMutation.mutate(editingZoneId) },
     ]);
   }
-
-  const totalCount = useMemo(
-    () => (summaryQuery.data ?? []).reduce((sum, z) => sum + z.count, 0),
-    [summaryQuery.data]
-  );
 
   const overdueCleaning = useMemo(
     () => (cleaningQuery.data ?? []).filter((task) => task.overdue),
@@ -268,14 +262,6 @@ export default function OverviewScreen() {
             </View>
             <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
           </Pressable>
-        )}
-
-        {totalCount === 0 && (
-          <EmptyState
-            icon="cube-outline"
-            title={t('overview.emptyTitle')}
-            subtitle={t('overview.emptySubtitle')}
-          />
         )}
 
         <SectionTitle small>{t('zone.title')}</SectionTitle>

@@ -44,7 +44,8 @@ export function AddFab({ onPress, icon = 'add', actions, bottom }: Props) {
         {open ? (
           <>
             <BlurView
-              intensity={35}
+              intensity={100}
+              blurReductionFactor={1}
               tint={scheme === 'dark' ? 'dark' : 'light'}
               blurMethod={Platform.OS === 'android' ? 'dimezisBlurView' : undefined}
               style={[styles.backdrop, { bottom: backdropBottom }]}

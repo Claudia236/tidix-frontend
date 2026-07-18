@@ -3,25 +3,23 @@ import { useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
+import { getErrorMessage } from '../../src/api/client';
 import { itemsApi } from '../../src/api/items';
 import { showAlert } from '../../src/components/AppAlert';
+import { ItemForm } from '../../src/components/ItemForm';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
-import { useSelectableCategories, useLocationColor } from '../../src/constants/domain';
-import { useStorageLocations } from '../../src/hooks/useStorageLocations';
 import { useI18n } from '../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
-import { todayLocalISODate } from '../../src/utils/expiry';
+import type { Category, ItemInput } from '../../src/types';
 import { parseReceiptLines } from '../../src/utils/receiptParser';
-import type { Category } from '../../src/types';
 
 interface ReceiptLine {
   id: string;
   name: string;
-  checked: boolean;
 }
 
 export default function ScanReceiptScreen() {
@@ -31,28 +29,26 @@ export default function ScanReceiptScreen() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { locations } = useStorageLocations();
-  const categories = useSelectableCategories();
-  const getLocationColor = useLocationColor();
 
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [recognizing, setRecognizing] = useState(false);
   const [lines, setLines] = useState<ReceiptLine[]>([]);
-  const [storageLocationId, setStorageLocationId] = useState<string>('');
-  const [category, setCategory] = useState<Category>('ALTRO');
-  const [saving, setSaving] = useState(false);
-
-  const effectiveLocationId = storageLocationId || locations[0]?.id || '';
-  const checkedCount = lines.filter((l) => l.checked && l.name.trim()).length;
+  const [hasRecognized, setHasRecognized] = useState(false);
+  const [editingLine, setEditingLine] = useState<ReceiptLine | null>(null);
+  const [lastCategory, setLastCategory] = useState<Category | undefined>(undefined);
+  const [lastStorageLocationId, setLastStorageLocationId] = useState<string | undefined>(undefined);
+  const [savingItem, setSavingItem] = useState(false);
 
   async function processImage(uri: string) {
     setPhotoUri(uri);
     setRecognizing(true);
     setLines([]);
+    setHasRecognized(false);
     try {
       const result = await TextRecognition.recognize(uri);
       const candidates = parseReceiptLines(result.text);
-      setLines(candidates.map((name, i) => ({ id: `${i}-${name}`, name, checked: true })));
+      setLines(candidates.map((name, i) => ({ id: `${i}-${name}`, name })));
+      setHasRecognized(true);
     } catch {
       showAlert(t('common.error'), t('scanReceipt.recognizeError'));
     } finally {
@@ -87,142 +83,109 @@ export default function ScanReceiptScreen() {
   function reset() {
     setPhotoUri(null);
     setLines([]);
-  }
-
-  function toggleLine(id: string) {
-    setLines((prev) => prev.map((l) => (l.id === id ? { ...l, checked: !l.checked } : l)));
+    setHasRecognized(false);
   }
 
   function updateLineName(id: string, name: string) {
     setLines((prev) => prev.map((l) => (l.id === id ? { ...l, name } : l)));
   }
 
-  async function handleConfirm() {
-    const toAdd = lines.filter((l) => l.checked && l.name.trim());
-    if (toAdd.length === 0 || !effectiveLocationId) return;
-    setSaving(true);
+  function dismissLine(id: string) {
+    setLines((prev) => prev.filter((l) => l.id !== id));
+  }
+
+  async function handleSaveFromForm(input: ItemInput) {
+    if (!editingLine) return;
+    const lineId = editingLine.id;
+    setSavingItem(true);
     try {
-      for (const line of toAdd) {
-        await itemsApi.create({
-          name: line.name.trim(),
-          storageLocationId: effectiveLocationId,
-          category,
-          quantity: 1,
-          unit: 'PZ',
-          expirationDate: null,
-          purchaseDate: todayLocalISODate(),
-        });
-      }
+      const created = await itemsApi.create(input);
       queryClient.invalidateQueries({ queryKey: ['items'] });
-      showAlert(t('common.ok'), t('scanReceipt.addedCount', { n: toAdd.length }));
-      router.back();
-    } catch {
-      showAlert(t('common.error'), t('common.genericError'));
+      setLastCategory(created.category);
+      setLastStorageLocationId(created.storageLocationId);
+      setLines((prev) => prev.filter((l) => l.id !== lineId));
+      setEditingLine(null);
+    } catch (e) {
+      showAlert(t('common.error'), getErrorMessage(e, t));
     } finally {
-      setSaving(false);
+      setSavingItem(false);
     }
   }
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { paddingBottom: 40 + insets.bottom }]}>
-      {!photoUri ? (
-        <>
-          <Text style={styles.intro}>{t('scanReceipt.intro')}</Text>
-          <PrimaryButton label={t('scanReceipt.takePhoto')} onPress={handleTakePhoto} />
-          <PrimaryButton label={t('scanReceipt.pickFromGallery')} variant="secondary" onPress={handlePickFromGallery} />
-        </>
-      ) : (
-        <>
-          <Image source={{ uri: photoUri }} style={styles.preview} resizeMode="cover" />
-          <Pressable onPress={reset}>
-            <Text style={styles.retake}>{t('scanReceipt.retake')}</Text>
-          </Pressable>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: 40 + insets.bottom }]}>
+        {!photoUri ? (
+          <>
+            <Text style={styles.intro}>{t('scanReceipt.intro')}</Text>
+            <PrimaryButton label={t('scanReceipt.takePhoto')} onPress={handleTakePhoto} />
+            <PrimaryButton label={t('scanReceipt.pickFromGallery')} variant="secondary" onPress={handlePickFromGallery} />
+          </>
+        ) : (
+          <>
+            <Image source={{ uri: photoUri }} style={styles.preview} resizeMode="cover" />
+            <Pressable onPress={reset}>
+              <Text style={styles.retake}>{t('scanReceipt.retake')}</Text>
+            </Pressable>
 
-          {recognizing ? (
-            <Text style={styles.recognizing}>{t('scanReceipt.recognizing')}</Text>
-          ) : (
-            <>
-              <View style={styles.field}>
-                <Text style={styles.label}>{t('scanReceipt.locationLabel')}</Text>
-                <View style={styles.grid}>
-                  {locations.map((location) => {
-                    const active = effectiveLocationId === location.id;
-                    const { color } = getLocationColor(location.id);
-                    return (
-                      <Pressable
-                        key={location.id}
-                        onPress={() => setStorageLocationId(location.id)}
-                        style={[styles.chip, { borderColor: active ? color : colors.line, backgroundColor: active ? color : colors.card }]}
-                      >
-                        <Text style={{ fontSize: 14 }}>{location.emoji}</Text>
-                        <Text style={[styles.chipText, { color: active ? colors.white : colors.ink }]}>{location.name}</Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </View>
-
-              <View style={styles.field}>
-                <Text style={styles.label}>{t('scanReceipt.categoryLabel')}</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryRow}>
-                  {categories.map((cat) => {
-                    const active = category === cat.key;
-                    return (
-                      <Pressable
-                        key={cat.key}
-                        onPress={() => setCategory(cat.key)}
-                        style={[styles.categoryChip, active && styles.categoryChipActive]}
-                      >
-                        <Text style={{ fontSize: 16 }}>{cat.emoji}</Text>
-                        <Text style={styles.categoryChipText}>{cat.short}</Text>
-                      </Pressable>
-                    );
-                  })}
-                </ScrollView>
-              </View>
-
+            {recognizing ? (
+              <Text style={styles.recognizing}>{t('scanReceipt.recognizing')}</Text>
+            ) : lines.length === 0 ? (
+              <>
+                <Text style={styles.hint}>{hasRecognized ? t('scanReceipt.allDone') : t('scanReceipt.noItemsFound')}</Text>
+                {hasRecognized ? (
+                  <PrimaryButton label={t('scanReceipt.backToOverview')} variant="secondary" onPress={() => router.back()} />
+                ) : null}
+              </>
+            ) : (
               <View style={styles.field}>
                 <Text style={styles.label}>{t('scanReceipt.itemsTitle')}</Text>
-                {lines.length === 0 ? (
-                  <Text style={styles.hint}>{t('scanReceipt.noItemsFound')}</Text>
-                ) : (
-                  <>
-                    <Text style={styles.hint}>{t('scanReceipt.itemsHint')}</Text>
-                    <View style={styles.lineList}>
-                      {lines.map((line) => (
-                        <View key={line.id} style={styles.lineRow}>
-                          <Pressable
-                            onPress={() => toggleLine(line.id)}
-                            style={[styles.checkbox, line.checked && styles.checkboxChecked]}
-                          >
-                            {line.checked ? <Ionicons name="checkmark" size={14} color={colors.white} /> : null}
-                          </Pressable>
-                          <TextInput
-                            value={line.name}
-                            onChangeText={(v) => updateLineName(line.id, v)}
-                            style={styles.lineInput}
-                            placeholderTextColor={colors.inkSoft}
-                          />
-                        </View>
-                      ))}
+                <Text style={styles.hint}>{t('scanReceipt.itemsHint')}</Text>
+                <View style={styles.lineList}>
+                  {lines.map((line) => (
+                    <View key={line.id} style={styles.lineRow}>
+                      <Pressable onPress={() => dismissLine(line.id)} style={styles.lineIconButton} hitSlop={8}>
+                        <Ionicons name="close" size={18} color={colors.inkSoft} />
+                      </Pressable>
+                      <TextInput
+                        value={line.name}
+                        onChangeText={(v) => updateLineName(line.id, v)}
+                        style={styles.lineInput}
+                        placeholderTextColor={colors.inkSoft}
+                      />
+                      <Pressable onPress={() => setEditingLine(line)} style={styles.lineIconButton} hitSlop={8}>
+                        <Ionicons name="pencil-outline" size={18} color={colors.brand} />
+                      </Pressable>
                     </View>
-                  </>
-                )}
+                  ))}
+                </View>
               </View>
+            )}
+          </>
+        )}
+      </ScrollView>
 
-              {checkedCount > 0 ? (
-                <PrimaryButton
-                  label={t('scanReceipt.confirm', { n: checkedCount })}
-                  onPress={handleConfirm}
-                  loading={saving}
-                  disabled={!effectiveLocationId}
-                />
-              ) : null}
-            </>
-          )}
-        </>
-      )}
-    </ScrollView>
+      <Modal visible={editingLine !== null} animationType="slide" onRequestClose={() => setEditingLine(null)}>
+        <SafeAreaView style={styles.modalSafeArea}>
+          <View style={styles.modalHeader}>
+            <Pressable onPress={() => setEditingLine(null)} hitSlop={8}>
+              <Ionicons name="arrow-back" size={22} color={colors.ink} />
+            </Pressable>
+            <Text style={styles.modalTitle}>{t('appLayout.newProduct')}</Text>
+            <View style={{ width: 22 }} />
+          </View>
+          {editingLine ? (
+            <ItemForm
+              key={editingLine.id}
+              initial={{ name: editingLine.name, category: lastCategory, storageLocationId: lastStorageLocationId }}
+              submitLabel={t('common.save')}
+              submitting={savingItem}
+              onSubmit={handleSaveFromForm}
+            />
+          ) : null}
+        </SafeAreaView>
+      </Modal>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -242,44 +205,9 @@ function createStyles(COLORS: ColorPalette) {
       color: COLORS.inkSoft,
     },
     hint: { fontSize: 12, color: COLORS.inkSoft },
-    grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-    chip: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-      borderWidth: 1,
-      borderRadius: 10,
-      paddingVertical: 8,
-      paddingHorizontal: 12,
-    },
-    chipText: { fontWeight: '600', fontSize: 13 },
-    categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 2 },
-    categoryChip: {
-      alignItems: 'center',
-      gap: 4,
-      borderWidth: 1,
-      borderColor: COLORS.line,
-      borderRadius: 12,
-      paddingVertical: 8,
-      paddingHorizontal: 12,
-      minWidth: 64,
-      backgroundColor: COLORS.card,
-    },
-    categoryChipActive: { borderColor: COLORS.brand, backgroundColor: COLORS.okBg },
-    categoryChipText: { fontSize: 11, color: COLORS.ink },
     lineList: { gap: 8 },
-    lineRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    checkbox: {
-      width: 24,
-      height: 24,
-      borderRadius: 6,
-      borderWidth: 1,
-      borderColor: COLORS.line,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: COLORS.card,
-    },
-    checkboxChecked: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
+    lineRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    lineIconButton: { padding: 2 },
     lineInput: {
       flex: 1,
       borderWidth: 1,
@@ -291,5 +219,16 @@ function createStyles(COLORS: ColorPalette) {
       color: COLORS.ink,
       backgroundColor: COLORS.card,
     },
+    modalSafeArea: { flex: 1, backgroundColor: COLORS.bg },
+    modalHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.line,
+    },
+    modalTitle: { fontSize: 16, fontWeight: '700', color: COLORS.ink },
   });
 }

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { householdApi } from '../../src/api/household';
@@ -183,7 +183,8 @@ export default function HouseholdScreen() {
   const isOwner = household.ownerId === user?.id;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingBottom: 48 + insets.bottom }]}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 48 + insets.bottom }]}>
       {editingName ? (
         <View style={styles.nameEditRow}>
           <TextInput
@@ -349,7 +350,8 @@ export default function HouseholdScreen() {
 
       <PrimaryButton label={t('household.leaveFamily')} variant="secondary" onPress={handleLeavePress} />
       <PrimaryButton label={t('household.leaveAccount')} variant="danger" onPress={logout} />
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { storageLocationsApi } from '../api/storageLocations';
 import { CONSUME_WITHIN_DAYS_CATEGORIES, useSelectableCategories, useLocationColor, useUnitLabel, UNITS } from '../constants/domain';
@@ -106,11 +106,12 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={[styles.container, { paddingBottom: 40 + insets.bottom }]}
-      keyboardShouldPersistTaps="handled"
-    >
-      <TextField label={t('itemForm.name.label')} placeholder={t('itemForm.name.placeholder')} value={name} onChangeText={setName} autoFocus />
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView
+        contentContainerStyle={[styles.container, { paddingBottom: 40 + insets.bottom }]}
+        keyboardShouldPersistTaps="handled"
+      >
+        <TextField label={t('itemForm.name.label')} placeholder={t('itemForm.name.placeholder')} value={name} onChangeText={setName} autoFocus />
 
       <View style={styles.field}>
         <Text style={styles.label}>{t('itemForm.location.label')}</Text>
@@ -269,7 +270,8 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
         ) : null}
         <PrimaryButton label={submitLabel} onPress={handleSubmit} disabled={!canSubmit} loading={submitting} style={{ flex: 1 }} />
       </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

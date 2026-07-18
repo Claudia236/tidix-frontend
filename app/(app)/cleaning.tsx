@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cleaningApi } from '../../src/api/cleaning';
 import { getErrorMessage } from '../../src/api/client';
@@ -112,7 +112,7 @@ export default function CleaningScreen() {
   const tasks = tasksQuery.data ?? [];
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={[styles.topSection, webCentered]}>
         {formOpen ? (
           <View style={styles.form}>
@@ -210,7 +210,7 @@ export default function CleaningScreen() {
         onPress={() => (formOpen ? closeForm() : openAddForm())}
         bottom={24 + insets.bottom}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

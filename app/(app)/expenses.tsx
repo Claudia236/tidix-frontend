@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { expensesApi } from '../../src/api/expenses';
@@ -204,7 +204,7 @@ export default function ExpensesScreen() {
   const summary = summaryQuery.data;
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={[styles.scroll, webCentered, { paddingBottom: 60 + insets.bottom }]}>
         <View style={styles.monthRow}>
           <Pressable onPress={() => setMonth((m) => shiftMonth(m, -1))} hitSlop={8}>
@@ -426,7 +426,7 @@ export default function ExpensesScreen() {
         onPress={() => (adding ? closeForm() : openAddForm())}
         bottom={24 + insets.bottom}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

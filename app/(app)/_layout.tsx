@@ -27,6 +27,10 @@ export default function AppLayout() {
         options={{ presentation: 'modal', title: t('shoppingNote.edit.title'), headerStyle: { backgroundColor: colors.bg } }}
       />
       <Stack.Screen
+        name="scan-receipt"
+        options={{ presentation: 'modal', title: t('appLayout.scanReceipt'), headerStyle: { backgroundColor: colors.bg } }}
+      />
+      <Stack.Screen
         name="shopping-purchased"
         options={{ title: t('appLayout.purchased'), headerStyle: { backgroundColor: colors.bg } }}
       />

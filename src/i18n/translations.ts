@@ -431,20 +431,23 @@ const ENTRIES: Record<string, EntryTriple> = {
   'scanReceipt.pickFromGallery': { it: 'Scegli dalla galleria', en: 'Pick from gallery', es: 'Elegir de la galería' },
   'scanReceipt.recognizing': { it: 'Lettura dello scontrino in corso...', en: 'Reading the receipt...', es: 'Leyendo el recibo...' },
   'scanReceipt.retake': { it: 'Rifai foto', en: 'Retake photo', es: 'Repetir foto' },
-  'scanReceipt.locationLabel': { it: 'Aggiungi tutto in', en: 'Add everything to', es: 'Añadir todo a' },
-  'scanReceipt.categoryLabel': { it: 'Categoria per tutti', en: 'Category for all', es: 'Categoría para todos' },
   'scanReceipt.itemsTitle': { it: 'Prodotti riconosciuti', en: 'Recognized products', es: 'Productos reconocidos' },
   'scanReceipt.itemsHint': {
-    it: 'Deseleziona le righe che non sono prodotti e correggi i nomi se necessario.',
-    en: 'Uncheck the lines that are not products and fix the names if needed.',
-    es: 'Desmarca las líneas que no son productos y corrige los nombres si es necesario.',
+    it: "Tocca la matita per aggiungere un prodotto alle scorte scegliendo zona e categoria, oppure la X per scartare una riga che non è un prodotto.",
+    en: 'Tap the pencil to add a product to stock choosing its zone and category, or the X to discard a line that is not a product.',
+    es: 'Toca el lápiz para añadir un producto a existencias eligiendo zona y categoría, o la X para descartar una línea que no es un producto.',
   },
   'scanReceipt.noItemsFound': {
     it: 'Non è stato riconosciuto nessun prodotto in questa foto. Prova a rifare la foto con più luce e a inquadrare bene lo scontrino.',
     en: 'No products were recognized in this photo. Try retaking it with more light and framing the receipt well.',
     es: 'No se ha reconocido ningún producto en esta foto. Intenta repetirla con más luz y encuadrando bien el recibo.',
   },
-  'scanReceipt.confirm': { it: (v) => `Aggiungi ${v.n} prodotti alle scorte`, en: (v) => `Add ${v.n} products to stock`, es: (v) => `Añadir ${v.n} productos a existencias` },
+  'scanReceipt.allDone': {
+    it: 'Hai gestito tutti i prodotti riconosciuti in questo scontrino.',
+    en: "You've handled all the products recognized in this receipt.",
+    es: 'Has gestionado todos los productos reconocidos en este recibo.',
+  },
+  'scanReceipt.backToOverview': { it: 'Torna alla Panoramica', en: 'Back to Overview', es: 'Volver a la Panorámica' },
   'scanReceipt.cameraPermissionDenied': {
     it: 'Permesso fotocamera negato. Abilitalo dalle impostazioni del telefono per scattare una foto allo scontrino.',
     en: 'Camera permission denied. Enable it from your phone settings to take a photo of the receipt.',
@@ -460,7 +463,6 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: "I couldn't read this image. Please try another photo.",
     es: 'No he podido leer esta imagen. Prueba con otra foto.',
   },
-  'scanReceipt.addedCount': { it: (v) => `${v.n} prodotti aggiunti alle scorte`, en: (v) => `${v.n} products added to stock`, es: (v) => `${v.n} productos añadidos a existencias` },
 
   // Expenses
   'month.1': { it: 'Gennaio', en: 'January', es: 'Enero' },

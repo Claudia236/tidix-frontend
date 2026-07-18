@@ -69,6 +69,13 @@ export default function TabsLayout() {
                 onPress: () => router.push('/(app)/item/new'),
               },
               {
+                key: 'receipt',
+                icon: 'receipt-outline',
+                label: t('overview.fab.addFromReceipt'),
+                color: '#394D39',
+                onPress: () => router.push('/(app)/scan-receipt'),
+              },
+              {
                 key: 'shopping',
                 icon: 'cart-outline',
                 label: t('overview.fab.addShoppingNote'),

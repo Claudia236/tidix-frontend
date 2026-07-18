@@ -220,6 +220,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   // Overview (Panoramica)
   'overview.title': { it: 'Panoramica', en: 'Overview', es: 'Resumen' },
   'overview.fab.addStockItem': { it: 'Aggiungi a scorte', en: 'Add to stock', es: 'Añadir a existencias' },
+  'overview.fab.addFromReceipt': { it: 'Aggiungi da scontrino', en: 'Add from receipt', es: 'Añadir desde recibo' },
   'overview.fab.addShoppingNote': { it: 'Aggiungi a lista spesa', en: 'Add to shopping list', es: 'Añadir a lista de compra' },
   'overview.fab.addCleaningTask': { it: 'Nuova pulizia', en: 'New cleaning task', es: 'Nueva limpieza' },
   'overview.fab.addExpense': { it: 'Nuova spesa', en: 'New expense', es: 'Nuevo gasto' },
@@ -418,6 +419,48 @@ const ENTRIES: Record<string, EntryTriple> = {
   'appLayout.editProduct': { it: 'Modifica prodotto', en: 'Edit product', es: 'Editar producto' },
   'appLayout.household': { it: 'La tua famiglia', en: 'Your household', es: 'Tu familia' },
   'appLayout.purchased': { it: 'Acquistati', en: 'Purchased', es: 'Comprados' },
+  'appLayout.scanReceipt': { it: 'Aggiungi da scontrino', en: 'Add from receipt', es: 'Añadir desde recibo' },
+
+  // Scan receipt
+  'scanReceipt.intro': {
+    it: 'Fotografa lo scontrino della spesa: i prodotti riconosciuti verranno proposti per essere aggiunti alle scorte.',
+    en: 'Take a photo of your shopping receipt: the recognized products will be suggested for adding to your stock.',
+    es: 'Fotografía el recibo de la compra: los productos reconocidos se propondrán para añadir a tus existencias.',
+  },
+  'scanReceipt.takePhoto': { it: 'Scatta foto', en: 'Take photo', es: 'Hacer foto' },
+  'scanReceipt.pickFromGallery': { it: 'Scegli dalla galleria', en: 'Pick from gallery', es: 'Elegir de la galería' },
+  'scanReceipt.recognizing': { it: 'Lettura dello scontrino in corso...', en: 'Reading the receipt...', es: 'Leyendo el recibo...' },
+  'scanReceipt.retake': { it: 'Rifai foto', en: 'Retake photo', es: 'Repetir foto' },
+  'scanReceipt.locationLabel': { it: 'Aggiungi tutto in', en: 'Add everything to', es: 'Añadir todo a' },
+  'scanReceipt.categoryLabel': { it: 'Categoria per tutti', en: 'Category for all', es: 'Categoría para todos' },
+  'scanReceipt.itemsTitle': { it: 'Prodotti riconosciuti', en: 'Recognized products', es: 'Productos reconocidos' },
+  'scanReceipt.itemsHint': {
+    it: 'Deseleziona le righe che non sono prodotti e correggi i nomi se necessario.',
+    en: 'Uncheck the lines that are not products and fix the names if needed.',
+    es: 'Desmarca las líneas que no son productos y corrige los nombres si es necesario.',
+  },
+  'scanReceipt.noItemsFound': {
+    it: 'Non è stato riconosciuto nessun prodotto in questa foto. Prova a rifare la foto con più luce e a inquadrare bene lo scontrino.',
+    en: 'No products were recognized in this photo. Try retaking it with more light and framing the receipt well.',
+    es: 'No se ha reconocido ningún producto en esta foto. Intenta repetirla con más luz y encuadrando bien el recibo.',
+  },
+  'scanReceipt.confirm': { it: (v) => `Aggiungi ${v.n} prodotti alle scorte`, en: (v) => `Add ${v.n} products to stock`, es: (v) => `Añadir ${v.n} productos a existencias` },
+  'scanReceipt.cameraPermissionDenied': {
+    it: 'Permesso fotocamera negato. Abilitalo dalle impostazioni del telefono per scattare una foto allo scontrino.',
+    en: 'Camera permission denied. Enable it from your phone settings to take a photo of the receipt.',
+    es: 'Permiso de cámara denegado. Actívalo desde los ajustes del teléfono para fotografiar el recibo.',
+  },
+  'scanReceipt.libraryPermissionDenied': {
+    it: 'Permesso galleria negato. Abilitalo dalle impostazioni del telefono per scegliere una foto.',
+    en: 'Gallery permission denied. Enable it from your phone settings to pick a photo.',
+    es: 'Permiso de galería denegado. Actívalo desde los ajustes del teléfono para elegir una foto.',
+  },
+  'scanReceipt.recognizeError': {
+    it: "Non sono riuscito a leggere questa immagine. Riprova con un'altra foto.",
+    en: "I couldn't read this image. Please try another photo.",
+    es: 'No he podido leer esta imagen. Prueba con otra foto.',
+  },
+  'scanReceipt.addedCount': { it: (v) => `${v.n} prodotti aggiunti alle scorte`, en: (v) => `${v.n} products added to stock`, es: (v) => `${v.n} productos añadidos a existencias` },
 
   // Expenses
   'month.1': { it: 'Gennaio', en: 'January', es: 'Enero' },

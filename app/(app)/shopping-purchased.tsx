@@ -25,12 +25,6 @@ export default function ShoppingPurchasedScreen() {
   const notesQuery = useQuery({ queryKey: ['shopping-notes'], queryFn: shoppingNotesApi.list });
   const checkedNotes = useMemo(() => (notesQuery.data ?? []).filter((n) => n.checked), [notesQuery.data]);
 
-  const uncheckNoteMutation = useMutation({
-    mutationFn: (id: string) => shoppingNotesApi.uncheck(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
-  });
-
   const removeNoteMutation = useMutation({
     mutationFn: (id: string) => shoppingNotesApi.remove(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
@@ -64,13 +58,10 @@ export default function ShoppingPurchasedScreen() {
               <Text style={styles.rowName} numberOfLines={1}>{note.text}</Text>
               {note.detail ? <Text style={styles.rowDetail} numberOfLines={1}>{note.detail}</Text> : null}
             </View>
-            <Pressable onPress={() => uncheckNoteMutation.mutate(note.id)} hitSlop={8}>
-              <Ionicons name="arrow-undo-outline" size={18} color={colors.inkSoft} />
-            </Pressable>
-            <Pressable onPress={() => goAddToStock(note)} style={styles.addToStockButton} hitSlop={8}>
+            <Pressable onPress={() => goAddToStock(note)} style={styles.addToStockButton} hitSlop={6}>
               <Text style={styles.addToStockText}>{t('shopping.addToStock')}</Text>
             </Pressable>
-            <Pressable onPress={() => removeNoteMutation.mutate(note.id)} hitSlop={8}>
+            <Pressable onPress={() => removeNoteMutation.mutate(note.id)} style={styles.deleteButton} hitSlop={6}>
               <Ionicons name="trash-outline" size={18} color={colors.inkSoft} />
             </Pressable>
           </View>
@@ -103,5 +94,6 @@ function createStyles(COLORS: ColorPalette) {
       paddingVertical: 6,
     },
     addToStockText: { fontSize: 11, fontWeight: '700', color: COLORS.white },
+    deleteButton: { padding: 4 },
   });
 }

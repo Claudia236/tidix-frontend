@@ -20,7 +20,7 @@ import { webCentered } from '../../../src/theme/responsive';
 import type { Category, Item, ItemInput, ShoppingNote } from '../../../src/types';
 
 type ToBuyRow =
-  | { key: string; type: 'header'; category: Category }
+  | { key: string; type: 'header'; category: Category; count: number }
   | { key: string; type: 'item'; data: Item }
   | { key: string; type: 'note'; data: ShoppingNote };
 
@@ -34,6 +34,16 @@ export default function ShoppingScreen() {
   const categories = useCategories();
   const getLocationColor = useLocationColor();
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<Category>>(new Set());
+
+  function toggleCategoryCollapsed(category: Category) {
+    setCollapsedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(category)) next.delete(category);
+      else next.add(category);
+      return next;
+    });
+  }
 
   const shoppingQuery = useQuery({ queryKey: ['items', 'shopping-list'], queryFn: itemsApi.shoppingList });
   const notesQuery = useQuery({ queryKey: ['shopping-notes'], queryFn: shoppingNotesApi.list });
@@ -92,18 +102,28 @@ export default function ShoppingScreen() {
       const group = byCategory.get(cat.key);
       if (group && group.length > 0) {
         group.sort((a, b) => rowName(a).localeCompare(rowName(b), undefined, { sensitivity: 'base' }));
-        rows.push({ key: `header-${cat.key}`, type: 'header', category: cat.key });
-        rows.push(...group);
+        rows.push({ key: `header-${cat.key}`, type: 'header', category: cat.key, count: group.length });
+        if (!collapsedCategories.has(cat.key)) rows.push(...group);
       }
     }
     return rows;
-  }, [shoppingQuery.data, notesQuery.data, categories]);
+  }, [shoppingQuery.data, notesQuery.data, categories, collapsedCategories]);
 
   const purchasedCount = useMemo(() => (notesQuery.data ?? []).filter((n) => n.checked).length, [notesQuery.data]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={[styles.container, webCentered]}>
+      {purchasedCount > 0 ? (
+        <Pressable style={styles.purchasedBanner} onPress={() => router.push('/(app)/shopping-purchased')}>
+          <View style={styles.purchasedBannerLeft}>
+            <Ionicons name="bag-check-outline" size={18} color={colors.brand} />
+            <Text style={styles.purchasedBannerText}>{t('shopping.purchasedBanner', { n: purchasedCount })}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
+        </Pressable>
+      ) : null}
+
       <SectionTitle logo>{t('shopping.title')}</SectionTitle>
 
       <FlatList
@@ -121,10 +141,14 @@ export default function ShoppingScreen() {
         renderItem={({ item: row }) => {
           if (row.type === 'header') {
             const info = findCategoryInfo(categories, row.category);
+            const collapsed = collapsedCategories.has(row.category);
             return (
-              <Text style={styles.categoryHeader}>
-                {info.emoji} {info.label}
-              </Text>
+              <Pressable style={styles.categoryHeader} onPress={() => toggleCategoryCollapsed(row.category)}>
+                <Text style={styles.categoryHeaderText}>
+                  {info.emoji} {info.label} ({row.count})
+                </Text>
+                <Ionicons name={collapsed ? 'chevron-down' : 'chevron-up'} size={16} color={colors.inkSoft} />
+              </Pressable>
             );
           }
 
@@ -178,16 +202,6 @@ export default function ShoppingScreen() {
         }}
       />
 
-      {purchasedCount > 0 ? (
-        <Pressable style={styles.purchasedBanner} onPress={() => router.push('/(app)/shopping-purchased')}>
-          <View style={styles.purchasedBannerLeft}>
-            <Ionicons name="bag-check-outline" size={18} color={colors.brand} />
-            <Text style={styles.purchasedBannerText}>{t('shopping.purchasedBanner', { n: purchasedCount })}</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
-        </Pressable>
-      ) : null}
-
       </ScrollView>
 
       <RestockDialog
@@ -230,13 +244,19 @@ function createStyles(COLORS: ColorPalette) {
       justifyContent: 'center',
     },
     categoryHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: 10,
+      marginBottom: 4,
+      paddingVertical: 2,
+    },
+    categoryHeaderText: {
       fontSize: 11,
       fontWeight: '700',
       textTransform: 'uppercase',
       letterSpacing: 0.4,
       color: COLORS.inkSoft,
-      marginTop: 10,
-      marginBottom: 4,
     },
     list: { gap: 0 },
     row: {

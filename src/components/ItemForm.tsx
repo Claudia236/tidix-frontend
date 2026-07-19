@@ -74,11 +74,16 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
 
   const canSubmit = name.trim().length > 0 && !!effectiveLocationId;
   const usesConsumeWithinDays = CONSUME_WITHIN_DAYS_CATEGORIES.has(category);
+  const hidesExpiration = category === 'CASA_PULIZIA';
+  const hidesPurchaseDate = category === 'AVANZI';
+  const hidesOpenedToggle = hidesExpiration || hidesPurchaseDate;
 
   function handleSubmit() {
     if (!canSubmit) return;
     let resolvedExpirationDate = expirationDate;
-    if (usesConsumeWithinDays) {
+    if (hidesExpiration) {
+      resolvedExpirationDate = null;
+    } else if (usesConsumeWithinDays) {
       const days = Number(consumeWithinDays.trim());
       if (consumeWithinDays.trim() && Number.isFinite(days) && days >= 0) {
         const date = new Date();
@@ -88,6 +93,7 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
         resolvedExpirationDate = null;
       }
     }
+    const effectiveOpened = !hidesOpenedToggle && opened;
     onSubmit({
       name: name.trim(),
       storageLocationId: effectiveLocationId,
@@ -96,9 +102,9 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
       unit,
       expirationDate: resolvedExpirationDate,
       purchaseDate,
-      opened,
-      openedDate: opened ? openedDate : null,
-      openedReminderEnabled: opened ? openedReminderEnabled : false,
+      opened: effectiveOpened,
+      openedDate: effectiveOpened ? openedDate : null,
+      openedReminderEnabled: effectiveOpened ? openedReminderEnabled : false,
     });
   }
 
@@ -233,53 +239,59 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
         </View>
       </View>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>{t('itemForm.purchaseDate.label')}</Text>
-        <DatePickerField value={purchaseDate} onChange={setPurchaseDate} allowClear={false} />
-      </View>
+      {!hidesPurchaseDate ? (
+        <View style={styles.field}>
+          <Text style={styles.label}>{t('itemForm.purchaseDate.label')}</Text>
+          <DatePickerField value={purchaseDate} onChange={setPurchaseDate} allowClear={false} />
+        </View>
+      ) : null}
 
-      <View style={styles.field}>
-        {usesConsumeWithinDays ? (
-          <>
-            <TextField
-              label={t('itemForm.consumeWithinDays.label')}
-              labelExtra={
-                <Pressable
-                  hitSlop={8}
-                  onPress={() =>
-                    showAlert(t('itemForm.consumeWithinDays.guideTitle'), t(`itemForm.consumeWithinDays.guide.${category}`))
-                  }
-                >
-                  <Ionicons name="information-circle-outline" size={16} color={colors.brand} />
-                </Pressable>
-              }
-              placeholder={t('itemForm.consumeWithinDays.placeholder')}
-              keyboardType="numeric"
-              value={consumeWithinDays}
-              onChangeText={setConsumeWithinDays}
-            />
-            <Text style={styles.consumeWithinDaysHint}>{t('itemForm.consumeWithinDays.hint')}</Text>
-          </>
-        ) : (
-          <>
-            <Text style={styles.label}>{t('itemForm.expirationDate.label')}</Text>
-            <DatePickerField value={expirationDate} onChange={setExpirationDate} />
-          </>
-        )}
-      </View>
+      {!hidesExpiration ? (
+        <View style={styles.field}>
+          {usesConsumeWithinDays ? (
+            <>
+              <TextField
+                label={t('itemForm.consumeWithinDays.label')}
+                labelExtra={
+                  <Pressable
+                    hitSlop={8}
+                    onPress={() =>
+                      showAlert(t('itemForm.consumeWithinDays.guideTitle'), t(`itemForm.consumeWithinDays.guide.${category}`))
+                    }
+                  >
+                    <Ionicons name="information-circle-outline" size={16} color={colors.brand} />
+                  </Pressable>
+                }
+                placeholder={t('itemForm.consumeWithinDays.placeholder')}
+                keyboardType="numeric"
+                value={consumeWithinDays}
+                onChangeText={setConsumeWithinDays}
+              />
+              <Text style={styles.consumeWithinDaysHint}>{t('itemForm.consumeWithinDays.hint')}</Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.label}>{t('itemForm.expirationDate.label')}</Text>
+              <DatePickerField value={expirationDate} onChange={setExpirationDate} />
+            </>
+          )}
+        </View>
+      ) : null}
 
-      <View style={styles.field}>
-        <Pressable onPress={handleToggleOpened} style={styles.openedToggle}>
-          <Ionicons name={opened ? 'checkbox' : 'square-outline'} size={18} color={colors.brand} />
-          <Text style={styles.openedToggleText}>{t('itemForm.openedToggle')}</Text>
-        </Pressable>
-        {opened ? (
-          <>
-            <Text style={styles.label}>{t('itemForm.openedDate.label')}</Text>
-            <DatePickerField value={openedDate} onChange={setOpenedDate} allowClear={false} />
-          </>
-        ) : null}
-      </View>
+      {!hidesOpenedToggle ? (
+        <View style={styles.field}>
+          <Pressable onPress={handleToggleOpened} style={styles.openedToggle}>
+            <Ionicons name={opened ? 'checkbox' : 'square-outline'} size={18} color={colors.brand} />
+            <Text style={styles.openedToggleText}>{t('itemForm.openedToggle')}</Text>
+          </Pressable>
+          {opened ? (
+            <>
+              <Text style={styles.label}>{t('itemForm.openedDate.label')}</Text>
+              <DatePickerField value={openedDate} onChange={setOpenedDate} allowClear={false} />
+            </>
+          ) : null}
+        </View>
+      ) : null}
 
       <View style={styles.actions}>
         {onDelete ? (

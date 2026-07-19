@@ -25,8 +25,8 @@ const CATEGORY_KEYS: Category[] = [
 export const CONSUME_WITHIN_DAYS_CATEGORIES: ReadonlySet<Category> = new Set(['AVANZI', 'ORTOFRUTTA']);
 
 const CATEGORY_EMOJI: Record<Category, string> = {
-  AVANZI: '🥡',
-  ORTOFRUTTA: '🥦',
+  AVANZI: '🍱',
+  ORTOFRUTTA: '🧺',
   PASTA_CEREALI: '🍝',
   LEGUMI: '🫘',
   CARNE_PESCE: '🥩',

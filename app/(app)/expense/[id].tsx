@@ -3,15 +3,14 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getErrorMessage } from '../../../src/api/client';
-import { itemsApi } from '../../../src/api/items';
+import { expensesApi } from '../../../src/api/expenses';
 import { showAlert } from '../../../src/components/AppAlert';
-import { ItemForm } from '../../../src/components/ItemForm';
+import { ExpenseForm, type ExpenseFormOutput } from '../../../src/components/ExpenseForm';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
-import type { ItemInput } from '../../../src/types';
 
-export default function EditItemScreen() {
+export default function EditExpenseScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -19,34 +18,35 @@ export default function EditItemScreen() {
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const itemQuery = useQuery({ queryKey: ['items', id], queryFn: () => itemsApi.get(id), enabled: !!id });
+  const expensesQuery = useQuery({ queryKey: ['expenses', 'all'], queryFn: () => expensesApi.list() });
+  const expense = expensesQuery.data?.find((e) => e.id === id);
 
   const updateMutation = useMutation({
-    mutationFn: (input: ItemInput) => itemsApi.update(id, input),
+    mutationFn: (input: ExpenseFormOutput) => expensesApi.update(id, input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['items'] });
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
       router.back();
     },
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => itemsApi.remove(id),
+    mutationFn: () => expensesApi.remove(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['items'] });
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
       router.back();
     },
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   function confirmDelete() {
-    showAlert(t('item.confirmDeleteTitle'), t('item.confirmDeleteMessage'), [
+    showAlert(t('expenses.confirmDeleteTitle'), t('expenses.confirmDeleteMessage'), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.delete'), style: 'destructive', onPress: () => deleteMutation.mutate() },
     ]);
   }
 
-  if (itemQuery.isLoading || !itemQuery.data) {
+  if (expensesQuery.isLoading || !expense) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator color={colors.brand} />
@@ -54,26 +54,36 @@ export default function EditItemScreen() {
     );
   }
 
-  const item = itemQuery.data;
+  const percentages = expense.splits.map((s) => s.percentage);
+  const equalSplit = percentages.every((p) => Math.abs(p - percentages[0]) < 0.5);
+  const customPercentages: Record<string, string> = {};
+  const paidAmounts: Record<string, string> = {};
+  const paidInFull: Record<string, boolean> = {};
+  expense.splits.forEach((s) => {
+    customPercentages[s.userId] = String(s.percentage);
+    if (s.userId !== expense.paidByUserId) {
+      paidAmounts[s.userId] = s.paidAmount ? String(s.paidAmount) : '';
+      paidInFull[s.userId] = s.paidAmount >= s.amount - 0.01;
+    }
+  });
 
   return (
     <View style={styles.container}>
-      <ItemForm
+      <ExpenseForm
         initial={{
-          name: item.name,
-          storageLocationId: item.storageLocationId,
-          category: item.category,
-          quantity: item.quantity,
-          unit: item.unit,
-          expirationDate: item.expirationDate,
-          purchaseDate: item.purchaseDate,
-          opened: item.opened,
-          openedDate: item.openedDate,
-          openedReminderEnabled: item.openedReminderEnabled,
+          description: expense.description,
+          amount: String(expense.amount),
+          date: expense.date,
+          paidByUserId: expense.paidByUserId,
+          participantIds: expense.splits.map((s) => s.userId),
+          equalSplit,
+          customPercentages,
+          paidAmounts,
+          paidInFull,
         }}
         submitLabel={t('common.saveChanges')}
         submitting={updateMutation.isPending}
-        onSubmit={(input) => updateMutation.mutate(input)}
+        onSubmit={(output) => updateMutation.mutate(output)}
         onDelete={confirmDelete}
         deleting={deleteMutation.isPending}
       />

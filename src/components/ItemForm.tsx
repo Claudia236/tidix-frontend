@@ -54,6 +54,7 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   const [openedDate, setOpenedDate] = useState<string | null>(
     initial?.openedDate ?? todayLocalISODate()
   );
+  const [openedReminderEnabled, setOpenedReminderEnabled] = useState(initial?.openedReminderEnabled ?? false);
   const [addingLocation, setAddingLocation] = useState(false);
   const [newLocationName, setNewLocationName] = useState('');
   const [newLocationEmoji, setNewLocationEmoji] = useState('');
@@ -97,6 +98,22 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
       purchaseDate,
       opened,
       openedDate: opened ? openedDate : null,
+      openedReminderEnabled: opened ? openedReminderEnabled : false,
+    });
+  }
+
+  function handleToggleOpened() {
+    setOpened((prev) => {
+      const next = !prev;
+      if (next) {
+        showAlert(t('itemForm.openedReminder.title'), t('itemForm.openedReminder.message'), [
+          { text: t('common.no'), style: 'cancel', onPress: () => setOpenedReminderEnabled(false) },
+          { text: t('common.yes'), onPress: () => setOpenedReminderEnabled(true) },
+        ]);
+      } else {
+        setOpenedReminderEnabled(false);
+      }
+      return next;
     });
   }
 
@@ -252,7 +269,7 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
       </View>
 
       <View style={styles.field}>
-        <Pressable onPress={() => setOpened((v) => !v)} style={styles.openedToggle}>
+        <Pressable onPress={handleToggleOpened} style={styles.openedToggle}>
           <Ionicons name={opened ? 'checkbox' : 'square-outline'} size={18} color={colors.brand} />
           <Text style={styles.openedToggleText}>{t('itemForm.openedToggle')}</Text>
         </Pressable>

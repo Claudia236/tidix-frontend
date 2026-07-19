@@ -1,6 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
-import { dayToJsWeekday } from '../constants/domain';
+import { dayToJsWeekday, getWasteTypeEmoji } from '../constants/domain';
 import type { TranslateFn } from '../i18n/I18nContext';
 import type { WasteSchedule } from '../types';
 import { CHANNEL_ID, cancelByPrefix, ensureChannel, ensureNotificationPermissions, getNotificationsEnabledPref } from './core';
@@ -41,7 +41,7 @@ export async function syncWasteReminders(schedules: WasteSchedule[], t: Translat
         identifier: `${PREFIX}${schedule.type}-${day}`,
         content: {
           title: t('notif.wasteReminder.title'),
-          body: t('notif.wasteReminder.body', { type: t(`wasteNotif.${schedule.type}`) }),
+          body: t('notif.wasteReminder.body', { type: t(`wasteNotif.${schedule.type}`), emoji: getWasteTypeEmoji(schedule.type) }),
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.WEEKLY,

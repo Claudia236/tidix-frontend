@@ -43,12 +43,28 @@ export default function AppLayout() {
         options={{ title: t('more.cleaning.label'), headerStyle: { backgroundColor: colors.bg } }}
       />
       <Stack.Screen
+        name="cleaning-task/new"
+        options={{ presentation: 'modal', title: t('appLayout.newCleaningTask'), headerStyle: { backgroundColor: colors.bg } }}
+      />
+      <Stack.Screen
+        name="cleaning-task/[id]"
+        options={{ presentation: 'modal', title: t('appLayout.editCleaningTask'), headerStyle: { backgroundColor: colors.bg } }}
+      />
+      <Stack.Screen
         name="waste"
         options={{ title: t('more.waste.label'), headerStyle: { backgroundColor: colors.bg } }}
       />
       <Stack.Screen
         name="expenses"
         options={{ title: t('more.expenses.label'), headerStyle: { backgroundColor: colors.bg } }}
+      />
+      <Stack.Screen
+        name="expense/new"
+        options={{ presentation: 'modal', title: t('appLayout.newExpense'), headerStyle: { backgroundColor: colors.bg } }}
+      />
+      <Stack.Screen
+        name="expense/[id]"
+        options={{ presentation: 'modal', title: t('appLayout.editExpense'), headerStyle: { backgroundColor: colors.bg } }}
       />
     </Stack>
   );

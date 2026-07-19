@@ -83,18 +83,11 @@ export default function TabsLayout() {
                 onPress: () => router.push('/(app)/shopping-note/new'),
               },
               {
-                key: 'cleaning',
-                icon: 'sparkles-outline',
-                label: t('overview.fab.addCleaningTask'),
-                color: '#6B8261',
-                onPress: () => router.push({ pathname: '/(app)/cleaning', params: { openForm: '1' } }),
-              },
-              {
                 key: 'expense',
                 icon: 'cash-outline',
                 label: t('overview.fab.addExpense'),
-                color: '#94A98A',
-                onPress: () => router.push({ pathname: '/(app)/expenses', params: { openForm: '1' } }),
+                color: '#6B8261',
+                onPress: () => router.push('/(app)/expense/new'),
               },
             ]}
           />

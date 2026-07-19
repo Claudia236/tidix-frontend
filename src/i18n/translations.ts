@@ -110,7 +110,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   // waste types
   'waste.ORGANICO.label': { it: 'Organico', en: 'Organic', es: 'Orgánico' },
   'waste.PLASTICA.label': { it: 'Plastica', en: 'Plastic', es: 'Plástico' },
-  'waste.CARTA_CARTONE.label': { it: 'Carta e cartone', en: 'Paper and cardboard', es: 'Papel y cartón' },
+  'waste.CARTA_CARTONE.label': { it: 'Carta', en: 'Paper', es: 'Papel' },
   'waste.VETRO.label': { it: 'Vetro', en: 'Glass', es: 'Vidrio' },
   'waste.INDIFFERENZIATO.label': { it: 'Indifferenziato', en: 'General waste', es: 'Resto' },
   'waste.ALTRO.label': { it: 'Altro', en: 'Other', es: 'Otro' },
@@ -174,7 +174,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   // waste type names with article, used inside the friendly notification body
   'wasteNotif.ORGANICO': { it: "l'organico", en: 'the organic waste', es: 'el orgánico' },
   'wasteNotif.PLASTICA': { it: 'la plastica', en: 'the plastic', es: 'el plástico' },
-  'wasteNotif.CARTA_CARTONE': { it: 'la carta e il cartone', en: 'the paper and cardboard', es: 'el papel y cartón' },
+  'wasteNotif.CARTA_CARTONE': { it: 'la carta', en: 'the paper', es: 'el papel' },
   'wasteNotif.VETRO': { it: 'il vetro', en: 'the glass', es: 'el vidrio' },
   'wasteNotif.INDIFFERENZIATO': { it: "l'indifferenziato", en: 'the general waste', es: 'el resto' },
   'wasteNotif.ALTRO': { it: 'gli altri rifiuti', en: 'the rest', es: 'los demás residuos' },

@@ -6,7 +6,7 @@ import type { WasteSchedule } from '../types';
 import { CHANNEL_ID, cancelByPrefix, ensureChannel, ensureNotificationPermissions, getNotificationsEnabledPref } from './core';
 
 const REMINDER_HOUR = 20;
-const REMINDER_MINUTE = 0;
+const REMINDER_MINUTE = 30;
 const PREFIX = 'waste-reminder-';
 
 // expo-notifications usa la convenzione 1 = domenica ... 7 = sabato per i trigger settimanali
@@ -16,9 +16,11 @@ function toTriggerWeekday(jsWeekday: number): number {
 
 /**
  * Riprogramma tutti i promemoria rifiuti da zero in base al calendario corrente.
- * Il promemoria arriva la sera del giorno prima della raccolta.
- * Non tocca il web: li' non esiste uno scheduler persistente affidabile,
- * il promemoria e' invece un banner mostrato in app (vedi wasteTypesCollectedOn).
+ * La notifica arriva la sera del giorno prima della raccolta, alle 20:30: un
+ * banner nella Panoramica (vedi wasteTypesCollectedOn) compare gia' dalle 20:00
+ * come primo promemoria visivo, la notifica push e' il secondo avviso 30 minuti
+ * dopo per chi non ha ancora aperto l'app.
+ * Non tocca il web: li' non esiste uno scheduler persistente affidabile.
  */
 export async function syncWasteReminders(schedules: WasteSchedule[], t: TranslateFn): Promise<void> {
   if (Platform.OS === 'web') return;

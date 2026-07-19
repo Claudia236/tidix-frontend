@@ -108,8 +108,10 @@ export default function OverviewScreen() {
   const openedItems = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.opened), [allItemsQuery.data]);
 
   const wasteTomorrow = useMemo(() => {
-    if (Platform.OS !== 'web' || !wasteSchedulesQuery.data) return [];
-    const tomorrow = jsWeekdayToDay((new Date().getDay() + 1) % 7);
+    if (!wasteSchedulesQuery.data) return [];
+    const now = new Date();
+    if (now.getHours() < 20) return [];
+    const tomorrow = jsWeekdayToDay((now.getDay() + 1) % 7);
     return wasteTypesCollectedOn(wasteSchedulesQuery.data, tomorrow);
   }, [wasteSchedulesQuery.data]);
 

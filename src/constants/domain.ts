@@ -173,11 +173,11 @@ export interface WasteTypeInfo {
 const WASTE_TYPE_KEYS: WasteType[] = ['ORGANICO', 'PLASTICA', 'CARTA_CARTONE', 'VETRO', 'INDIFFERENZIATO', 'ALTRO'];
 
 const WASTE_TYPE_EMOJI: Record<WasteType, string> = {
-  ORGANICO: '🫝',
+  ORGANICO: '🍎',
   PLASTICA: '🧴',
   CARTA_CARTONE: '📦',
   VETRO: '🍾',
-  INDIFFERENZIATO: '🌑',
+  INDIFFERENZIATO: '⚫',
   ALTRO: '📌',
 };
 

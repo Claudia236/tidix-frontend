@@ -25,7 +25,7 @@ const CATEGORY_KEYS: Category[] = [
 export const CONSUME_WITHIN_DAYS_CATEGORIES: ReadonlySet<Category> = new Set(['AVANZI', 'ORTOFRUTTA']);
 
 const CATEGORY_EMOJI: Record<Category, string> = {
-  AVANZI: '🍱',
+  AVANZI: '🍝',
   ORTOFRUTTA: '🍊',
   PASTA_CEREALI: '🍝',
   LEGUMI: '🫘',
@@ -173,11 +173,11 @@ export interface WasteTypeInfo {
 const WASTE_TYPE_KEYS: WasteType[] = ['ORGANICO', 'PLASTICA', 'CARTA_CARTONE', 'VETRO', 'INDIFFERENZIATO', 'ALTRO'];
 
 const WASTE_TYPE_EMOJI: Record<WasteType, string> = {
-  ORGANICO: '🍂',
-  PLASTICA: '♻️',
+  ORGANICO: '🫝',
+  PLASTICA: '🧴',
   CARTA_CARTONE: '📦',
   VETRO: '🍾',
-  INDIFFERENZIATO: '🚮',
+  INDIFFERENZIATO: '🌑',
   ALTRO: '📌',
 };
 

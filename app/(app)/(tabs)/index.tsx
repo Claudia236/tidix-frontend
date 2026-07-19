@@ -12,7 +12,7 @@ import { wasteApi } from '../../../src/api/waste';
 import { showAlert } from '../../../src/components/AppAlert';
 import { PrimaryButton } from '../../../src/components/PrimaryButton';
 import { SectionTitle } from '../../../src/components/SectionTitle';
-import { jsWeekdayToDay, wasteTypesCollectedOn } from '../../../src/constants/domain';
+import { findCategoryInfo, jsWeekdayToDay, useCategories, wasteTypesCollectedOn } from '../../../src/constants/domain';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import { syncExpiryReminders } from '../../../src/notifications/expiryReminders';
 import { syncOpenedReminders } from '../../../src/notifications/openedReminders';
@@ -29,6 +29,7 @@ export default function OverviewScreen() {
   const { colors, scheme } = useTheme();
   const { t, language } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const categories = useCategories();
 
   const summaryQuery = useQuery({ queryKey: ['items', 'summary'], queryFn: itemsApi.summary });
   const expiredQuery = useQuery({ queryKey: ['items', 'expired'], queryFn: itemsApi.expired });
@@ -42,6 +43,20 @@ export default function OverviewScreen() {
   const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
   const [zoneName, setZoneName] = useState('');
   const [zoneEmoji, setZoneEmoji] = useState('');
+  const [collapsedCards, setCollapsedCards] = useState<Set<string>>(new Set());
+
+  function toggleCardCollapsed(key: string) {
+    setCollapsedCards((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  function categoryEmoji(category: Item['category']): string {
+    return findCategoryInfo(categories, category).emoji;
+  }
 
   function invalidateZones() {
     queryClient.invalidateQueries({ queryKey: ['storage-locations'] });
@@ -191,15 +206,22 @@ export default function OverviewScreen() {
         <SectionTitle>{t('overview.title')}</SectionTitle>
 
         <View style={styles.detailCard}>
-          <View style={styles.detailCardHeader}>
-            <Text style={[styles.detailCardTitle, avanziItems.length > 0 && { color: colors.warn }]}>
-              {t('overview.avanziCard.title')}
-            </Text>
+          <Pressable style={styles.detailCardHeader} onPress={() => toggleCardCollapsed('avanzi')}>
+            <View style={styles.detailCardHeaderLeft}>
+              <Ionicons
+                name={collapsedCards.has('avanzi') ? 'chevron-forward' : 'chevron-down'}
+                size={16}
+                color={colors.inkSoft}
+              />
+              <Text style={[styles.detailCardTitle, avanziItems.length > 0 && { color: colors.warn }]}>
+                {t('overview.avanziCard.title')}
+              </Text>
+            </View>
             <Text style={[styles.detailCardCount, avanziItems.length > 0 && { color: colors.warn }]}>
               {avanziItems.length}
             </Text>
-          </View>
-          {avanziItems.length === 0 ? (
+          </Pressable>
+          {collapsedCards.has('avanzi') ? null : avanziItems.length === 0 ? (
             <Text style={styles.detailCardEmpty}>{t('overview.avanziCard.allGood')}</Text>
           ) : (
             <View style={styles.detailCardList}>
@@ -207,7 +229,7 @@ export default function OverviewScreen() {
                 const info = getExpiryInfo(item.expirationDate, t, language);
                 return (
                   <Pressable key={item.id} style={styles.detailRow} onPress={() => goToItem(item)}>
-                    <Text style={styles.detailRowText} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.detailRowText} numberOfLines={1}>{categoryEmoji(item.category)} {item.name}</Text>
                     {info ? <Text style={styles.detailRowMeta}>{info.label}</Text> : null}
                   </Pressable>
                 );
@@ -217,21 +239,28 @@ export default function OverviewScreen() {
         </View>
 
         <View style={styles.detailCard}>
-          <View style={styles.detailCardHeader}>
-            <Text style={[styles.detailCardTitle, openedItems.length > 0 && { color: colors.gold }]}>
-              {t('overview.openedCard.title')}
-            </Text>
+          <Pressable style={styles.detailCardHeader} onPress={() => toggleCardCollapsed('opened')}>
+            <View style={styles.detailCardHeaderLeft}>
+              <Ionicons
+                name={collapsedCards.has('opened') ? 'chevron-forward' : 'chevron-down'}
+                size={16}
+                color={colors.inkSoft}
+              />
+              <Text style={[styles.detailCardTitle, openedItems.length > 0 && { color: colors.gold }]}>
+                {t('overview.openedCard.title')}
+              </Text>
+            </View>
             <Text style={[styles.detailCardCount, openedItems.length > 0 && { color: colors.gold }]}>
               {openedItems.length}
             </Text>
-          </View>
-          {openedItems.length === 0 ? (
+          </Pressable>
+          {collapsedCards.has('opened') ? null : openedItems.length === 0 ? (
             <Text style={styles.detailCardEmpty}>{t('overview.openedCard.allGood')}</Text>
           ) : (
             <View style={styles.detailCardList}>
               {openedItems.map((item) => (
                 <Pressable key={item.id} style={styles.detailRow} onPress={() => goToItem(item)}>
-                  <Text style={styles.detailRowText} numberOfLines={1}>{item.name}</Text>
+                  <Text style={styles.detailRowText} numberOfLines={1}>{categoryEmoji(item.category)} {item.name}</Text>
                   {item.openedDate ? (
                     <Text style={styles.detailRowMeta}>
                       {t('itemCard.openedOn', { date: formatShortDate(item.openedDate, language) })}
@@ -244,15 +273,22 @@ export default function OverviewScreen() {
         </View>
 
         <View style={styles.detailCard}>
-          <View style={styles.detailCardHeader}>
-            <Text style={[styles.detailCardTitle, expiringItems.length > 0 && { color: colors.danger }]}>
-              {t('overview.expiringCard.title')}
-            </Text>
+          <Pressable style={styles.detailCardHeader} onPress={() => toggleCardCollapsed('expiring')}>
+            <View style={styles.detailCardHeaderLeft}>
+              <Ionicons
+                name={collapsedCards.has('expiring') ? 'chevron-forward' : 'chevron-down'}
+                size={16}
+                color={colors.inkSoft}
+              />
+              <Text style={[styles.detailCardTitle, expiringItems.length > 0 && { color: colors.danger }]}>
+                {t('overview.expiringCard.title')}
+              </Text>
+            </View>
             <Text style={[styles.detailCardCount, expiringItems.length > 0 && { color: colors.danger }]}>
               {expiringItems.length}
             </Text>
-          </View>
-          {expiringItems.length === 0 ? (
+          </Pressable>
+          {collapsedCards.has('expiring') ? null : expiringItems.length === 0 ? (
             <Text style={styles.detailCardEmpty}>{t('overview.expiringCard.allGood')}</Text>
           ) : (
             <View style={styles.detailCardList}>
@@ -260,7 +296,7 @@ export default function OverviewScreen() {
                 const info = getExpiryInfo(item.expirationDate, t, language);
                 return (
                   <Pressable key={item.id} style={styles.detailRow} onPress={() => goToItem(item)}>
-                    <Text style={styles.detailRowText} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.detailRowText} numberOfLines={1}>{categoryEmoji(item.category)} {item.name}</Text>
                     {info ? <Text style={styles.detailRowMeta}>{info.label}</Text> : null}
                   </Pressable>
                 );
@@ -270,15 +306,22 @@ export default function OverviewScreen() {
         </View>
 
         <View style={styles.detailCard}>
-          <View style={styles.detailCardHeader}>
-            <Text style={[styles.detailCardTitle, overdueCleaning.length > 0 && { color: colors.info }]}>
-              {t('overview.cleaningDueSection')}
-            </Text>
+          <Pressable style={styles.detailCardHeader} onPress={() => toggleCardCollapsed('cleaning')}>
+            <View style={styles.detailCardHeaderLeft}>
+              <Ionicons
+                name={collapsedCards.has('cleaning') ? 'chevron-forward' : 'chevron-down'}
+                size={16}
+                color={colors.inkSoft}
+              />
+              <Text style={[styles.detailCardTitle, overdueCleaning.length > 0 && { color: colors.info }]}>
+                {t('overview.cleaningDueSection')}
+              </Text>
+            </View>
             <Text style={[styles.detailCardCount, overdueCleaning.length > 0 && { color: colors.info }]}>
               {overdueCleaning.length}
             </Text>
-          </View>
-          {overdueCleaning.length === 0 ? (
+          </Pressable>
+          {collapsedCards.has('cleaning') ? null : overdueCleaning.length === 0 ? (
             <Text style={styles.detailCardEmpty}>{t('overview.cleaningCard.allGood')}</Text>
           ) : (
             <View style={styles.detailCardList}>
@@ -413,6 +456,7 @@ function createStyles(COLORS: ColorPalette) {
       gap: 8,
     },
     detailCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    detailCardHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 },
     detailCardTitle: { fontSize: 16, fontWeight: '800', color: COLORS.ink },
     detailCardCount: { fontSize: 20, fontWeight: '800', color: COLORS.ink },
     detailCardEmpty: { fontSize: 12, color: COLORS.inkSoft },

@@ -3,15 +3,15 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getErrorMessage } from '../../../src/api/client';
-import { itemsApi } from '../../../src/api/items';
+import { cleaningApi } from '../../../src/api/cleaning';
 import { showAlert } from '../../../src/components/AppAlert';
-import { ItemForm } from '../../../src/components/ItemForm';
+import { CleaningTaskForm } from '../../../src/components/CleaningTaskForm';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
-import type { ItemInput } from '../../../src/types';
+import type { CleaningTaskInput } from '../../../src/types';
 
-export default function EditItemScreen() {
+export default function EditCleaningTaskScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -19,34 +19,35 @@ export default function EditItemScreen() {
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const itemQuery = useQuery({ queryKey: ['items', id], queryFn: () => itemsApi.get(id), enabled: !!id });
+  const tasksQuery = useQuery({ queryKey: ['cleaning-tasks'], queryFn: cleaningApi.list });
+  const task = tasksQuery.data?.find((tsk) => tsk.id === id);
 
   const updateMutation = useMutation({
-    mutationFn: (input: ItemInput) => itemsApi.update(id, input),
+    mutationFn: (input: CleaningTaskInput) => cleaningApi.update(id, input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['items'] });
+      queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] });
       router.back();
     },
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => itemsApi.remove(id),
+    mutationFn: () => cleaningApi.remove(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['items'] });
+      queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] });
       router.back();
     },
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   function confirmDelete() {
-    showAlert(t('item.confirmDeleteTitle'), t('item.confirmDeleteMessage'), [
+    showAlert(t('cleaning.confirmDeleteTitle'), t('cleaning.confirmDeleteMessage', { name: task?.name ?? '' }), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.delete'), style: 'destructive', onPress: () => deleteMutation.mutate() },
     ]);
   }
 
-  if (itemQuery.isLoading || !itemQuery.data) {
+  if (tasksQuery.isLoading || !task) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator color={colors.brand} />
@@ -54,22 +55,13 @@ export default function EditItemScreen() {
     );
   }
 
-  const item = itemQuery.data;
-
   return (
     <View style={styles.container}>
-      <ItemForm
+      <CleaningTaskForm
         initial={{
-          name: item.name,
-          storageLocationId: item.storageLocationId,
-          category: item.category,
-          quantity: item.quantity,
-          unit: item.unit,
-          expirationDate: item.expirationDate,
-          purchaseDate: item.purchaseDate,
-          opened: item.opened,
-          openedDate: item.openedDate,
-          openedReminderEnabled: item.openedReminderEnabled,
+          name: task.name,
+          frequencyDays: task.frequencyDays,
+          lastCleanedDate: task.lastCleanedDate,
         }}
         submitLabel={t('common.saveChanges')}
         submitting={updateMutation.isPending}

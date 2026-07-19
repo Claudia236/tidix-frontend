@@ -15,6 +15,7 @@ import { SectionTitle } from '../../../src/components/SectionTitle';
 import { jsWeekdayToDay, wasteTypesCollectedOn } from '../../../src/constants/domain';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import { syncExpiryReminders } from '../../../src/notifications/expiryReminders';
+import { syncOpenedReminders } from '../../../src/notifications/openedReminders';
 import { syncWasteReminders } from '../../../src/notifications/wasteReminders';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
@@ -102,10 +103,12 @@ export default function OverviewScreen() {
 
   const expiringItems = useMemo(() => {
     const combined = [...(expiredQuery.data ?? []), ...(expiringQuery.data ?? [])];
-    return combined.sort((a, b) => (a.daysUntilExpiration ?? 0) - (b.daysUntilExpiration ?? 0));
+    return combined.filter((i) => i.category !== 'AVANZI').sort((a, b) => (a.daysUntilExpiration ?? 0) - (b.daysUntilExpiration ?? 0));
   }, [expiredQuery.data, expiringQuery.data]);
 
   const openedItems = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.opened), [allItemsQuery.data]);
+
+  const avanziItems = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.category === 'AVANZI'), [allItemsQuery.data]);
 
   const wasteTomorrow = useMemo(() => {
     if (!wasteSchedulesQuery.data) return [];
@@ -124,6 +127,11 @@ export default function OverviewScreen() {
     if (Platform.OS === 'web' || !wasteSchedulesQuery.data) return;
     syncWasteReminders(wasteSchedulesQuery.data, t);
   }, [wasteSchedulesQuery.data, t]);
+
+  useEffect(() => {
+    if (Platform.OS === 'web' || !allItemsQuery.data) return;
+    syncOpenedReminders(allItemsQuery.data, t);
+  }, [allItemsQuery.data, t]);
 
   function refresh() {
     summaryQuery.refetch();
@@ -184,7 +192,35 @@ export default function OverviewScreen() {
 
         <View style={styles.detailCard}>
           <View style={styles.detailCardHeader}>
-            <Text style={styles.detailCardTitle}>{t('overview.openedCard.title')}</Text>
+            <Text style={[styles.detailCardTitle, avanziItems.length > 0 && { color: colors.warn }]}>
+              {t('overview.avanziCard.title')}
+            </Text>
+            <Text style={[styles.detailCardCount, avanziItems.length > 0 && { color: colors.warn }]}>
+              {avanziItems.length}
+            </Text>
+          </View>
+          {avanziItems.length === 0 ? (
+            <Text style={styles.detailCardEmpty}>{t('overview.avanziCard.allGood')}</Text>
+          ) : (
+            <View style={styles.detailCardList}>
+              {avanziItems.map((item) => {
+                const info = getExpiryInfo(item.expirationDate, t, language);
+                return (
+                  <Pressable key={item.id} style={styles.detailRow} onPress={() => goToItem(item)}>
+                    <Text style={styles.detailRowText} numberOfLines={1}>{item.name}</Text>
+                    {info ? <Text style={styles.detailRowMeta}>{info.label}</Text> : null}
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.detailCard}>
+          <View style={styles.detailCardHeader}>
+            <Text style={[styles.detailCardTitle, openedItems.length > 0 && { color: colors.gold }]}>
+              {t('overview.openedCard.title')}
+            </Text>
             <Text style={[styles.detailCardCount, openedItems.length > 0 && { color: colors.gold }]}>
               {openedItems.length}
             </Text>
@@ -209,7 +245,9 @@ export default function OverviewScreen() {
 
         <View style={styles.detailCard}>
           <View style={styles.detailCardHeader}>
-            <Text style={styles.detailCardTitle}>{t('overview.expiringCard.title')}</Text>
+            <Text style={[styles.detailCardTitle, expiringItems.length > 0 && { color: colors.danger }]}>
+              {t('overview.expiringCard.title')}
+            </Text>
             <Text style={[styles.detailCardCount, expiringItems.length > 0 && { color: colors.danger }]}>
               {expiringItems.length}
             </Text>
@@ -233,7 +271,9 @@ export default function OverviewScreen() {
 
         <View style={styles.detailCard}>
           <View style={styles.detailCardHeader}>
-            <Text style={styles.detailCardTitle}>{t('overview.cleaningDueSection')}</Text>
+            <Text style={[styles.detailCardTitle, overdueCleaning.length > 0 && { color: colors.info }]}>
+              {t('overview.cleaningDueSection')}
+            </Text>
             <Text style={[styles.detailCardCount, overdueCleaning.length > 0 && { color: colors.info }]}>
               {overdueCleaning.length}
             </Text>
@@ -373,7 +413,7 @@ function createStyles(COLORS: ColorPalette) {
       gap: 8,
     },
     detailCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    detailCardTitle: { fontSize: 13, fontWeight: '700', color: COLORS.ink },
+    detailCardTitle: { fontSize: 16, fontWeight: '800', color: COLORS.ink },
     detailCardCount: { fontSize: 20, fontWeight: '800', color: COLORS.ink },
     detailCardEmpty: { fontSize: 12, color: COLORS.inkSoft },
     detailCardList: { gap: 2 },

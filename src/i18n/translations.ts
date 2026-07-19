@@ -148,9 +148,9 @@ const ENTRIES: Record<string, EntryTriple> = {
   // notifications
   'notif.wasteReminder.title': { it: 'Tidix ti ricorda 🗑️', en: 'Tidix reminder 🗑️', es: 'Tidix te recuerda 🗑️' },
   'notif.wasteReminder.body': {
-    it: (v) => `Ehi! Domani è l'ora di buttare ${v.type} 🗑️ Non dimenticare di mettere fuori il secchio stasera!`,
-    en: (v) => `Hey! Tomorrow it's time to take out ${v.type} 🗑️ Don't forget to put the bin out tonight!`,
-    es: (v) => `¡Oye! Mañana toca sacar ${v.type} 🗑️ ¡No olvides sacar el cubo esta noche!`,
+    it: (v) => `Ehi! Domani è l'ora di buttare ${v.type} ${v.emoji} Non dimenticare di mettere fuori il secchio stasera!`,
+    en: (v) => `Hey! Tomorrow it's time to take out ${v.type} ${v.emoji} Don't forget to put the bin out tonight!`,
+    es: (v) => `¡Oye! Mañana toca sacar ${v.type} ${v.emoji} ¡No olvides sacar el cubo esta noche!`,
   },
   'notif.cleaningReminder.title': { it: 'Tidix ti ricorda 🧽', en: 'Tidix reminder 🧽', es: 'Tidix te recuerda 🧽' },
   'notif.cleaningReminder.body': {
@@ -163,6 +163,12 @@ const ENTRIES: Record<string, EntryTriple> = {
     it: (v) => `Ehi! Hai visto che ${v.name} sta per scadere? Meglio darci un'occhiata prima che sia tardi 🥲`,
     en: (v) => `Hey! Have you seen that ${v.name} is about to expire? Better take a look before it's too late 🥲`,
     es: (v) => `¡Oye! ¿Has visto que ${v.name} está a punto de caducar? Mejor échale un vistazo antes de que sea tarde 🥲`,
+  },
+  'notif.openedReminder.title': { it: 'Tidix ti ricorda 📦', en: 'Tidix reminder 📦', es: 'Tidix te recuerda 📦' },
+  'notif.openedReminder.body': {
+    it: (v) => `${v.name} è aperto da 3 giorni: l'hai ancora consumato?`,
+    en: (v) => `${v.name} has been opened for 3 days: have you used it up yet?`,
+    es: (v) => `${v.name} está abierto desde hace 3 días: ¿ya lo has consumido?`,
   },
 
   // waste type names with article, used inside the friendly notification body
@@ -214,16 +220,21 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: '🍝 Cooked dishes (pasta, rice, meat, fish): 3-4 days in the fridge\n🍲 Soups and stews: 3-5 days in the fridge\n❄️ If frozen: up to 2-3 months\n\nAlways store leftovers in a closed container and let them cool down within 2 hours of cooking.',
     es: '🍝 Platos cocinados (pasta, arroz, carne, pescado): 3-4 días en la nevera\n🍲 Sopas y guisos: 3-5 días en la nevera\n❄️ Si están congelados: hasta 2-3 meses\n\nGuarda siempre las sobras en un recipiente cerrado y déjalas enfriar en un plazo de 2 horas tras cocinar.',
   },
-  'itemForm.openedToggle': { it: 'Confezione già aperta', en: 'Package already opened', es: 'Paquete ya abierto' },
+  'itemForm.openedToggle': { it: 'Prodotto aperto', en: 'Product opened', es: 'Producto abierto' },
   'itemForm.openedDate.label': { it: 'Aperta il', en: 'Opened on', es: 'Abierto el' },
+  'itemForm.openedReminder.title': { it: 'Promemoria consumo', en: 'Consumption reminder', es: 'Recordatorio de consumo' },
+  'itemForm.openedReminder.message': {
+    it: 'Vuoi ricevere una notifica tra 3 giorni se questo prodotto risulta ancora aperto e non consumato?',
+    en: 'Do you want to receive a notification in 3 days if this product is still opened and not used up?',
+    es: '¿Quieres recibir una notificación dentro de 3 días si este producto sigue abierto y sin consumir?',
+  },
 
   // Overview (Panoramica)
   'overview.title': { it: 'Panoramica', en: 'Overview', es: 'Resumen' },
-  'overview.fab.addStockItem': { it: 'Aggiungi a scorte', en: 'Add to stock', es: 'Añadir a existencias' },
-  'overview.fab.addFromReceipt': { it: 'Aggiungi da scontrino', en: 'Add from receipt', es: 'Añadir desde recibo' },
-  'overview.fab.addShoppingNote': { it: 'Aggiungi a lista spesa', en: 'Add to shopping list', es: 'Añadir a lista de compra' },
-  'overview.fab.addCleaningTask': { it: 'Nuova pulizia', en: 'New cleaning task', es: 'Nueva limpieza' },
-  'overview.fab.addExpense': { it: 'Nuova spesa', en: 'New expense', es: 'Nuevo gasto' },
+  'overview.fab.addStockItem': { it: 'Prodotto in scorte', en: 'Product in stock', es: 'Producto en existencias' },
+  'overview.fab.addFromReceipt': { it: 'Prodotti da scontrino', en: 'Products from receipt', es: 'Productos desde recibo' },
+  'overview.fab.addShoppingNote': { it: 'Prodotto in lista della spesa', en: 'Product in shopping list', es: 'Producto en lista de compra' },
+  'overview.fab.addExpense': { it: 'Spesa condivisa', en: 'Shared expense', es: 'Gasto compartido' },
   'overview.statProducts': { it: (v) => (v.n === 1 ? 'prodotto' : 'prodotti'), en: (v) => (v.n === 1 ? 'product' : 'products'), es: (v) => (v.n === 1 ? 'producto' : 'productos') },
   'overview.allGood': {
     it: 'Nessuna scadenza imminente. Tutto sotto controllo.',
@@ -238,6 +249,12 @@ const ENTRIES: Record<string, EntryTriple> = {
     es: (v) => (v.n === 1 ? `Limpiado hace ${v.n} día` : `Limpiado hace ${v.n} días`),
   },
   'overview.cleaningCard.allGood': { it: 'Tutto pulito! ✨', en: 'All clean! ✨', es: '¡Todo limpio! ✨' },
+  'overview.avanziCard.title': { it: 'Avanzi', en: 'Leftovers', es: 'Sobras' },
+  'overview.avanziCard.allGood': {
+    it: 'Nessun avanzo al momento',
+    en: 'No leftovers right now',
+    es: 'Ninguna sobra por ahora',
+  },
   'overview.openedCard.title': { it: 'Prodotti aperti', en: 'Opened products', es: 'Productos abiertos' },
   'overview.openedCard.allGood': {
     it: 'Nessun prodotto aperto al momento',
@@ -328,6 +345,7 @@ const ENTRIES: Record<string, EntryTriple> = {
 
   // Cleaning
   'cleaning.addToggle': { it: 'Aggiungi ambiente', en: 'Add room', es: 'Añadir espacio' },
+  'cleaning.searchPlaceholder': { it: 'Cerca un ambiente...', en: 'Search a room...', es: 'Busca un espacio...' },
   'cleaning.nameLabel': { it: 'Nome', en: 'Name', es: 'Nombre' },
   'cleaning.namePlaceholder': { it: 'Es. Bagno, Forno, Frigorifero...', en: 'e.g. Bathroom, Oven, Fridge...', es: 'ej. Baño, Horno, Frigorífico...' },
   'cleaning.suggestionsLabel': { it: 'Suggerimenti', en: 'Suggestions', es: 'Sugerencias' },
@@ -417,6 +435,10 @@ const ENTRIES: Record<string, EntryTriple> = {
   // App layout (stack screen titles)
   'appLayout.newProduct': { it: 'Nuovo prodotto', en: 'New product', es: 'Nuevo producto' },
   'appLayout.editProduct': { it: 'Modifica prodotto', en: 'Edit product', es: 'Editar producto' },
+  'appLayout.newCleaningTask': { it: 'Nuova pulizia', en: 'New cleaning task', es: 'Nueva limpieza' },
+  'appLayout.editCleaningTask': { it: 'Modifica pulizia', en: 'Edit cleaning task', es: 'Editar limpieza' },
+  'appLayout.newExpense': { it: 'Nuova spesa', en: 'New expense', es: 'Nuevo gasto' },
+  'appLayout.editExpense': { it: 'Modifica spesa', en: 'Edit expense', es: 'Editar gasto' },
   'appLayout.household': { it: 'La tua famiglia', en: 'Your household', es: 'Tu familia' },
   'appLayout.purchased': { it: 'Acquistati', en: 'Purchased', es: 'Comprados' },
   'appLayout.scanReceipt': { it: 'Aggiungi da scontrino', en: 'Add from receipt', es: 'Añadir desde recibo' },
@@ -490,12 +512,13 @@ const ENTRIES: Record<string, EntryTriple> = {
   'expenses.paidByLabel': { it: 'Pagato da', en: 'Paid by', es: 'Pagado por' },
   'expenses.splitWithLabel': { it: 'Dividi con', en: 'Split with', es: 'Dividir con' },
   'expenses.equalSplitToggle': { it: 'Dividi in parti uguali', en: 'Split equally', es: 'Dividir a partes iguales' },
-  'expenses.alreadyPaidLabel': { it: 'Chi ha già dato la sua parte', en: 'Who already gave their share', es: 'Quién ya ha dado su parte' },
+  'expenses.alreadyPaidLabel': { it: 'Rimborsi ricevuti', en: 'Reimbursements received', es: 'Reembolsos recibidos' },
   'expenses.alreadyPaidHint': {
-    it: 'Indica quanto ognuno ha già versato in contanti, anche se non corrisponde esattamente alla quota.',
-    en: 'Enter how much each person has already paid in cash, even if it does not exactly match their share.',
-    es: 'Indica cuánto ha aportado ya cada uno en efectivo, aunque no coincida exactamente con su parte.',
+    it: 'Indica quanto ognuno ha versato, anche se non corrisponde esattamente alla quota.',
+    en: 'Enter how much each person has paid, even if it does not exactly match their share.',
+    es: 'Indica cuánto ha aportado cada uno, aunque no coincida exactamente con su parte.',
   },
+  'expenses.alreadyPaidFull': { it: 'Ha saldato per intero', en: 'Paid in full', es: 'Ha pagado por completo' },
   'expenses.percentagesLabel': { it: 'Percentuali (devono sommare a 100)', en: 'Percentages (must add up to 100)', es: 'Porcentajes (deben sumar 100)' },
   'expenses.percentagesErrorTitle': { it: 'Spese', en: 'Expenses', es: 'Gastos' },
   'expenses.percentagesError': {

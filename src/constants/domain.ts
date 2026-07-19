@@ -177,9 +177,13 @@ const WASTE_TYPE_EMOJI: Record<WasteType, string> = {
   PLASTICA: '♻️',
   CARTA_CARTONE: '📦',
   VETRO: '🍾',
-  INDIFFERENZIATO: '🗑️',
+  INDIFFERENZIATO: '🚮',
   ALTRO: '📌',
 };
+
+export function getWasteTypeEmoji(key: WasteType): string {
+  return WASTE_TYPE_EMOJI[key];
+}
 
 export function buildWasteTypes(t: TranslateFn): WasteTypeInfo[] {
   return WASTE_TYPE_KEYS.map((key) => ({ key, label: t(`waste.${key}.label`), emoji: WASTE_TYPE_EMOJI[key] }));

@@ -75,6 +75,7 @@ export interface Item {
   purchaseDate: string | null;
   opened: boolean;
   openedDate: string | null;
+  openedReminderEnabled: boolean;
   addedByUserId: string;
   createdAt: string;
   updatedAt: string | null;
@@ -90,6 +91,7 @@ export interface ItemInput {
   purchaseDate?: string | null;
   opened?: boolean;
   openedDate?: string | null;
+  openedReminderEnabled?: boolean;
 }
 
 export interface AdjustQuantityInput {

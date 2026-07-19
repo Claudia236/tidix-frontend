@@ -9,11 +9,14 @@ import { expensesApi } from '../../src/api/expenses';
 import { showAlert } from '../../src/components/AppAlert';
 import { AddFab } from '../../src/components/AddFab';
 import { EmptyState } from '../../src/components/EmptyState';
+import { SettlePaymentDialog } from '../../src/components/SettlePaymentDialog';
 import { useAuth } from '../../src/context/AuthContext';
 import { useI18n, type TranslateFn } from '../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
+import type { UserBalance } from '../../src/types';
+import { computeFifoSettlement, totalOwedByUser } from '../../src/utils/expenseSettlement';
 
 function currentMonth(): string {
   const now = new Date();
@@ -40,13 +43,36 @@ export default function ExpensesScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const [month, setMonth] = useState(currentMonth());
+  const [settleTarget, setSettleTarget] = useState<UserBalance | null>(null);
 
   const expensesQuery = useQuery({ queryKey: ['expenses', month], queryFn: () => expensesApi.list(month) });
   const summaryQuery = useQuery({ queryKey: ['expenses', 'summary', month], queryFn: () => expensesApi.summary(month) });
+  const allExpensesQuery = useQuery({ queryKey: ['expenses', 'all'], queryFn: () => expensesApi.list() });
 
   const removeMutation = useMutation({
     mutationFn: (id: string) => expensesApi.remove(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expenses'] }),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+  });
+
+  const settleMutation = useMutation({
+    mutationFn: async ({ debtorUserId, amount }: { debtorUserId: string; amount: number }) => {
+      const result = computeFifoSettlement(allExpensesQuery.data ?? [], debtorUserId, amount);
+      for (const a of result.allocations) {
+        await expensesApi.setSplitPaidAmount(a.expenseId, debtorUserId, a.newPaidAmount);
+      }
+      return result;
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      setSettleTarget(null);
+      showAlert(
+        t('expenses.settleTitle', { name: settleTarget?.userName ?? '' }),
+        result.leftover > 0.01
+          ? t('expenses.settleSuccessWithLeftover', { n: result.allocations.length, leftover: result.leftover.toFixed(2) })
+          : t('expenses.settleSuccess', { n: result.allocations.length })
+      );
+    },
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
@@ -76,23 +102,34 @@ export default function ExpensesScreen() {
         {summary ? (
           <View style={styles.summaryCard}>
             <Text style={styles.summaryTotal}>{t('expenses.total')}: {summary.totalAmount.toFixed(2)} €</Text>
-            {summary.byUser.map((b) => (
-              <View key={b.userId} style={styles.balanceRow}>
-                <Text style={styles.balanceName}>{b.userId === user?.id ? t('common.you') : b.userName}</Text>
-                <Text
-                  style={[
-                    styles.balanceNet,
-                    { color: b.netBalance > 0.01 ? colors.positive : b.netBalance < -0.01 ? colors.danger : colors.inkSoft },
-                  ]}
+            {summary.byUser.map((b) => {
+              const owesMoney = b.netBalance < -0.01;
+              const Row = owesMoney ? Pressable : View;
+              return (
+                <Row
+                  key={b.userId}
+                  style={styles.balanceRow}
+                  {...(owesMoney ? { onPress: () => setSettleTarget(b) } : {})}
                 >
-                  {b.netBalance > 0.01
-                    ? t('expenses.deveRicevere', { amount: b.netBalance.toFixed(2) })
-                    : b.netBalance < -0.01
-                      ? t('expenses.deveDare', { amount: Math.abs(b.netBalance).toFixed(2) })
-                      : t('expenses.inPari')}
-                </Text>
-              </View>
-            ))}
+                  <View style={styles.balanceRowText}>
+                    <Text style={styles.balanceName}>{b.userId === user?.id ? t('common.you') : b.userName}</Text>
+                    <Text
+                      style={[
+                        styles.balanceNet,
+                        { color: b.netBalance > 0.01 ? colors.positive : owesMoney ? colors.danger : colors.inkSoft },
+                      ]}
+                    >
+                      {b.netBalance > 0.01
+                        ? t('expenses.deveRicevere', { amount: b.netBalance.toFixed(2) })
+                        : owesMoney
+                          ? t('expenses.deveDare', { amount: Math.abs(b.netBalance).toFixed(2) })
+                          : t('expenses.inPari')}
+                    </Text>
+                  </View>
+                  {owesMoney ? <Ionicons name="chevron-forward" size={16} color={colors.inkSoft} /> : null}
+                </Row>
+              );
+            })}
           </View>
         ) : null}
 
@@ -154,6 +191,18 @@ export default function ExpensesScreen() {
       </ScrollView>
 
       <AddFab onPress={() => router.push('/(app)/expense/new')} bottom={24 + insets.bottom} />
+
+      <SettlePaymentDialog
+        visible={settleTarget !== null}
+        personName={settleTarget ? (settleTarget.userId === user?.id ? t('common.you') : settleTarget.userName) : ''}
+        totalOwed={settleTarget ? totalOwedByUser(allExpensesQuery.data ?? [], settleTarget.userId) : 0}
+        submitting={settleMutation.isPending}
+        onCancel={() => setSettleTarget(null)}
+        onConfirm={(amount) => {
+          if (!settleTarget) return;
+          settleMutation.mutate({ debtorUserId: settleTarget.userId, amount });
+        }}
+      />
     </View>
   );
 }
@@ -173,7 +222,16 @@ function createStyles(COLORS: ColorPalette) {
       gap: 10,
     },
     summaryTotal: { fontSize: 15, fontWeight: '800', color: COLORS.ink },
-    balanceRow: { borderTopWidth: 1, borderColor: COLORS.line, paddingTop: 8, marginTop: 2, gap: 2 },
+    balanceRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderTopWidth: 1,
+      borderColor: COLORS.line,
+      paddingTop: 8,
+      marginTop: 2,
+    },
+    balanceRowText: { gap: 2 },
     balanceName: { fontSize: 13, fontWeight: '700', color: COLORS.ink },
     balanceNet: { fontSize: 12, fontWeight: '700' },
     list: { gap: 10 },

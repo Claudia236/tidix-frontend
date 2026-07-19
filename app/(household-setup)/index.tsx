@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { getErrorMessage } from '../../src/api/client';
 import { householdApi } from '../../src/api/household';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
@@ -50,7 +50,7 @@ export default function HouseholdSetupScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={styles.flex} behavior="padding">
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>{t('householdSetup.greeting', { name: user?.name ?? '' })}</Text>
         <Text style={styles.subtitle}>{t('householdSetup.subtitle')}</Text>

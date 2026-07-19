@@ -26,7 +26,7 @@ export const CONSUME_WITHIN_DAYS_CATEGORIES: ReadonlySet<Category> = new Set(['A
 
 const CATEGORY_EMOJI: Record<Category, string> = {
   AVANZI: '🍱',
-  ORTOFRUTTA: '🧺',
+  ORTOFRUTTA: '🍊',
   PASTA_CEREALI: '🍝',
   LEGUMI: '🫘',
   CARNE_PESCE: '🥩',

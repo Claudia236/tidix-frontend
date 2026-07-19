@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { householdApi } from '../api/household';
 import { useAuth } from '../context/AuthContext';
@@ -125,13 +125,13 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
         splits = ids.map((id) => ({
           userId: id,
           percentage: pct[id],
-          paidAmount: Number((paidAmounts[id] ?? '0').replace(',', '.')) || 0,
+          paidAmount: paidInFull[id] ? participantShareAmount(id) : Number((paidAmounts[id] ?? '0').replace(',', '.')) || 0,
         }));
       } else {
         splits = ids.map((id) => ({
           userId: id,
           percentage: Number((customPercentages[id] ?? '0').replace(',', '.')) || 0,
-          paidAmount: Number((paidAmounts[id] ?? '0').replace(',', '.')) || 0,
+          paidAmount: paidInFull[id] ? participantShareAmount(id) : Number((paidAmounts[id] ?? '0').replace(',', '.')) || 0,
         }));
         const sum = splits.reduce((s, sp) => s + sp.percentage, 0);
         if (Math.abs(sum - 100) > 0.5) {
@@ -150,7 +150,7 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <ScrollView
         contentContainerStyle={[styles.container, webCentered, { paddingBottom: 40 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
@@ -212,7 +212,7 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
                     </Pressable>
                     <Text style={styles.percentName}>{id === user?.id ? t('common.you') : m?.name ?? id}</Text>
                     <TextInput
-                      value={paidAmounts[id] ?? ''}
+                      value={full ? participantShareAmount(id).toFixed(2) : paidAmounts[id] ?? ''}
                       onChangeText={(v) => setPaidAmounts((prev) => ({ ...prev, [id]: v }))}
                       editable={!full}
                       keyboardType="numeric"

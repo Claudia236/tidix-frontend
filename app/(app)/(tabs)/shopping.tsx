@@ -114,6 +114,8 @@ export default function ShoppingScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={[styles.container, webCentered]}>
+      <SectionTitle logo>{t('shopping.title')}</SectionTitle>
+
       {purchasedCount > 0 ? (
         <Pressable style={styles.purchasedBanner} onPress={() => router.push('/(app)/shopping-purchased')}>
           <View style={styles.purchasedBannerLeft}>
@@ -123,8 +125,6 @@ export default function ShoppingScreen() {
           <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
         </Pressable>
       ) : null}
-
-      <SectionTitle logo>{t('shopping.title')}</SectionTitle>
 
       <FlatList
         data={toBuyRows}

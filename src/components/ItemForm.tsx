@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { storageLocationsApi } from '../api/storageLocations';
 import { CONSUME_WITHIN_DAYS_CATEGORIES, useSelectableCategories, useLocationColor, useUnitLabel, UNITS } from '../constants/domain';
@@ -74,9 +74,10 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
 
   const canSubmit = name.trim().length > 0 && !!effectiveLocationId;
   const usesConsumeWithinDays = CONSUME_WITHIN_DAYS_CATEGORIES.has(category);
+  const isAvanzi = category === 'AVANZI';
   const hidesExpiration = category === 'CASA_PULIZIA';
-  const hidesPurchaseDate = category === 'AVANZI';
-  const hidesOpenedToggle = hidesExpiration || hidesPurchaseDate;
+  const hidesPurchaseDate = category === 'CASA_PULIZIA';
+  const hidesOpenedToggle = hidesExpiration || isAvanzi;
 
   function handleSubmit() {
     if (!canSubmit) return;
@@ -129,7 +130,7 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <ScrollView
         contentContainerStyle={[styles.container, { paddingBottom: 40 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
@@ -241,7 +242,7 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
 
       {!hidesPurchaseDate ? (
         <View style={styles.field}>
-          <Text style={styles.label}>{t('itemForm.purchaseDate.label')}</Text>
+          <Text style={styles.label}>{t(isAvanzi ? 'itemForm.cookedDate.label' : 'itemForm.purchaseDate.label')}</Text>
           <DatePickerField value={purchaseDate} onChange={setPurchaseDate} allowClear={false} />
         </View>
       ) : null}

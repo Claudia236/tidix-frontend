@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { cleaningApi } from '../../../src/api/cleaning';
@@ -45,6 +45,12 @@ export default function OverviewScreen() {
   const [zoneEmoji, setZoneEmoji] = useState('');
   const [collapsedCards, setCollapsedCards] = useState<Set<string>>(
     () => new Set(['avanzi', 'opened', 'expiring', 'cleaning'])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      setCollapsedCards(new Set(['avanzi', 'opened', 'expiring', 'cleaning']));
+    }, [])
   );
 
   function toggleCardCollapsed(key: string) {

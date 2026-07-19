@@ -536,6 +536,24 @@ const ENTRIES: Record<string, EntryTriple> = {
   'expenses.emptyTitle': { it: 'Nessuna spesa questo mese', en: 'No expenses this month', es: 'Sin gastos este mes' },
   'expenses.emptySubtitle': { it: 'Aggiungi la prima spesa condivisa.', en: 'Add the first shared expense.', es: 'Añade el primer gasto compartido.' },
   'expenses.paidOfTotal': { it: (v) => `${v.paid} di ${v.total} €`, en: (v) => `${v.paid} of ${v.total} €`, es: (v) => `${v.paid} de ${v.total} €` },
+  'expenses.settleTitle': { it: (v) => `Registra pagamento di ${v.name}`, en: (v) => `Record payment from ${v.name}`, es: (v) => `Registrar pago de ${v.name}` },
+  'expenses.settleHint': {
+    it: 'L\'importo verrà usato per saldare le quote non pagate, dalla spesa più vecchia alla più recente.',
+    en: 'The amount will be used to settle unpaid shares, from the oldest expense to the most recent.',
+    es: 'El importe se usará para saldar las cuotas no pagadas, desde el gasto más antiguo al más reciente.',
+  },
+  'expenses.settleAmountLabel': { it: 'Importo versato (€)', en: 'Amount paid (€)', es: 'Importe pagado (€)' },
+  'expenses.settleConfirm': { it: 'Registra pagamento', en: 'Record payment', es: 'Registrar pago' },
+  'expenses.settleSuccess': {
+    it: (v) => `Pagamento allocato su ${v.n} ${v.n === 1 ? 'spesa' : 'spese'}.`,
+    en: (v) => `Payment allocated across ${v.n} ${v.n === 1 ? 'expense' : 'expenses'}.`,
+    es: (v) => `Pago asignado a ${v.n} ${v.n === 1 ? 'gasto' : 'gastos'}.`,
+  },
+  'expenses.settleSuccessWithLeftover': {
+    it: (v) => `Pagamento allocato su ${v.n} ${v.n === 1 ? 'spesa' : 'spese'}. Avanzano ${v.leftover} € non dovuti.`,
+    en: (v) => `Payment allocated across ${v.n} ${v.n === 1 ? 'expense' : 'expenses'}. ${v.leftover} € left over, not owed.`,
+    es: (v) => `Pago asignado a ${v.n} ${v.n === 1 ? 'gasto' : 'gastos'}. Sobran ${v.leftover} € no adeudados.`,
+  },
 
   // Household
   'household.inviteCodeLabel': { it: 'Codice invito', en: 'Invite code', es: 'Código de invitación' },

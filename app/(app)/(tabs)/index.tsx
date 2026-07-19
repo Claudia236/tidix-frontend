@@ -118,7 +118,7 @@ export default function OverviewScreen() {
 
   const expiringItems = useMemo(() => {
     const combined = [...(expiredQuery.data ?? []), ...(expiringQuery.data ?? [])];
-    return combined.filter((i) => i.category !== 'AVANZI').sort((a, b) => (a.daysUntilExpiration ?? 0) - (b.daysUntilExpiration ?? 0));
+    return combined.filter((i) => i.category !== 'AVANZI' && !i.opened).sort((a, b) => (a.daysUntilExpiration ?? 0) - (b.daysUntilExpiration ?? 0));
   }, [expiredQuery.data, expiringQuery.data]);
 
   const openedItems = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.opened), [allItemsQuery.data]);

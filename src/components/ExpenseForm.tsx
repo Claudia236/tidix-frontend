@@ -196,6 +196,29 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
           <Text style={styles.equalToggleText}>{t('expenses.equalSplitToggle')}</Text>
         </Pressable>
 
+        {!equalSplit ? (
+          <View style={styles.field}>
+            <Text style={styles.label}>{t('expenses.percentagesLabel')}</Text>
+            {Array.from(participantIds).map((id) => {
+              const m = members.find((mm) => mm.id === id);
+              return (
+                <View key={id} style={styles.percentRow}>
+                  <Text style={styles.percentName}>{id === user?.id ? t('common.you') : m?.name ?? id}</Text>
+                  <TextInput
+                    value={customPercentages[id] ?? ''}
+                    onChangeText={(v) => setCustomPercentages((prev) => ({ ...prev, [id]: v }))}
+                    keyboardType="numeric"
+                    placeholder="0"
+                    placeholderTextColor={colors.inkSoft}
+                    style={styles.percentInput}
+                  />
+                  <Text style={styles.percentSign}>%</Text>
+                </View>
+              );
+            })}
+          </View>
+        ) : null}
+
         {Array.from(participantIds).filter((id) => id !== effectivePaidBy).length > 0 ? (
           <View style={styles.field}>
             <Text style={styles.label}>{t('expenses.alreadyPaidLabel')}</Text>
@@ -224,29 +247,6 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
                   </View>
                 );
               })}
-          </View>
-        ) : null}
-
-        {!equalSplit ? (
-          <View style={styles.field}>
-            <Text style={styles.label}>{t('expenses.percentagesLabel')}</Text>
-            {Array.from(participantIds).map((id) => {
-              const m = members.find((mm) => mm.id === id);
-              return (
-                <View key={id} style={styles.percentRow}>
-                  <Text style={styles.percentName}>{id === user?.id ? t('common.you') : m?.name ?? id}</Text>
-                  <TextInput
-                    value={customPercentages[id] ?? ''}
-                    onChangeText={(v) => setCustomPercentages((prev) => ({ ...prev, [id]: v }))}
-                    keyboardType="numeric"
-                    placeholder="0"
-                    placeholderTextColor={colors.inkSoft}
-                    style={styles.percentInput}
-                  />
-                  <Text style={styles.percentSign}>%</Text>
-                </View>
-              );
-            })}
           </View>
         ) : null}
 

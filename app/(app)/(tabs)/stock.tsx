@@ -71,7 +71,8 @@ export default function StockScreen() {
       } else {
         setFilterLocationId('TUTTI');
       }
-    }, [])
+      setCollapsedCategories(new Set(categories.map((c) => c.key)));
+    }, [categories])
   );
 
   const itemsQuery = useQuery({

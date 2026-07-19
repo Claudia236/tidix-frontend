@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCleaningSuggestions, type CleaningSuggestion } from '../constants/domain';
 import { useI18n } from '../i18n/I18nContext';
@@ -46,7 +46,7 @@ export function CleaningTaskForm({ initial, submitLabel, submitting, onSubmit, o
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <ScrollView
         contentContainerStyle={[styles.container, webCentered, { paddingBottom: 40 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"

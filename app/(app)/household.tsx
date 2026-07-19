@@ -183,7 +183,7 @@ export default function HouseholdScreen() {
   const isOwner = household.ownerId === user?.id;
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 48 + insets.bottom }]}>
       {editingName ? (
         <View style={styles.nameEditRow}>

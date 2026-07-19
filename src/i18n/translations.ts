@@ -193,6 +193,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   'itemForm.quantity.label': { it: 'Quantità', en: 'Quantity', es: 'Cantidad' },
   'itemForm.unit.label': { it: 'Unità', en: 'Unit', es: 'Unidad' },
   'itemForm.purchaseDate.label': { it: 'Data di acquisto', en: 'Purchase date', es: 'Fecha de compra' },
+  'itemForm.cookedDate.label': { it: 'Data in cui è stato cucinato', en: 'Date it was cooked', es: 'Fecha en que se cocinó' },
   'itemForm.expirationDate.label': { it: 'Scadenza (opzionale)', en: 'Expiry date (optional)', es: 'Caducidad (opcional)' },
   'itemForm.consumeWithinDays.label': {
     it: 'Consumare entro (giorni, opzionale)',
@@ -255,6 +256,12 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: 'No leftovers right now',
     es: 'Ninguna sobra por ahora',
   },
+  'overview.avanziCard.cookedToday': { it: 'Cucinato oggi', en: 'Cooked today', es: 'Cocinado hoy' },
+  'overview.avanziCard.cookedDaysAgo': {
+    it: (v) => (v.n === 1 ? `Cucinato ${v.n} giorno fa` : `Cucinato ${v.n} giorni fa`),
+    en: (v) => (v.n === 1 ? `Cooked ${v.n} day ago` : `Cooked ${v.n} days ago`),
+    es: (v) => (v.n === 1 ? `Cocinado hace ${v.n} día` : `Cocinado hace ${v.n} días`),
+  },
   'overview.openedCard.title': { it: 'Prodotti aperti', en: 'Opened products', es: 'Productos abiertos' },
   'overview.openedCard.allGood': {
     it: 'Nessun prodotto aperto al momento',
@@ -273,9 +280,9 @@ const ENTRIES: Record<string, EntryTriple> = {
     es: (v) => (v.n === 1 ? `${v.n} producto para comprar` : `${v.n} productos para comprar`),
   },
   'overview.wasteTomorrow': {
-    it: (v) => `Ehi! Domani è l'ora di buttare ${v.types} 🗑️\nNon dimenticare di mettere fuori il secchio stasera!`,
-    en: (v) => `Hey! Tomorrow it's time to take out ${v.types} 🗑️\nDon't forget to put the bin out tonight!`,
-    es: (v) => `¡Oye! Mañana toca sacar ${v.types} 🗑️\n¡No olvides sacar el cubo esta noche!`,
+    it: (v) => `Ehi! Non dimenticare di mettere fuori il secchio ${v.types} stasera!`,
+    en: (v) => `Hey! Don't forget to put out the bin for ${v.types} tonight!`,
+    es: (v) => `¡Oye! No olvides sacar el cubo de ${v.types} esta noche!`,
   },
 
   // Expiry status labels (used on item cards and the expiring-products overview card)

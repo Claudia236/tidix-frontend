@@ -12,7 +12,7 @@ import { wasteApi } from '../../../src/api/waste';
 import { showAlert } from '../../../src/components/AppAlert';
 import { PrimaryButton } from '../../../src/components/PrimaryButton';
 import { SectionTitle } from '../../../src/components/SectionTitle';
-import { findCategoryInfo, jsWeekdayToDay, useCategories, wasteTypesCollectedOn } from '../../../src/constants/domain';
+import { findCategoryInfo, getWasteTypeEmoji, jsWeekdayToDay, useCategories, wasteTypesCollectedOn } from '../../../src/constants/domain';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import { syncExpiryReminders } from '../../../src/notifications/expiryReminders';
 import { syncOpenedReminders } from '../../../src/notifications/openedReminders';
@@ -21,7 +21,7 @@ import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import { webCentered } from '../../../src/theme/responsive';
 import type { Item, ZoneSummary } from '../../../src/types';
-import { formatShortDate, getExpiryInfo } from '../../../src/utils/expiry';
+import { daysUntil, formatShortDate, getExpiryInfo } from '../../../src/utils/expiry';
 
 export default function OverviewScreen() {
   const router = useRouter();
@@ -43,7 +43,9 @@ export default function OverviewScreen() {
   const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
   const [zoneName, setZoneName] = useState('');
   const [zoneEmoji, setZoneEmoji] = useState('');
-  const [collapsedCards, setCollapsedCards] = useState<Set<string>>(new Set());
+  const [collapsedCards, setCollapsedCards] = useState<Set<string>>(
+    () => new Set(['avanzi', 'opened', 'expiring', 'cleaning'])
+  );
 
   function toggleCardCollapsed(key: string) {
     setCollapsedCards((prev) => {
@@ -169,7 +171,7 @@ export default function OverviewScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <KeyboardAvoidingView style={styles.flex} behavior="padding">
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={<RefreshControl refreshing={summaryQuery.isFetching} onRefresh={refresh} />}
@@ -197,7 +199,7 @@ export default function OverviewScreen() {
             <Ionicons name="trash-outline" size={18} color={colors.danger} />
             <Text style={styles.wasteBannerText}>
               {t('overview.wasteTomorrow', {
-                types: wasteTomorrow.map((w) => t(`wasteNotif.${w}`)).join(', '),
+                types: wasteTomorrow.map((w) => `${t(`wasteNotif.${w}`)} ${getWasteTypeEmoji(w)}`).join(', '),
               })}
             </Text>
           </Pressable>
@@ -226,11 +228,17 @@ export default function OverviewScreen() {
           ) : (
             <View style={styles.detailCardList}>
               {avanziItems.map((item) => {
-                const info = getExpiryInfo(item.expirationDate, t, language);
+                const cookedDaysAgo = item.purchaseDate ? -daysUntil(item.purchaseDate) : null;
+                const cookedLabel =
+                  cookedDaysAgo === null || cookedDaysAgo < 0
+                    ? null
+                    : cookedDaysAgo === 0
+                      ? t('overview.avanziCard.cookedToday')
+                      : t('overview.avanziCard.cookedDaysAgo', { n: cookedDaysAgo });
                 return (
                   <Pressable key={item.id} style={styles.detailRow} onPress={() => goToItem(item)}>
                     <Text style={styles.detailRowText} numberOfLines={1}>{categoryEmoji(item.category)} {item.name}</Text>
-                    {info ? <Text style={styles.detailRowMeta}>{info.label}</Text> : null}
+                    {cookedLabel ? <Text style={styles.detailRowMeta}>{cookedLabel}</Text> : null}
                   </Pressable>
                 );
               })}

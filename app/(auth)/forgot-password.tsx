@@ -1,6 +1,6 @@
 import { Link, useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { authApi } from '../../src/api/auth';
 import { getErrorMessage } from '../../src/api/client';
 import { PasswordField } from '../../src/components/PasswordField';
@@ -54,7 +54,7 @@ export default function ForgotPasswordScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={styles.flex} behavior="padding">
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.logo}>{t('auth.forgot.title')}</Text>
         <Text style={styles.subtitle}>

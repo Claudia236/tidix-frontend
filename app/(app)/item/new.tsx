@@ -51,6 +51,7 @@ export default function NewItemScreen() {
         submitLabel={t('common.save')}
         submitting={createMutation.isPending}
         onSubmit={(input) => createMutation.mutate(input)}
+        enableScan
       />
     </View>
   );

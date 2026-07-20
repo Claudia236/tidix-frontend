@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import TextRecognition from '@react-native-ml-kit/text-recognition';
+import * as ImagePicker from 'expo-image-picker';
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { storageLocationsApi } from '../api/storageLocations';
 import { CONSUME_WITHIN_DAYS_CATEGORIES, useSelectableCategories, useLocationColor, useUnitLabel, UNITS } from '../constants/domain';
@@ -12,10 +14,13 @@ import { useTheme } from '../theme/ThemeContext';
 import { webCentered } from '../theme/responsive';
 import type { Category, ItemInput, Unit } from '../types';
 import { daysUntil, toLocalISODate, todayLocalISODate } from '../utils/expiry';
+import { parseExpirationDate, parseProductName } from '../utils/productLabelParser';
 import { showAlert } from './AppAlert';
 import { DatePickerField } from './DatePickerField';
 import { PrimaryButton } from './PrimaryButton';
 import { TextField } from './TextField';
+
+const MAX_SCAN_PHOTOS = 2;
 
 interface Props {
   initial?: Partial<ItemInput>;
@@ -24,9 +29,10 @@ interface Props {
   onSubmit: (input: ItemInput) => void;
   onDelete?: () => void;
   deleting?: boolean;
+  enableScan?: boolean;
 }
 
-export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete, deleting }: Props) {
+export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete, deleting, enableScan }: Props) {
   const { colors } = useTheme();
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
@@ -58,6 +64,9 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   const [addingLocation, setAddingLocation] = useState(false);
   const [newLocationName, setNewLocationName] = useState('');
   const [newLocationEmoji, setNewLocationEmoji] = useState('');
+  const [scanModalVisible, setScanModalVisible] = useState(false);
+  const [scanPhotos, setScanPhotos] = useState<string[]>([]);
+  const [scanRecognizing, setScanRecognizing] = useState(false);
 
   const effectiveLocationId = storageLocationId || locations[0]?.id || '';
 
@@ -127,6 +136,70 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   function handleCreateLocation() {
     if (!newLocationName.trim()) return;
     createLocationMutation.mutate();
+  }
+
+  function closeScanModal() {
+    setScanModalVisible(false);
+    setScanPhotos([]);
+  }
+
+  async function addScanPhoto(source: 'camera' | 'gallery') {
+    if (source === 'camera') {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        showAlert(t('common.error'), t('scanProduct.cameraPermissionDenied'));
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({ mediaTypes: 'images', quality: 0.7 });
+      if (!result.canceled && result.assets[0]) {
+        setScanPhotos((prev) => [...prev, result.assets[0].uri].slice(0, MAX_SCAN_PHOTOS));
+      }
+    } else {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        showAlert(t('common.error'), t('scanProduct.libraryPermissionDenied'));
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', quality: 0.7 });
+      if (!result.canceled && result.assets[0]) {
+        setScanPhotos((prev) => [...prev, result.assets[0].uri].slice(0, MAX_SCAN_PHOTOS));
+      }
+    }
+  }
+
+  function removeScanPhoto(uri: string) {
+    setScanPhotos((prev) => prev.filter((p) => p !== uri));
+  }
+
+  async function runScan() {
+    if (scanPhotos.length === 0) return;
+    setScanRecognizing(true);
+    try {
+      const texts = await Promise.all(scanPhotos.map((uri) => TextRecognition.recognize(uri)));
+      const combinedText = texts.map((r) => r.text).join('\n');
+      const recognizedName = parseProductName(combinedText);
+      const recognizedDate = parseExpirationDate(combinedText);
+
+      if (!recognizedName && !recognizedDate) {
+        showAlert(t('common.error'), t('scanProduct.noDataFound'));
+        return;
+      }
+
+      if (recognizedName) setName(recognizedName);
+      if (recognizedDate) {
+        if (usesConsumeWithinDays) {
+          setConsumeWithinDays(String(Math.max(0, daysUntil(recognizedDate))));
+        } else {
+          setExpirationDate(recognizedDate);
+        }
+      }
+      closeScanModal();
+      showAlert(t('scanProduct.resultTitle'), t('scanProduct.resultMessage'));
+    } catch {
+      showAlert(t('common.error'), t('scanProduct.recognizeError'));
+    } finally {
+      setScanRecognizing(false);
+    }
   }
 
   return (
@@ -301,6 +374,59 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
         <PrimaryButton label={submitLabel} onPress={handleSubmit} disabled={!canSubmit} loading={submitting} style={{ flex: 1 }} />
       </View>
       </ScrollView>
+
+      {enableScan ? (
+        <Pressable
+          style={[styles.scanFab, { bottom: 24 + insets.bottom }]}
+          onPress={() => setScanModalVisible(true)}
+        >
+          <Text style={styles.scanFabEmoji}>📷</Text>
+        </Pressable>
+      ) : null}
+
+      {enableScan ? (
+        <Modal visible={scanModalVisible} transparent animationType="fade" onRequestClose={closeScanModal}>
+          <View style={styles.scanBackdrop}>
+            <View style={styles.scanCard}>
+              <Text style={styles.scanTitle}>{t('scanProduct.title')}</Text>
+              <Text style={styles.scanHint}>{t('scanProduct.hint')}</Text>
+
+              <View style={styles.scanPhotosRow}>
+                {scanPhotos.map((uri) => (
+                  <View key={uri} style={styles.scanPhotoSlot}>
+                    <Image source={{ uri }} style={styles.scanPhoto} resizeMode="cover" />
+                    <Pressable onPress={() => removeScanPhoto(uri)} style={styles.scanPhotoRemove} hitSlop={8}>
+                      <Ionicons name="close" size={14} color={colors.white} />
+                    </Pressable>
+                  </View>
+                ))}
+                {scanPhotos.length < MAX_SCAN_PHOTOS ? (
+                  <Pressable
+                    style={[styles.scanPhotoSlot, styles.scanPhotoAdd]}
+                    onPress={() => addScanPhoto('camera')}
+                  >
+                    <Ionicons name="camera-outline" size={22} color={colors.brand} />
+                  </Pressable>
+                ) : null}
+              </View>
+
+              <Pressable onPress={() => addScanPhoto('gallery')}>
+                <Text style={styles.scanGalleryLink}>{t('scanProduct.pickFromGallery')}</Text>
+              </Pressable>
+
+              <PrimaryButton
+                label={t('scanProduct.analyze')}
+                onPress={runScan}
+                disabled={scanPhotos.length === 0}
+                loading={scanRecognizing}
+              />
+              <Pressable onPress={closeScanModal} hitSlop={8}>
+                <Text style={styles.scanCancel}>{t('common.cancel')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+      ) : null}
     </KeyboardAvoidingView>
   );
 }
@@ -399,5 +525,55 @@ function createStyles(COLORS: ColorPalette) {
     openedToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     openedToggleText: { fontSize: 13, color: COLORS.ink },
     actions: { flexDirection: 'row', gap: 12, marginTop: 8 },
+    scanFab: {
+      position: 'absolute',
+      right: 20,
+      width: 46,
+      height: 46,
+      borderRadius: 23,
+      backgroundColor: COLORS.brand,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: '#000',
+      shadowOpacity: 0.15,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 3,
+    },
+    scanFabEmoji: { fontSize: 20 },
+    scanBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center', padding: 24 },
+    scanCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 14, width: '100%', maxWidth: 360 },
+    scanTitle: { fontSize: 15, fontWeight: '700', color: COLORS.ink },
+    scanHint: { fontSize: 13, color: COLORS.inkSoft, lineHeight: 18 },
+    scanPhotosRow: { flexDirection: 'row', gap: 10 },
+    scanPhotoSlot: {
+      width: 90,
+      height: 90,
+      borderRadius: 12,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: COLORS.line,
+    },
+    scanPhoto: { width: '100%', height: '100%' },
+    scanPhotoRemove: {
+      position: 'absolute',
+      top: 4,
+      right: 4,
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    scanPhotoAdd: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderStyle: 'dashed',
+      borderColor: COLORS.brand,
+      backgroundColor: COLORS.bg,
+    },
+    scanGalleryLink: { fontSize: 12, fontWeight: '700', color: COLORS.brand },
+    scanCancel: { textAlign: 'center', fontSize: 13, color: COLORS.inkSoft, marginTop: 4 },
   });
 }

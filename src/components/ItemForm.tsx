@@ -17,6 +17,7 @@ import { daysUntil, toLocalISODate, todayLocalISODate } from '../utils/expiry';
 import { parseExpirationDate, parseProductName } from '../utils/productLabelParser';
 import { showAlert } from './AppAlert';
 import { DatePickerField } from './DatePickerField';
+import { OpenedReminderDialog } from './OpenedReminderDialog';
 import { PrimaryButton } from './PrimaryButton';
 import { TextField } from './TextField';
 
@@ -61,6 +62,8 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
     initial?.openedDate ?? todayLocalISODate()
   );
   const [openedReminderEnabled, setOpenedReminderEnabled] = useState(initial?.openedReminderEnabled ?? false);
+  const [openedReminderDays, setOpenedReminderDays] = useState(initial?.openedReminderDays ?? 3);
+  const [reminderDialogVisible, setReminderDialogVisible] = useState(false);
   const [addingLocation, setAddingLocation] = useState(false);
   const [newLocationName, setNewLocationName] = useState('');
   const [newLocationEmoji, setNewLocationEmoji] = useState('');
@@ -115,6 +118,7 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
       opened: effectiveOpened,
       openedDate: effectiveOpened ? openedDate : null,
       openedReminderEnabled: effectiveOpened ? openedReminderEnabled : false,
+      openedReminderDays: effectiveOpened && openedReminderEnabled ? openedReminderDays : 3,
     });
   }
 
@@ -122,15 +126,23 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
     setOpened((prev) => {
       const next = !prev;
       if (next) {
-        showAlert(t('itemForm.openedReminder.title'), t('itemForm.openedReminder.message'), [
-          { text: t('common.no'), style: 'cancel', onPress: () => setOpenedReminderEnabled(false) },
-          { text: t('common.yes'), onPress: () => setOpenedReminderEnabled(true) },
-        ]);
+        setReminderDialogVisible(true);
       } else {
         setOpenedReminderEnabled(false);
       }
       return next;
     });
+  }
+
+  function handleReminderConfirm(days: number) {
+    setOpenedReminderEnabled(true);
+    setOpenedReminderDays(days);
+    setReminderDialogVisible(false);
+  }
+
+  function handleReminderCancel() {
+    setOpenedReminderEnabled(false);
+    setReminderDialogVisible(false);
   }
 
   function handleCreateLocation() {
@@ -362,6 +374,13 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
             <>
               <Text style={styles.label}>{t('itemForm.openedDate.label')}</Text>
               <DatePickerField value={openedDate} onChange={setOpenedDate} allowClear={false} />
+              {openedReminderEnabled ? (
+                <Pressable onPress={() => setReminderDialogVisible(true)} hitSlop={8}>
+                  <Text style={styles.reminderEditLink}>
+                    {t('itemForm.openedReminder.editLink', { n: openedReminderDays })}
+                  </Text>
+                </Pressable>
+              ) : null}
             </>
           ) : null}
         </View>
@@ -427,6 +446,13 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
           </View>
         </Modal>
       ) : null}
+
+      <OpenedReminderDialog
+        visible={reminderDialogVisible}
+        initialDays={openedReminderDays}
+        onConfirm={handleReminderConfirm}
+        onCancel={handleReminderCancel}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -524,6 +550,7 @@ function createStyles(COLORS: ColorPalette) {
     consumeWithinDaysHint: { fontSize: 11, color: COLORS.inkSoft, marginTop: -4 },
     openedToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     openedToggleText: { fontSize: 13, color: COLORS.ink },
+    reminderEditLink: { fontSize: 12, fontWeight: '600', color: COLORS.brand, marginTop: -4 },
     actions: { flexDirection: 'row', gap: 12, marginTop: 8 },
     scanFab: {
       position: 'absolute',

@@ -166,9 +166,9 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'notif.openedReminder.title': { it: 'Tidix ti ricorda 📦', en: 'Tidix reminder 📦', es: 'Tidix te recuerda 📦' },
   'notif.openedReminder.body': {
-    it: (v) => `${v.name} è aperto da 3 giorni: l'hai ancora consumato?`,
-    en: (v) => `${v.name} has been opened for 3 days: have you used it up yet?`,
-    es: (v) => `${v.name} está abierto desde hace 3 días: ¿ya lo has consumido?`,
+    it: (v) => `${v.name} è aperto da ${v.days} ${v.days === 1 ? 'giorno' : 'giorni'}: l'hai ancora consumato?`,
+    en: (v) => `${v.name} has been opened for ${v.days} ${v.days === 1 ? 'day' : 'days'}: have you used it up yet?`,
+    es: (v) => `${v.name} está abierto desde hace ${v.days} ${v.days === 1 ? 'día' : 'días'}: ¿ya lo has consumido?`,
   },
 
   // waste type names with article, used inside the friendly notification body
@@ -225,9 +225,15 @@ const ENTRIES: Record<string, EntryTriple> = {
   'itemForm.openedDate.label': { it: 'Aperta il', en: 'Opened on', es: 'Abierto el' },
   'itemForm.openedReminder.title': { it: 'Promemoria consumo', en: 'Consumption reminder', es: 'Recordatorio de consumo' },
   'itemForm.openedReminder.message': {
-    it: 'Vuoi ricevere una notifica tra 3 giorni se questo prodotto risulta ancora aperto e non consumato?',
-    en: 'Do you want to receive a notification in 3 days if this product is still opened and not used up?',
-    es: '¿Quieres recibir una notificación dentro de 3 días si este producto sigue abierto y sin consumir?',
+    it: 'Vuoi ricevere una notifica se questo prodotto risulta ancora aperto e non consumato? Scegli tra quanti giorni.',
+    en: 'Do you want to receive a notification if this product is still opened and not used up? Choose after how many days.',
+    es: '¿Quieres recibir una notificación si este producto sigue abierto y sin consumir? Elige en cuántos días.',
+  },
+  'itemForm.openedReminder.daysLabel': { it: 'Tra quanti giorni', en: 'After how many days', es: 'En cuántos días' },
+  'itemForm.openedReminder.editLink': {
+    it: (v) => `Promemoria tra ${v.n} ${v.n === 1 ? 'giorno' : 'giorni'} · Modifica`,
+    en: (v) => `Reminder in ${v.n} ${v.n === 1 ? 'day' : 'days'} · Edit`,
+    es: (v) => `Recordatorio en ${v.n} ${v.n === 1 ? 'día' : 'días'} · Editar`,
   },
 
   // Overview (Panoramica)

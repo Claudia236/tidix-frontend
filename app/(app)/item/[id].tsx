@@ -70,6 +70,7 @@ export default function EditItemScreen() {
           opened: item.opened,
           openedDate: item.openedDate,
           openedReminderEnabled: item.openedReminderEnabled,
+          openedReminderDays: item.openedReminderDays,
         }}
         submitLabel={t('common.saveChanges')}
         submitting={updateMutation.isPending}

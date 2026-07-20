@@ -7,12 +7,12 @@ import { CHANNEL_ID, cancelByPrefix, ensureChannel, ensureNotificationPermission
 const REMINDER_HOUR = 9;
 const REMINDER_MINUTE = 0;
 const PREFIX = 'opened-reminder-';
-const DAYS_UNTIL_REMINDER = 3;
 
 /**
- * Riprogramma i promemoria "prodotto aperto da 3 giorni" da zero. Solo i
+ * Riprogramma i promemoria "prodotto aperto da N giorni" da zero. Solo i
  * prodotti aperti per cui l'utente ha attivato il promemoria (vedi popup in
- * ItemForm) ricevono una notifica singola (non ricorrente).
+ * ItemForm) ricevono una notifica singola (non ricorrente), dopo il numero
+ * di giorni scelto dall'utente per quel prodotto (openedReminderDays).
  */
 export async function syncOpenedReminders(items: Item[], t: TranslateFn): Promise<void> {
   if (Platform.OS === 'web') return;
@@ -30,7 +30,7 @@ export async function syncOpenedReminders(items: Item[], t: TranslateFn): Promis
     if (!item.opened || !item.openedReminderEnabled || !item.openedDate) continue;
 
     const reminderDate = new Date(`${item.openedDate}T00:00:00`);
-    reminderDate.setDate(reminderDate.getDate() + DAYS_UNTIL_REMINDER);
+    reminderDate.setDate(reminderDate.getDate() + (item.openedReminderDays || 3));
     reminderDate.setHours(REMINDER_HOUR, REMINDER_MINUTE, 0, 0);
 
     if (reminderDate.getTime() <= now.getTime()) continue;
@@ -39,7 +39,7 @@ export async function syncOpenedReminders(items: Item[], t: TranslateFn): Promis
       identifier: `${PREFIX}${item.id}`,
       content: {
         title: t('notif.openedReminder.title'),
-        body: t('notif.openedReminder.body', { name: item.name }),
+        body: t('notif.openedReminder.body', { name: item.name, days: item.openedReminderDays || 3 }),
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,

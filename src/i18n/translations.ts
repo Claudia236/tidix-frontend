@@ -660,12 +660,12 @@ const ENTRIES: Record<string, EntryTriple> = {
   'household.themeLight': { it: 'Chiaro', en: 'Light', es: 'Claro' },
   'household.themeDark': { it: 'Scuro', en: 'Dark', es: 'Oscuro' },
   'household.notificationsLabel': { it: 'Notifiche', en: 'Notifications', es: 'Notificaciones' },
-  'household.notificationsGranted': { it: 'Attive ✓', en: 'Enabled ✓', es: 'Activadas ✓' },
-  'household.notificationsDisabledByUser': {
-    it: 'Disattivate: non riceverai promemoria di scadenze, pulizie e rifiuti',
-    en: "Disabled: you won't receive expiry, cleaning and waste reminders",
-    es: 'Desactivadas: no recibirás avisos de caducidad, limpieza y basura',
+  'household.notificationsHint': {
+    it: 'Per ricevere notifiche su prodotti scaduti, pulizie da fare, raccolta rifiuti e altro, vai nelle impostazioni del telefono e attiva le notifiche per Tidix.',
+    en: 'To receive notifications about expired products, chores due, waste collection and more, go to your phone settings and enable notifications for Tidix.',
+    es: 'Para recibir notificaciones sobre productos caducados, limpiezas pendientes, recogida de basura y más, ve a los ajustes del teléfono y activa las notificaciones para Tidix.',
   },
+  'household.notificationsGranted': { it: 'Attive ✓', en: 'Enabled ✓', es: 'Activadas ✓' },
   'household.notificationsUndetermined': {
     it: 'Non ancora attivate',
     en: 'Not enabled yet',

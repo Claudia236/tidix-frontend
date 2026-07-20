@@ -15,7 +15,6 @@ import type { Language } from '../../src/i18n/translations';
 import {
   ensureNotificationPermissions,
   getNotificationPermissionStatus,
-  getNotificationsEnabledPref,
   setNotificationsEnabledPref,
   type NotificationPermissionStatus,
 } from '../../src/notifications/core';
@@ -40,13 +39,16 @@ export default function HouseholdScreen() {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [notifStatus, setNotifStatus] = useState<NotificationPermissionStatus>('undetermined');
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
       if (Platform.OS === 'web') return;
       getNotificationPermissionStatus().then(setNotifStatus);
-      getNotificationsEnabledPref().then(setNotificationsEnabled);
+      // Non esiste piu' un interruttore in-app per le notifiche (l'unico
+      // controllo reale e' il permesso del sistema operativo): ci si assicura
+      // che la preferenza interna resti sempre attiva, cosi' chi l'aveva
+      // disattivata quando esisteva ancora lo switch non resta bloccato.
+      setNotificationsEnabledPref(true);
     }, [])
   );
 
@@ -57,23 +59,6 @@ export default function HouseholdScreen() {
     }
     await ensureNotificationPermissions();
     setNotifStatus(await getNotificationPermissionStatus());
-  }
-
-  async function handleToggleNotifications(next: boolean) {
-    if (next) {
-      let status = notifStatus;
-      if (status !== 'granted') {
-        await ensureNotificationPermissions();
-        status = await getNotificationPermissionStatus();
-        setNotifStatus(status);
-        if (status !== 'granted') return;
-      }
-      await setNotificationsEnabledPref(true);
-      setNotificationsEnabled(true);
-    } else {
-      await setNotificationsEnabledPref(false);
-      setNotificationsEnabled(false);
-    }
   }
 
   const renameMutation = useMutation({
@@ -293,28 +278,22 @@ export default function HouseholdScreen() {
 
         {Platform.OS !== 'web' ? (
           <View style={styles.settingsField}>
-            <View style={styles.notifHeaderRow}>
-              <Text style={styles.settingsFieldLabel}>{t('household.notificationsLabel')}</Text>
-              <Switch
-                value={notifStatus === 'granted' && notificationsEnabled}
-                onValueChange={handleToggleNotifications}
-                disabled={notifStatus === 'denied'}
-                trackColor={{ false: colors.line, true: colors.brand }}
-                thumbColor={colors.white}
-              />
-            </View>
+            <Text style={styles.settingsFieldLabel}>{t('household.notificationsLabel')}</Text>
+            <Text style={styles.cardHint}>{t('household.notificationsHint')}</Text>
             <Text style={[styles.notifStatusText, notifStatus === 'denied' && { color: colors.danger }]}>
               {notifStatus === 'denied'
                 ? t('household.notificationsDenied')
                 : notifStatus === 'granted'
-                  ? notificationsEnabled
-                    ? t('household.notificationsGranted')
-                    : t('household.notificationsDisabledByUser')
+                  ? t('household.notificationsGranted')
                   : t('household.notificationsUndetermined')}
             </Text>
-            {notifStatus === 'denied' ? (
+            {notifStatus !== 'granted' ? (
               <PrimaryButton
-                label={t('household.notificationsOpenSettingsButton')}
+                label={
+                  notifStatus === 'denied'
+                    ? t('household.notificationsOpenSettingsButton')
+                    : t('household.notificationsEnableButton')
+                }
                 onPress={handleEnableNotifications}
                 variant="secondary"
               />
@@ -403,7 +382,6 @@ function createStyles(COLORS: ColorPalette) {
     removeMemberButton: { padding: 4, marginRight: 8 },
     settingsField: { gap: 8 },
     settingsFieldLabel: { fontSize: 12, fontWeight: '700', color: COLORS.ink },
-    notifHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     notifStatusText: { fontSize: 12, color: COLORS.inkSoft },
     categoryList: { gap: 2 },
     categoryRow: {

@@ -100,6 +100,31 @@ Per un uso quotidiano (non solo test), conviene mettere il backend su un hosting
 
 In alternativa, con Android Studio già aperto sul progetto (vedi sopra): menu **Build → Build Bundle(s) / APK(s) → Build APK(s)**. Il file finito è in `android/app/build/outputs/apk/debug/app-debug.apk`.
 
+## Pubblicare la versione web (PWA) su GitHub Pages
+
+Oltre all'app nativa, questo progetto può essere installato direttamente dal browser (Chrome su Android mostra "Installa e crea scorciatoia", Safari su iOS "Aggiungi a Home"), senza passare da nessuno store. `public/manifest.json` e le icone sono già pronti; manca solo l'hosting.
+
+```bash
+npm run deploy:web
+```
+
+Questo comando fa l'export statico (`dist/`) con il percorso base e l'URL del backend già impostati per il repo su GitHub Pages, e sistema i riferimenti assoluti che l'export non riscrive da solo (manifest, icona Apple, fallback SPA `404.html`, `.nojekyll`). Poi pubblica il contenuto di `dist/` sul branch `gh-pages`:
+
+```bash
+git worktree add --orphan -b gh-pages /tmp/gh-pages-worktree
+cp -r dist/. /tmp/gh-pages-worktree/
+cd /tmp/gh-pages-worktree && git add -A && git commit -m "Deploy" && git push -u origin gh-pages
+cd - && git worktree remove /tmp/gh-pages-worktree --force
+```
+
+(le volte successive, dato che il branch `gh-pages` esiste già, basta rigenerare `dist/`, copiarla in un worktree del branch esistente — `git worktree add /tmp/gh-pages-worktree gh-pages` — e ripetere commit/push).
+
+**Passo manuale una tantum**: su GitHub, Settings → Pages → Source: "Deploy from a branch" → branch `gh-pages` → cartella `/ (root)` → Save. Dopo qualche minuto il sito è live su `https://<utente>.github.io/logistica-domestica-frontend/`.
+
+Se cambi il nome del repo, aggiorna anche `EXPO_PUBLIC_BASE_PATH` nello script `deploy:web` in `package.json`.
+
+⚠️ Sul web non funzionano le notifiche locali (promemoria scadenze/pulizie/rifiuti, disattivate di proposito in `Platform.OS === 'web'`) né la scansione OCR di scontrini/prodotti (usa un modulo nativo, ML Kit). È quindi una versione più leggera dell'app pensata come accesso rapido, non un sostituto dell'APK.
+
 ## Struttura
 
 ```

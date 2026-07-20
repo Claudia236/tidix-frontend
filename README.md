@@ -14,7 +14,7 @@ Il design (colori, zone, categorie, logica di scadenza) riprende il prototipo Re
 ## Requisiti
 
 - Node.js 20+
-- Il [backend](../logistica-domestica-backend) in esecuzione e raggiungibile dal dispositivo/browser
+- Il [backend](../tidix-backend) in esecuzione e raggiungibile dal dispositivo/browser
 - Per lo sviluppo rapido: app **Expo Go** sul telefono (non serve Android Studio/Xcode)
 - Per Android Studio: JDK 17+ e Android Studio con un SDK Android installato (vedi sotto)
 
@@ -119,7 +119,7 @@ cd - && git worktree remove /tmp/gh-pages-worktree --force
 
 (le volte successive, dato che il branch `gh-pages` esiste già, basta rigenerare `dist/`, copiarla in un worktree del branch esistente — `git worktree add /tmp/gh-pages-worktree gh-pages` — e ripetere commit/push).
 
-**Passo manuale una tantum**: su GitHub, Settings → Pages → Source: "Deploy from a branch" → branch `gh-pages` → cartella `/ (root)` → Save. Dopo qualche minuto il sito è live su `https://<utente>.github.io/logistica-domestica-frontend/`.
+**Passo manuale una tantum**: su GitHub, Settings → Pages → Source: "Deploy from a branch" → branch `gh-pages` → cartella `/ (root)` → Save. Dopo qualche minuto il sito è live su `https://<utente>.github.io/tidix-frontend/`.
 
 Se cambi il nome del repo, aggiorna anche `EXPO_PUBLIC_BASE_PATH` nello script `deploy:web` in `package.json`.
 

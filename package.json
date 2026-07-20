@@ -8,7 +8,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "deploy:web": "export EXPO_PUBLIC_BASE_PATH=/logistica-domestica-frontend EXPO_PUBLIC_API_URL=https://logistica-domestica-backend.onrender.com && expo export --platform web && node scripts/postprocess-gh-pages.js"
+    "deploy:web": "export EXPO_PUBLIC_BASE_PATH=/tidix-frontend EXPO_PUBLIC_API_URL=https://logistica-domestica-backend.onrender.com && expo export --platform web && node scripts/postprocess-gh-pages.js"
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.3",

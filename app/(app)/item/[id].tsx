@@ -39,10 +39,23 @@ export default function EditItemScreen() {
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
+  const deleteAndAddToShoppingListMutation = useMutation({
+    mutationFn: () => {
+      const quantity = itemQuery.data?.quantity ?? 0;
+      return itemsApi.adjustQuantity(id, { delta: -quantity, hideFromShoppingList: false });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+      router.back();
+    },
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+  });
+
   function confirmDelete() {
     showAlert(t('item.confirmDeleteTitle'), t('item.confirmDeleteMessage'), [
       { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: () => deleteMutation.mutate() },
+      { text: t('item.deleteAndAddToShoppingList'), onPress: () => deleteAndAddToShoppingListMutation.mutate() },
+      { text: t('item.deleteOnly'), style: 'destructive', onPress: () => deleteMutation.mutate() },
     ]);
   }
 
@@ -76,7 +89,7 @@ export default function EditItemScreen() {
         submitting={updateMutation.isPending}
         onSubmit={(input) => updateMutation.mutate(input)}
         onDelete={confirmDelete}
-        deleting={deleteMutation.isPending}
+        deleting={deleteMutation.isPending || deleteAndAddToShoppingListMutation.isPending}
       />
     </View>
   );

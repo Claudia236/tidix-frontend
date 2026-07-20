@@ -707,9 +707,15 @@ const ENTRIES: Record<string, EntryTriple> = {
   // Item detail
   'item.confirmDeleteTitle': { it: 'Elimina prodotto', en: 'Delete product', es: 'Eliminar producto' },
   'item.confirmDeleteMessage': {
-    it: 'Vuoi eliminare definitivamente questo prodotto?',
-    en: 'Do you want to permanently delete this product?',
-    es: '¿Quieres eliminar definitivamente este producto?',
+    it: "Vuoi eliminarlo e basta, oppure hai finito il prodotto e vuoi aggiungerlo alla lista della spesa?",
+    en: 'Do you just want to delete it, or have you run out and want to add it to the shopping list?',
+    es: '¿Quieres solo eliminarlo, o se ha terminado y quieres añadirlo a la lista de la compra?',
+  },
+  'item.deleteOnly': { it: 'Solo elimina', en: 'Just delete', es: 'Solo eliminar' },
+  'item.deleteAndAddToShoppingList': {
+    it: 'Aggiungi a lista spesa',
+    en: 'Add to shopping list',
+    es: 'Añadir a la lista',
   },
 
   // Auth

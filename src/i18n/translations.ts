@@ -492,6 +492,40 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: "I couldn't read this image. Please try another photo.",
     es: 'No he podido leer esta imagen. Prueba con otra foto.',
   },
+  'scanProduct.title': { it: 'Scansiona prodotto', en: 'Scan product', es: 'Escanear producto' },
+  'scanProduct.hint': {
+    it: "Fotografa il prodotto (fino a 2 foto, es. fronte confezione e data di scadenza): nome e scadenza verranno compilati automaticamente.",
+    en: 'Photograph the product (up to 2 photos, e.g. package front and expiry date): name and expiry will be filled in automatically.',
+    es: 'Fotografía el producto (hasta 2 fotos, ej. frente del envase y fecha de caducidad): el nombre y la caducidad se rellenarán automáticamente.',
+  },
+  'scanProduct.pickFromGallery': { it: 'Scegli dalla galleria', en: 'Pick from gallery', es: 'Elegir de la galería' },
+  'scanProduct.analyze': { it: 'Analizza foto', en: 'Analyze photos', es: 'Analizar fotos' },
+  'scanProduct.resultTitle': { it: 'Prodotto riconosciuto', en: 'Product recognized', es: 'Producto reconocido' },
+  'scanProduct.resultMessage': {
+    it: 'Nome e/o data di scadenza compilati: controllali prima di salvare.',
+    en: 'Name and/or expiry date filled in: check them before saving.',
+    es: 'Nombre y/o fecha de caducidad rellenados: compruébalos antes de guardar.',
+  },
+  'scanProduct.noDataFound': {
+    it: 'Non sono riuscito a riconoscere nome o scadenza in queste foto. Prova con più luce e inquadrando bene etichetta e data.',
+    en: "I couldn't recognize a name or expiry date in these photos. Try with more light, framing the label and date well.",
+    es: 'No he podido reconocer nombre o caducidad en estas fotos. Prueba con más luz, encuadrando bien la etiqueta y la fecha.',
+  },
+  'scanProduct.recognizeError': {
+    it: "Non sono riuscito a leggere queste immagini. Riprova con un'altra foto.",
+    en: "I couldn't read these images. Please try another photo.",
+    es: 'No he podido leer estas imágenes. Prueba con otra foto.',
+  },
+  'scanProduct.cameraPermissionDenied': {
+    it: 'Permesso fotocamera negato. Abilitalo dalle impostazioni del telefono per fotografare il prodotto.',
+    en: 'Camera permission denied. Enable it from your phone settings to photograph the product.',
+    es: 'Permiso de cámara denegado. Actívalo desde los ajustes del teléfono para fotografiar el producto.',
+  },
+  'scanProduct.libraryPermissionDenied': {
+    it: 'Permesso galleria negato. Abilitalo dalle impostazioni del telefono per scegliere una foto.',
+    en: 'Gallery permission denied. Enable it from your phone settings to pick a photo.',
+    es: 'Permiso de galería denegado. Actívalo desde los ajustes del teléfono para elegir una foto.',
+  },
 
   // Expenses
   'month.1': { it: 'Gennaio', en: 'January', es: 'Enero' },

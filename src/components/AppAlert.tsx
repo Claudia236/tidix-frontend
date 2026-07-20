@@ -89,7 +89,7 @@ function createStyles(COLORS: ColorPalette) {
     card: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 14, width: '100%', maxWidth: 360 },
     title: { fontSize: 15, fontWeight: '700', color: COLORS.ink },
     message: { fontSize: 13, color: COLORS.inkSoft, lineHeight: 18 },
-    actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 20, marginTop: 4 },
+    actions: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 16, marginTop: 4 },
     button: { paddingVertical: 4 },
     buttonText: { fontSize: 14, fontWeight: '700', color: COLORS.brand },
     cancelText: { color: COLORS.inkSoft },

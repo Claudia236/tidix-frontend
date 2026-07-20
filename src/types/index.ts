@@ -76,6 +76,7 @@ export interface Item {
   opened: boolean;
   openedDate: string | null;
   openedReminderEnabled: boolean;
+  openedReminderDays: number;
   addedByUserId: string;
   createdAt: string;
   updatedAt: string | null;
@@ -92,6 +93,7 @@ export interface ItemInput {
   opened?: boolean;
   openedDate?: string | null;
   openedReminderEnabled?: boolean;
+  openedReminderDays?: number;
 }
 
 export interface AdjustQuantityInput {

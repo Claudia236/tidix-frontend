@@ -20,6 +20,7 @@ import { webCentered } from '../../../src/theme/responsive';
 import type { Category, Item, ItemInput } from '../../../src/types';
 
 type StockRow = { key: string; type: 'header'; category: Category; count: number } | { key: string; type: 'item'; data: Item };
+type SortBy = 'name' | 'purchaseDate';
 
 export default function StockScreen() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function StockScreen() {
   const [filterLocationId, setFilterLocationId] = useState<string>('TUTTI');
   const [search, setSearch] = useState('');
   const [onlyOpened, setOnlyOpened] = useState(false);
+  const [sortBy, setSortBy] = useState<SortBy>('name');
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<Category>>(new Set());
 
@@ -138,13 +140,25 @@ export default function StockScreen() {
 
   const items = useMemo(() => {
     const list = itemsQuery.data ?? [];
-    return onlyOpened ? list.filter((i) => i.opened) : list;
-  }, [itemsQuery.data, onlyOpened]);
+    const filtered = onlyOpened ? list.filter((i) => i.opened) : list;
+    if (sortBy === 'purchaseDate') {
+      // Piu' vecchi prima, per ricordare di consumarli per primi; chi non ha
+      // una data di acquisto (prodotti storici) va in fondo.
+      return [...filtered].sort((a, b) => {
+        if (!a.purchaseDate && !b.purchaseDate) return 0;
+        if (!a.purchaseDate) return 1;
+        if (!b.purchaseDate) return -1;
+        return a.purchaseDate.localeCompare(b.purchaseDate);
+      });
+    }
+    return filtered;
+  }, [itemsQuery.data, onlyOpened, sortBy]);
   const openedCount = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.opened).length, [allItemsQuery.data]);
 
-  // Il backend restituisce gia' gli item ordinati per nome: qui li raggruppiamo
-  // solo per categoria (nell'ordine delle categorie) senza toccare l'ordine
-  // alfabetico all'interno di ciascun gruppo.
+  // Il backend restituisce gia' gli item ordinati per nome (usato quando
+  // sortBy === 'name'); qui li raggruppiamo solo per categoria (nell'ordine
+  // delle categorie) senza toccare l'ordine gia' scelto all'interno di
+  // ciascun gruppo.
   const stockRows: StockRow[] = useMemo(() => {
     const byCategory = new Map<Category, Item[]>();
     for (const item of items) {
@@ -178,6 +192,26 @@ export default function StockScreen() {
             placeholderTextColor={colors.inkSoft}
             style={styles.searchInput}
           />
+        </View>
+
+        <View style={styles.sortRow}>
+          <Text style={styles.sortLabel}>{t('stock.sortLabel')}</Text>
+          <Pressable
+            onPress={() => setSortBy('name')}
+            style={[styles.sortChip, sortBy === 'name' && styles.sortChipActive]}
+          >
+            <Text style={[styles.sortChipText, sortBy === 'name' && styles.sortChipTextActive]}>
+              {t('stock.sortByName')}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setSortBy('purchaseDate')}
+            style={[styles.sortChip, sortBy === 'purchaseDate' && styles.sortChipActive]}
+          >
+            <Text style={[styles.sortChipText, sortBy === 'purchaseDate' && styles.sortChipTextActive]}>
+              {t('stock.sortByPurchaseDate')}
+            </Text>
+          </Pressable>
         </View>
 
         <ScrollView
@@ -292,6 +326,19 @@ function createStyles(COLORS: ColorPalette) {
       paddingVertical: 8,
     },
     searchInput: { flex: 1, fontSize: 13, color: COLORS.ink },
+    sortRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    sortLabel: { fontSize: 11, fontWeight: '700', color: COLORS.inkSoft, textTransform: 'uppercase', letterSpacing: 0.4 },
+    sortChip: {
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      backgroundColor: COLORS.card,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+    },
+    sortChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
+    sortChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
+    sortChipTextActive: { color: COLORS.white },
     filtersScroll: { flexGrow: 0, flexShrink: 0 },
     filters: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingBottom: 4, paddingRight: 20 },
     filterChip: {

@@ -403,6 +403,9 @@ const ENTRIES: Record<string, EntryTriple> = {
   'stock.searchPlaceholder': { it: 'Cerca un prodotto...', en: 'Search a product...', es: 'Buscar un producto...' },
   'stock.filterAll': { it: 'Tutti', en: 'All', es: 'Todos' },
   'stock.openedFilter': { it: (v) => `Aperti (${v.n})`, en: (v) => `Opened (${v.n})`, es: (v) => `Abiertos (${v.n})` },
+  'stock.sortLabel': { it: 'Ordina per', en: 'Sort by', es: 'Ordenar por' },
+  'stock.sortByName': { it: 'Nome', en: 'Name', es: 'Nombre' },
+  'stock.sortByPurchaseDate': { it: 'Data di acquisto', en: 'Purchase date', es: 'Fecha de compra' },
   'stock.emptyTitle': { it: 'Nessun prodotto trovato', en: 'No products found', es: 'No se encontraron productos' },
   'stock.emptySubtitle': {
     it: 'Prova a modificare la ricerca o aggiungi un nuovo prodotto.',

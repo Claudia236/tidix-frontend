@@ -589,6 +589,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   'expenses.emptySubtitle': { it: 'Aggiungi la prima spesa condivisa.', en: 'Add the first shared expense.', es: 'Añade el primer gasto compartido.' },
   'expenses.paidOfTotal': { it: (v) => `${v.paid} di ${v.total} €`, en: (v) => `${v.paid} of ${v.total} €`, es: (v) => `${v.paid} de ${v.total} €` },
   'expenses.settleTitle': { it: (v) => `Registra pagamento di ${v.name}`, en: (v) => `Record payment from ${v.name}`, es: (v) => `Registrar pago de ${v.name}` },
+  'expenses.markPaymentButton': { it: 'Segna pagamento', en: 'Mark payment', es: 'Marcar pago' },
   'expenses.settleHint': {
     it: 'L\'importo verrà usato per saldare le quote non pagate, dalla spesa più vecchia alla più recente.',
     en: 'The amount will be used to settle unpaid shares, from the oldest expense to the most recent.',

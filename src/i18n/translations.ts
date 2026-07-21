@@ -564,7 +564,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   'expenses.paidByLabel': { it: 'Pagato da', en: 'Paid by', es: 'Pagado por' },
   'expenses.splitWithLabel': { it: 'Dividi con', en: 'Split with', es: 'Dividir con' },
   'expenses.equalSplitToggle': { it: 'Dividi in parti uguali', en: 'Split equally', es: 'Dividir a partes iguales' },
-  'expenses.alreadyPaidLabel': { it: 'Rimborsi ricevuti', en: 'Reimbursements received', es: 'Reembolsos recibidos' },
+  'expenses.alreadyPaidLabel': { it: 'Quota già versata', en: 'Share already paid', es: 'Parte ya pagada' },
   'expenses.alreadyPaidHint': {
     it: 'Indica quanto ognuno ha versato, anche se non corrisponde esattamente alla quota.',
     en: 'Enter how much each person has paid, even if it does not exactly match their share.',

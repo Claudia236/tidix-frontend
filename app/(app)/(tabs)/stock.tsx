@@ -21,6 +21,7 @@ import type { Category, Item, ItemInput } from '../../../src/types';
 
 type StockRow = { key: string; type: 'header'; category: Category; count: number } | { key: string; type: 'item'; data: Item };
 type SortBy = 'name' | 'purchaseDate';
+type PurchaseDateDirection = 'oldestFirst' | 'newestFirst';
 
 export default function StockScreen() {
   const router = useRouter();
@@ -35,6 +36,7 @@ export default function StockScreen() {
   const [search, setSearch] = useState('');
   const [onlyOpened, setOnlyOpened] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>('name');
+  const [purchaseDateDirection, setPurchaseDateDirection] = useState<PurchaseDateDirection>('oldestFirst');
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<Category>>(new Set());
 
@@ -142,24 +144,31 @@ export default function StockScreen() {
     const list = itemsQuery.data ?? [];
     const filtered = onlyOpened ? list.filter((i) => i.opened) : list;
     if (sortBy === 'purchaseDate') {
-      // Piu' vecchi prima, per ricordare di consumarli per primi; chi non ha
-      // una data di acquisto (prodotti storici) va in fondo.
+      // Chi non ha una data di acquisto (prodotti storici) va sempre in fondo,
+      // indipendentemente dalla direzione scelta.
+      const sign = purchaseDateDirection === 'oldestFirst' ? 1 : -1;
       return [...filtered].sort((a, b) => {
         if (!a.purchaseDate && !b.purchaseDate) return 0;
         if (!a.purchaseDate) return 1;
         if (!b.purchaseDate) return -1;
-        return a.purchaseDate.localeCompare(b.purchaseDate);
+        return sign * a.purchaseDate.localeCompare(b.purchaseDate);
       });
     }
     return filtered;
-  }, [itemsQuery.data, onlyOpened, sortBy]);
+  }, [itemsQuery.data, onlyOpened, sortBy, purchaseDateDirection]);
   const openedCount = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.opened).length, [allItemsQuery.data]);
 
-  // Il backend restituisce gia' gli item ordinati per nome (usato quando
-  // sortBy === 'name'); qui li raggruppiamo solo per categoria (nell'ordine
-  // delle categorie) senza toccare l'ordine gia' scelto all'interno di
-  // ciascun gruppo.
+  // Ordinando per categoria (default), il backend restituisce gia' gli item
+  // ordinati per nome: qui li raggruppiamo solo per categoria (nell'ordine
+  // delle categorie), con header collassabili, senza toccare l'ordine gia'
+  // scelto all'interno di ciascun gruppo.
+  // Ordinando per data di acquisto invece si vuole un unico elenco su tutte
+  // le scorte, senza raggruppamento ne' header.
   const stockRows: StockRow[] = useMemo(() => {
+    if (sortBy === 'purchaseDate') {
+      return items.map((item) => ({ key: `item-${item.id}`, type: 'item' as const, data: item }));
+    }
+
     const byCategory = new Map<Category, Item[]>();
     for (const item of items) {
       if (!byCategory.has(item.category)) byCategory.set(item.category, []);
@@ -176,7 +185,7 @@ export default function StockScreen() {
       }
     }
     return rows;
-  }, [items, categories, collapsedCategories]);
+  }, [items, categories, collapsedCategories, sortBy]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -205,12 +214,25 @@ export default function StockScreen() {
             </Text>
           </Pressable>
           <Pressable
-            onPress={() => setSortBy('purchaseDate')}
-            style={[styles.sortChip, sortBy === 'purchaseDate' && styles.sortChipActive]}
+            onPress={() => {
+              if (sortBy === 'purchaseDate') {
+                setPurchaseDateDirection((d) => (d === 'oldestFirst' ? 'newestFirst' : 'oldestFirst'));
+              } else {
+                setSortBy('purchaseDate');
+              }
+            }}
+            style={[styles.sortChip, styles.sortChipRow, sortBy === 'purchaseDate' && styles.sortChipActive]}
           >
             <Text style={[styles.sortChipText, sortBy === 'purchaseDate' && styles.sortChipTextActive]}>
               {t('stock.sortByPurchaseDate')}
             </Text>
+            {sortBy === 'purchaseDate' ? (
+              <Ionicons
+                name={purchaseDateDirection === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
+                size={12}
+                color={colors.white}
+              />
+            ) : null}
           </Pressable>
         </View>
 
@@ -336,6 +358,7 @@ function createStyles(COLORS: ColorPalette) {
       paddingHorizontal: 10,
       paddingVertical: 5,
     },
+    sortChipRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
     sortChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
     sortChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
     sortChipTextActive: { color: COLORS.white },

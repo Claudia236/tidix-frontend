@@ -105,13 +105,8 @@ export default function ExpensesScreen() {
             <Text style={styles.summaryTotal}>{t('expenses.total')}: {summary.totalAmount.toFixed(2)} €</Text>
             {summary.byUser.map((b) => {
               const owesMoney = b.netBalance < -0.01;
-              const Row = owesMoney ? Pressable : View;
               return (
-                <Row
-                  key={b.userId}
-                  style={styles.balanceRow}
-                  {...(owesMoney ? { onPress: () => setSettleTarget(b) } : {})}
-                >
+                <View key={b.userId} style={styles.balanceRow}>
                   <View style={styles.balanceRowText}>
                     <Text style={styles.balanceName}>{b.userId === user?.id ? t('common.you') : b.userName}</Text>
                     <Text
@@ -127,8 +122,13 @@ export default function ExpensesScreen() {
                           : t('expenses.inPari')}
                     </Text>
                   </View>
-                  {owesMoney ? <Ionicons name="chevron-forward" size={16} color={colors.inkSoft} /> : null}
-                </Row>
+                  {owesMoney ? (
+                    <Pressable style={styles.settleButton} onPress={() => setSettleTarget(b)}>
+                      <Ionicons name="cash-outline" size={14} color={colors.white} />
+                      <Text style={styles.settleButtonText}>{t('expenses.markPaymentButton')}</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
               );
             })}
           </View>
@@ -235,6 +235,16 @@ function createStyles(COLORS: ColorPalette) {
     balanceRowText: { gap: 2 },
     balanceName: { fontSize: 13, fontWeight: '700', color: COLORS.ink },
     balanceNet: { fontSize: 12, fontWeight: '700' },
+    settleButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: COLORS.brand,
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+    },
+    settleButtonText: { fontSize: 12, fontWeight: '700', color: COLORS.white },
     list: { gap: 10 },
     expenseCard: {
       backgroundColor: COLORS.card,

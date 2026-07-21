@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { householdApi } from '../api/household';
@@ -77,7 +77,7 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
   const [date, setDate] = useState<string | null>(initial?.date ?? todayLocalISODate());
   const [paidByUserId, setPaidByUserId] = useState(initial?.paidByUserId ?? user?.id ?? '');
   const [participantIds, setParticipantIds] = useState<Set<string>>(
-    () => new Set([...(initial?.participantIds ?? members.map((m) => m.id)), ...(user ? [user.id] : [])])
+    () => new Set(initial?.participantIds ?? members.map((m) => m.id))
   );
   const [equalSplit, setEqualSplit] = useState(initial?.equalSplit ?? true);
   const [customPercentages, setCustomPercentages] = useState<Record<string, string>>(initial?.customPercentages ?? {});
@@ -85,6 +85,14 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
   const [paidInFull, setPaidInFull] = useState<Record<string, boolean>>(initial?.paidInFull ?? {});
 
   const effectivePaidBy = paidByUserId || user?.id || members[0]?.id || '';
+
+  // Chi paga fa sempre parte della divisione (non c'e' un chip per toglierlo):
+  // se cambia il pagatore, assicurati che resti incluso anche se in
+  // precedenza era stato deselezionato come partecipante.
+  useEffect(() => {
+    if (!effectivePaidBy) return;
+    setParticipantIds((prev) => (prev.has(effectivePaidBy) ? prev : new Set(prev).add(effectivePaidBy)));
+  }, [effectivePaidBy]);
 
   function participantShareAmount(id: string): number {
     const totalAmount = Math.max(0, Number(amount.replace(',', '.')) || 0);
@@ -181,12 +189,12 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
           <Text style={styles.label}>{t('expenses.splitWithLabel')}</Text>
           <View style={styles.chipRow}>
             {members
-              .filter((m) => m.id !== user?.id)
+              .filter((m) => m.id !== effectivePaidBy)
               .map((m) => {
                 const active = participantIds.has(m.id);
                 return (
                   <Pressable key={m.id} onPress={() => toggleParticipant(m.id)} style={[styles.chip, active && styles.chipActive]}>
-                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{m.name}</Text>
+                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{m.id === user?.id ? t('common.you') : m.name}</Text>
                   </Pressable>
                 );
               })}

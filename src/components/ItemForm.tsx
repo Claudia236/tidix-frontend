@@ -97,7 +97,6 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const usesConsumeWithinDays = CONSUME_WITHIN_DAYS_CATEGORIES.has(category);
   const isAvanzi = category === 'AVANZI';
   const hidesExpiration = category === 'CASA_PULIZIA';
-  const hidesPurchaseDate = category === 'CASA_PULIZIA';
   const hidesOpenedToggle = hidesExpiration || usesConsumeWithinDays;
 
   function handleSubmit() {
@@ -334,12 +333,10 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
         </View>
       </View>
 
-      {!hidesPurchaseDate ? (
-        <View style={styles.field}>
-          <Text style={styles.label}>{t(isAvanzi ? 'itemForm.cookedDate.label' : 'itemForm.purchaseDate.label')}</Text>
-          <DatePickerField value={purchaseDate} onChange={setPurchaseDate} allowClear={false} />
-        </View>
-      ) : null}
+      <View style={styles.field}>
+        <Text style={styles.label}>{t(isAvanzi ? 'itemForm.cookedDate.label' : 'itemForm.purchaseDate.label')}</Text>
+        <DatePickerField value={purchaseDate} onChange={setPurchaseDate} allowClear={false} />
+      </View>
 
       {!hidesExpiration ? (
         <View style={styles.field}>

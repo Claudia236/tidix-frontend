@@ -149,6 +149,13 @@ export default function OverviewScreen() {
     return wasteTypesCollectedOn(wasteSchedulesQuery.data, tomorrow);
   }, [wasteSchedulesQuery.data]);
 
+  const wasteTomorrowLabel = useMemo(() => {
+    const labels = wasteTomorrow.map((w) => `${t(`wastePartitive.${w}`)} ${getWasteTypeEmoji(w)}`);
+    if (labels.length <= 1) return labels.join('');
+    const conjunction = language === 'it' ? ' e ' : language === 'es' ? ' y ' : ' and ';
+    return `${labels.slice(0, -1).join(', ')}${conjunction}${labels[labels.length - 1]}`;
+  }, [wasteTomorrow, t, language]);
+
   useEffect(() => {
     if (Platform.OS === 'web' || !expiringQuery.data) return;
     syncExpiryReminders(expiringQuery.data, t);
@@ -212,9 +219,7 @@ export default function OverviewScreen() {
           <Pressable style={styles.wasteBanner} onPress={() => router.push('/(app)/waste')}>
             <Ionicons name="trash-outline" size={18} color={colors.danger} />
             <Text style={styles.wasteBannerText}>
-              {t('overview.wasteTomorrow', {
-                types: wasteTomorrow.map((w) => `${t(`wasteNotif.${w}`)} ${getWasteTypeEmoji(w)}`).join(', '),
-              })}
+              {t('overview.wasteTomorrow', { types: wasteTomorrowLabel })}
             </Text>
           </Pressable>
         ) : null}

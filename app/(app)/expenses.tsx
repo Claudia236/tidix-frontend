@@ -224,7 +224,7 @@ function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: COLORS.bg },
     scroll: { padding: 20, gap: 16, paddingBottom: 60 },
-    monthRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 },
+    monthRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 8 },
     monthLabel: { fontSize: 15, fontWeight: '700', color: COLORS.ink, textTransform: 'capitalize' },
     summaryCard: {
       backgroundColor: COLORS.card,

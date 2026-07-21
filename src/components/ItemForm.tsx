@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useMemo, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { storageLocationsApi } from '../api/storageLocations';
@@ -33,7 +33,14 @@ interface Props {
   enableScan?: boolean;
 }
 
-export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete, deleting, enableScan }: Props) {
+export interface ItemFormHandle {
+  openScan: () => void;
+}
+
+export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
+  { initial, submitLabel, submitting, onSubmit, onDelete, deleting, enableScan },
+  ref
+) {
   const { colors } = useTheme();
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
@@ -68,6 +75,8 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   const [newLocationName, setNewLocationName] = useState('');
   const [newLocationEmoji, setNewLocationEmoji] = useState('');
   const [scanModalVisible, setScanModalVisible] = useState(false);
+
+  useImperativeHandle(ref, () => ({ openScan: () => setScanModalVisible(true) }), []);
   const [scanPhotos, setScanPhotos] = useState<string[]>([]);
   const [scanRecognizing, setScanRecognizing] = useState(false);
 
@@ -395,15 +404,6 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
       </ScrollView>
 
       {enableScan ? (
-        <Pressable
-          style={[styles.scanFab, { bottom: 24 + insets.bottom }]}
-          onPress={() => setScanModalVisible(true)}
-        >
-          <Text style={styles.scanFabEmoji}>📷</Text>
-        </Pressable>
-      ) : null}
-
-      {enableScan ? (
         <Modal visible={scanModalVisible} transparent animationType="fade" onRequestClose={closeScanModal}>
           <View style={styles.scanBackdrop}>
             <View style={styles.scanCard}>
@@ -455,7 +455,7 @@ export function ItemForm({ initial, submitLabel, submitting, onSubmit, onDelete,
       />
     </KeyboardAvoidingView>
   );
-}
+});
 
 function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
@@ -552,22 +552,6 @@ function createStyles(COLORS: ColorPalette) {
     openedToggleText: { fontSize: 13, color: COLORS.ink },
     reminderEditLink: { fontSize: 12, fontWeight: '600', color: COLORS.brand, marginTop: -4 },
     actions: { flexDirection: 'row', gap: 12, marginTop: 8 },
-    scanFab: {
-      position: 'absolute',
-      right: 20,
-      width: 46,
-      height: 46,
-      borderRadius: 23,
-      backgroundColor: COLORS.brand,
-      alignItems: 'center',
-      justifyContent: 'center',
-      shadowColor: '#000',
-      shadowOpacity: 0.15,
-      shadowRadius: 6,
-      shadowOffset: { width: 0, height: 3 },
-      elevation: 3,
-    },
-    scanFabEmoji: { fontSize: 20 },
     scanBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center', padding: 24 },
     scanCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 14, width: '100%', maxWidth: 360 },
     scanTitle: { fontSize: 15, fontWeight: '700', color: COLORS.ink },

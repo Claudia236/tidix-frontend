@@ -96,16 +96,6 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
     return (totalAmount * pct) / 100;
   }
 
-  function togglePaidInFull(id: string) {
-    setPaidInFull((prev) => {
-      const next = !prev[id];
-      if (next) {
-        setPaidAmounts((amounts) => ({ ...amounts, [id]: participantShareAmount(id).toFixed(2) }));
-      }
-      return { ...prev, [id]: next };
-    });
-  }
-
   function toggleParticipant(id: string) {
     setParticipantIds((prev) => {
       const next = new Set(prev);
@@ -218,37 +208,6 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
                 </View>
               );
             })}
-          </View>
-        ) : null}
-
-        {Array.from(participantIds).filter((id) => id !== effectivePaidBy).length > 0 ? (
-          <View style={styles.field}>
-            <Text style={styles.label}>{t('expenses.alreadyPaidLabel')}</Text>
-            <Text style={styles.helperText}>{t('expenses.alreadyPaidHint')}</Text>
-            {Array.from(participantIds)
-              .filter((id) => id !== effectivePaidBy)
-              .map((id) => {
-                const m = members.find((mm) => mm.id === id);
-                const full = paidInFull[id] ?? false;
-                return (
-                  <View key={id} style={styles.percentRow}>
-                    <Pressable onPress={() => togglePaidInFull(id)} hitSlop={8}>
-                      <Ionicons name={full ? 'checkbox' : 'square-outline'} size={18} color={colors.brand} />
-                    </Pressable>
-                    <Text style={styles.percentName}>{id === user?.id ? t('common.you') : m?.name ?? id}</Text>
-                    <TextInput
-                      value={full ? participantShareAmount(id).toFixed(2) : paidAmounts[id] ?? ''}
-                      onChangeText={(v) => setPaidAmounts((prev) => ({ ...prev, [id]: v }))}
-                      editable={!full}
-                      keyboardType="numeric"
-                      placeholder="0.00"
-                      placeholderTextColor={colors.inkSoft}
-                      style={[styles.percentInput, full && styles.percentInputDisabled]}
-                    />
-                    <Text style={styles.percentSign}>€</Text>
-                  </View>
-                );
-              })}
           </View>
         ) : null}
 

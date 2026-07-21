@@ -98,7 +98,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const isAvanzi = category === 'AVANZI';
   const hidesExpiration = category === 'CASA_PULIZIA';
   const hidesPurchaseDate = category === 'CASA_PULIZIA';
-  const hidesOpenedToggle = hidesExpiration || isAvanzi;
+  const hidesOpenedToggle = hidesExpiration || usesConsumeWithinDays;
 
   function handleSubmit() {
     if (!canSubmit) return;

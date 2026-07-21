@@ -27,6 +27,12 @@ export function formatFullDate(dateStr: string, language: Language = 'it'): stri
   return d.toLocaleDateString(LOCALE_MAP[language] ?? 'it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+// Converte "YYYY-MM-DD" in "DD-MM-YYYY".
+export function formatDashDate(dateStr: string): string {
+  const [y, m, d] = dateStr.split('-');
+  return `${d}-${m}-${y}`;
+}
+
 // Converte un Date in "YYYY-MM-DD" usando i componenti locali: a differenza
 // di toISOString() (che passa per UTC) non sposta mai la data di un giorno
 // nei fusi orari avanti rispetto a UTC (es. l'Italia).

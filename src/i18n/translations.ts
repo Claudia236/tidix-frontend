@@ -383,6 +383,8 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'cleaning.everyDaysSuffix': { it: (v) => ` · ogni ${v.n} gg`, en: (v) => ` · every ${v.n} days`, es: (v) => ` · cada ${v.n} días` },
   'cleaning.overdue': { it: 'Da pulire', en: 'Overdue', es: 'Pendiente' },
+  'cleaning.toCleanSection': { it: 'Da pulire', en: 'To clean', es: 'Por limpiar' },
+  'cleaning.doneSection': { it: 'Pulite', en: 'Done', es: 'Limpiadas' },
   'cleaning.confirmDeleteTitle': { it: 'Elimina', en: 'Delete', es: 'Eliminar' },
   'cleaning.confirmDeleteMessage': {
     it: (v) => `Rimuovere "${v.name}" dalla lista pulizia?`,

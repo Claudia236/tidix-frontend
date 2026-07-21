@@ -52,9 +52,14 @@ export default function CleaningScreen() {
 
   const tasks = useMemo(() => {
     const all = tasksQuery.data ?? [];
-    if (!search.trim()) return all;
     const q = search.trim().toLowerCase();
-    return all.filter((task) => task.name.toLowerCase().includes(q));
+    const filtered = q ? all.filter((task) => task.name.toLowerCase().includes(q)) : all;
+    return [...filtered].sort((a, b) => {
+      if (a.daysSinceCleaned === null && b.daysSinceCleaned === null) return 0;
+      if (a.daysSinceCleaned === null) return -1;
+      if (b.daysSinceCleaned === null) return 1;
+      return b.daysSinceCleaned - a.daysSinceCleaned;
+    });
   }, [tasksQuery.data, search]);
 
   return (

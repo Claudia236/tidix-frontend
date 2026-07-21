@@ -120,7 +120,15 @@ export default function OverviewScreen() {
   }
 
   const overdueCleaning = useMemo(
-    () => (cleaningQuery.data ?? []).filter((task) => task.overdue),
+    () =>
+      (cleaningQuery.data ?? [])
+        .filter((task) => task.overdue)
+        .sort((a, b) => {
+          if (a.daysSinceCleaned === null && b.daysSinceCleaned === null) return 0;
+          if (a.daysSinceCleaned === null) return -1;
+          if (b.daysSinceCleaned === null) return 1;
+          return b.daysSinceCleaned - a.daysSinceCleaned;
+        }),
     [cleaningQuery.data]
   );
 

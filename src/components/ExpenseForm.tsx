@@ -77,7 +77,7 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
   const [date, setDate] = useState<string | null>(initial?.date ?? todayLocalISODate());
   const [paidByUserId, setPaidByUserId] = useState(initial?.paidByUserId ?? user?.id ?? '');
   const [participantIds, setParticipantIds] = useState<Set<string>>(
-    () => new Set(initial?.participantIds ?? members.map((m) => m.id))
+    () => new Set([...(initial?.participantIds ?? members.map((m) => m.id)), ...(user ? [user.id] : [])])
   );
   const [equalSplit, setEqualSplit] = useState(initial?.equalSplit ?? true);
   const [customPercentages, setCustomPercentages] = useState<Record<string, string>>(initial?.customPercentages ?? {});
@@ -180,14 +180,16 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
         <View style={styles.field}>
           <Text style={styles.label}>{t('expenses.splitWithLabel')}</Text>
           <View style={styles.chipRow}>
-            {members.map((m) => {
-              const active = participantIds.has(m.id);
-              return (
-                <Pressable key={m.id} onPress={() => toggleParticipant(m.id)} style={[styles.chip, active && styles.chipActive]}>
-                  <Text style={[styles.chipText, active && styles.chipTextActive]}>{m.id === user?.id ? t('common.you') : m.name}</Text>
-                </Pressable>
-              );
-            })}
+            {members
+              .filter((m) => m.id !== user?.id)
+              .map((m) => {
+                const active = participantIds.has(m.id);
+                return (
+                  <Pressable key={m.id} onPress={() => toggleParticipant(m.id)} style={[styles.chip, active && styles.chipActive]}>
+                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{m.name}</Text>
+                  </Pressable>
+                );
+              })}
           </View>
         </View>
 

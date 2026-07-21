@@ -17,6 +17,7 @@ import { useTheme } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
 import type { UserBalance } from '../../src/types';
 import { computeFifoSettlement, totalOwedByUser } from '../../src/utils/expenseSettlement';
+import { formatDashDate } from '../../src/utils/expiry';
 
 function currentMonth(): string {
   const now = new Date();
@@ -153,7 +154,7 @@ export default function ExpensesScreen() {
                     <Text style={styles.expenseAmount}>{item.amount.toFixed(2)} €</Text>
                   </View>
                   <Text style={styles.expenseMeta}>
-                    {item.paidByUserId === user?.id ? t('common.you') : item.paidByName} · {item.date}
+                    {item.paidByUserId === user?.id ? t('common.you') : item.paidByName} · {formatDashDate(item.date)}
                   </Text>
                 </Pressable>
                 <Pressable onPress={() => confirmDelete(item.id)} hitSlop={8}>

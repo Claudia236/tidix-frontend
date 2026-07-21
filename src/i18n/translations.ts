@@ -62,6 +62,8 @@ const ENTRIES: Record<string, EntryTriple> = {
   // categories
   'category.AVANZI.label': { it: 'Avanzi', en: 'Leftovers', es: 'Sobras' },
   'category.AVANZI.short': { it: 'Avanzi', en: 'Leftovers', es: 'Sobras' },
+  'category.PIATTI_PRONTI.label': { it: 'Piatti pronti', en: 'Ready meals', es: 'Platos preparados' },
+  'category.PIATTI_PRONTI.short': { it: 'Piatti pronti', en: 'Ready meals', es: 'Platos preparados' },
   'category.ORTOFRUTTA.label': { it: 'Ortofrutta', en: 'Fruit and vegetables', es: 'Fruta y verdura' },
   'category.ORTOFRUTTA.short': { it: 'Ortofrutta', en: 'Fruit/Veg', es: 'Fruta/Verdura' },
   'category.PASTA_CEREALI.label': { it: 'Pasta e cereali', en: 'Pasta and grains', es: 'Pasta y cereales' },
@@ -178,6 +180,14 @@ const ENTRIES: Record<string, EntryTriple> = {
   'wasteNotif.VETRO': { it: 'il vetro', en: 'the glass', es: 'el vidrio' },
   'wasteNotif.INDIFFERENZIATO': { it: "l'indifferenziato", en: 'the general waste', es: 'el resto' },
   'wasteNotif.ALTRO': { it: 'gli altri rifiuti', en: 'the rest', es: 'los demás residuos' },
+
+  // waste type names contracted after "di" (dell'/della/del/degli), used in the Panoramica banner
+  'wastePartitive.ORGANICO': { it: "dell'organico", en: 'the organic waste', es: 'el orgánico' },
+  'wastePartitive.PLASTICA': { it: 'della plastica', en: 'the plastic', es: 'el plástico' },
+  'wastePartitive.CARTA_CARTONE': { it: 'della carta', en: 'the paper', es: 'el papel' },
+  'wastePartitive.VETRO': { it: 'del vetro', en: 'the glass', es: 'el vidrio' },
+  'wastePartitive.INDIFFERENZIATO': { it: "dell'indifferenziato", en: 'the general waste', es: 'el resto' },
+  'wastePartitive.ALTRO': { it: 'degli altri rifiuti', en: 'the rest', es: 'los demás residuos' },
 
   // ItemCard
   'itemCard.needsBuying': { it: 'Da comprare', en: 'To buy', es: 'A comprar' },

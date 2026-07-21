@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { expensesApi } from '../../src/api/expenses';
@@ -89,60 +89,61 @@ export default function ExpensesScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={[styles.scroll, webCentered, { paddingBottom: 60 + insets.bottom }]}>
-        <View style={styles.monthRow}>
-          <Pressable onPress={() => setMonth((m) => shiftMonth(m, -1))} hitSlop={8}>
-            <Ionicons name="chevron-back" size={20} color={colors.ink} />
-          </Pressable>
-          <Text style={styles.monthLabel}>{monthLabel(month, t)}</Text>
-          <Pressable onPress={() => setMonth((m) => shiftMonth(m, 1))} hitSlop={8}>
-            <Ionicons name="chevron-forward" size={20} color={colors.ink} />
-          </Pressable>
-        </View>
+      <FlatList
+        data={expenses}
+        keyExtractor={(e) => e.id}
+        contentContainerStyle={[styles.scroll, styles.list, webCentered, { paddingBottom: 60 + insets.bottom }]}
+        ListHeaderComponent={
+          <>
+            <View style={styles.monthRow}>
+              <Pressable onPress={() => setMonth((m) => shiftMonth(m, -1))} hitSlop={8}>
+                <Ionicons name="chevron-back" size={20} color={colors.ink} />
+              </Pressable>
+              <Text style={styles.monthLabel}>{monthLabel(month, t)}</Text>
+              <Pressable onPress={() => setMonth((m) => shiftMonth(m, 1))} hitSlop={8}>
+                <Ionicons name="chevron-forward" size={20} color={colors.ink} />
+              </Pressable>
+            </View>
 
-        {summary ? (
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryTotal}>{t('expenses.total')}: {summary.totalAmount.toFixed(2)} €</Text>
-            {summary.byUser.map((b) => {
-              const owesMoney = b.netBalance < -0.01;
-              return (
-                <View key={b.userId} style={styles.balanceRow}>
-                  <View style={styles.balanceRowText}>
-                    <Text style={styles.balanceName}>{b.userId === user?.id ? t('common.you') : b.userName}</Text>
-                    <Text
-                      style={[
-                        styles.balanceNet,
-                        { color: b.netBalance > 0.01 ? colors.positive : owesMoney ? colors.danger : colors.inkSoft },
-                      ]}
-                    >
-                      {b.netBalance > 0.01
-                        ? t('expenses.deveRicevere', { amount: b.netBalance.toFixed(2) })
-                        : owesMoney
-                          ? t('expenses.deveDare', { amount: Math.abs(b.netBalance).toFixed(2) })
-                          : t('expenses.inPari')}
-                    </Text>
-                  </View>
-                  {owesMoney ? (
-                    <Pressable style={styles.settleButton} onPress={() => setSettleTarget(b)}>
-                      <Ionicons name="cash-outline" size={14} color={colors.white} />
-                      <Text style={styles.settleButtonText}>{t('expenses.markPaymentButton')}</Text>
-                    </Pressable>
-                  ) : null}
-                </View>
-              );
-            })}
-          </View>
-        ) : null}
-
-        <FlatList
-          data={expenses}
-          keyExtractor={(e) => e.id}
-          scrollEnabled={false}
-          contentContainerStyle={styles.list}
-          ListEmptyComponent={
-            <EmptyState icon="cash-outline" title={t('expenses.emptyTitle')} subtitle={t('expenses.emptySubtitle')} />
-          }
-          renderItem={({ item }) => (
+            {summary ? (
+              <View style={styles.summaryCard}>
+                <Text style={styles.summaryTotal}>{t('expenses.total')}: {summary.totalAmount.toFixed(2)} €</Text>
+                {summary.byUser.map((b) => {
+                  const owesMoney = b.netBalance < -0.01;
+                  return (
+                    <View key={b.userId} style={styles.balanceRow}>
+                      <View style={styles.balanceRowText}>
+                        <Text style={styles.balanceName}>{b.userId === user?.id ? t('common.you') : b.userName}</Text>
+                        <Text
+                          style={[
+                            styles.balanceNet,
+                            { color: b.netBalance > 0.01 ? colors.positive : owesMoney ? colors.danger : colors.inkSoft },
+                          ]}
+                        >
+                          {b.netBalance > 0.01
+                            ? t('expenses.deveRicevere', { amount: b.netBalance.toFixed(2) })
+                            : owesMoney
+                              ? t('expenses.deveDare', { amount: Math.abs(b.netBalance).toFixed(2) })
+                              : t('expenses.inPari')}
+                        </Text>
+                      </View>
+                      {owesMoney ? (
+                        <Pressable style={styles.settleButton} onPress={() => setSettleTarget(b)}>
+                          <Ionicons name="cash-outline" size={14} color={colors.white} />
+                          <Text style={styles.settleButtonText}>{t('expenses.markPaymentButton')}</Text>
+                        </Pressable>
+                      ) : null}
+                    </View>
+                  );
+                })}
+              </View>
+            ) : null}
+          </>
+        }
+        ListEmptyComponent={
+          <EmptyState icon="cash-outline" title={t('expenses.emptyTitle')} subtitle={t('expenses.emptySubtitle')} />
+        }
+        renderItem={({ item }) => (
             <View style={styles.expenseCard}>
               <View style={styles.expenseTopRow}>
                 <Pressable
@@ -189,7 +190,6 @@ export default function ExpensesScreen() {
             </View>
           )}
         />
-      </ScrollView>
 
       <AddFab onPress={() => router.push('/(app)/expense/new')} bottom={24 + insets.bottom} />
 

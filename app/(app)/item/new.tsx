@@ -46,7 +46,7 @@ export default function NewItemScreen() {
       <Stack.Screen
         options={{
           headerRight: () => (
-            <Pressable onPress={() => formRef.current?.openScan()} hitSlop={8}>
+            <Pressable onPress={() => formRef.current?.openScan()} hitSlop={8} style={{ paddingRight: 16 }}>
               <Ionicons name="camera-outline" size={22} color={colors.inkSoft} />
             </Pressable>
           ),

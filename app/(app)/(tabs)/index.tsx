@@ -229,11 +229,11 @@ export default function OverviewScreen() {
                 size={16}
                 color={colors.inkSoft}
               />
-              <Text style={[styles.detailCardTitle, avanziItems.length > 0 && { color: colors.warn }]}>
+              <Text style={[styles.detailCardTitle, { color: colors.warn }]}>
                 {t('overview.avanziCard.title')}
               </Text>
             </View>
-            <Text style={[styles.detailCardCount, avanziItems.length > 0 && { color: colors.warn }]}>
+            <Text style={[styles.detailCardCount, { color: colors.warn }]}>
               {avanziItems.length}
             </Text>
           </Pressable>
@@ -268,11 +268,11 @@ export default function OverviewScreen() {
                 size={16}
                 color={colors.inkSoft}
               />
-              <Text style={[styles.detailCardTitle, openedItems.length > 0 && { color: colors.gold }]}>
+              <Text style={[styles.detailCardTitle, { color: colors.gold }]}>
                 {t('overview.openedCard.title')}
               </Text>
             </View>
-            <Text style={[styles.detailCardCount, openedItems.length > 0 && { color: colors.gold }]}>
+            <Text style={[styles.detailCardCount, { color: colors.gold }]}>
               {openedItems.length}
             </Text>
           </Pressable>
@@ -302,11 +302,11 @@ export default function OverviewScreen() {
                 size={16}
                 color={colors.inkSoft}
               />
-              <Text style={[styles.detailCardTitle, expiringItems.length > 0 && { color: colors.danger }]}>
+              <Text style={[styles.detailCardTitle, { color: colors.danger }]}>
                 {t('overview.expiringCard.title')}
               </Text>
             </View>
-            <Text style={[styles.detailCardCount, expiringItems.length > 0 && { color: colors.danger }]}>
+            <Text style={[styles.detailCardCount, { color: colors.danger }]}>
               {expiringItems.length}
             </Text>
           </Pressable>
@@ -335,11 +335,11 @@ export default function OverviewScreen() {
                 size={16}
                 color={colors.inkSoft}
               />
-              <Text style={[styles.detailCardTitle, overdueCleaning.length > 0 && { color: colors.info }]}>
+              <Text style={[styles.detailCardTitle, { color: colors.info }]}>
                 {t('overview.cleaningDueSection')}
               </Text>
             </View>
-            <Text style={[styles.detailCardCount, overdueCleaning.length > 0 && { color: colors.info }]}>
+            <Text style={[styles.detailCardCount, { color: colors.info }]}>
               {overdueCleaning.length}
             </Text>
           </Pressable>

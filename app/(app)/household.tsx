@@ -276,30 +276,34 @@ export default function HouseholdScreen() {
           </View>
         </View>
 
-        {Platform.OS !== 'web' ? (
-          <View style={styles.settingsField}>
-            <Text style={styles.settingsFieldLabel}>{t('household.notificationsLabel')}</Text>
-            <Text style={styles.cardHint}>{t('household.notificationsHint')}</Text>
-            <Text style={[styles.notifStatusText, notifStatus === 'denied' && { color: colors.danger }]}>
-              {notifStatus === 'denied'
-                ? t('household.notificationsDenied')
-                : notifStatus === 'granted'
-                  ? t('household.notificationsGranted')
-                  : t('household.notificationsUndetermined')}
-            </Text>
-            {notifStatus !== 'granted' ? (
-              <PrimaryButton
-                label={
-                  notifStatus === 'denied'
-                    ? t('household.notificationsOpenSettingsButton')
-                    : t('household.notificationsEnableButton')
-                }
-                onPress={handleEnableNotifications}
-                variant="secondary"
-              />
-            ) : null}
-          </View>
-        ) : null}
+        <View style={styles.settingsField}>
+          <Text style={styles.settingsFieldLabel}>{t('household.notificationsLabel')}</Text>
+          {Platform.OS !== 'web' ? (
+            <>
+              <Text style={styles.cardHint}>{t('household.notificationsHint')}</Text>
+              <Text style={[styles.notifStatusText, notifStatus === 'denied' && { color: colors.danger }]}>
+                {notifStatus === 'denied'
+                  ? t('household.notificationsDenied')
+                  : notifStatus === 'granted'
+                    ? t('household.notificationsGranted')
+                    : t('household.notificationsUndetermined')}
+              </Text>
+              {notifStatus !== 'granted' ? (
+                <PrimaryButton
+                  label={
+                    notifStatus === 'denied'
+                      ? t('household.notificationsOpenSettingsButton')
+                      : t('household.notificationsEnableButton')
+                  }
+                  onPress={handleEnableNotifications}
+                  variant="secondary"
+                />
+              ) : null}
+            </>
+          ) : (
+            <Text style={styles.cardHint}>{t('household.notificationsWebHint')}</Text>
+          )}
+        </View>
       </View>
 
       <View style={styles.card}>

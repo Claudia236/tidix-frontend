@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../../src/api/client';
 import { itemsApi } from '../../../src/api/items';
@@ -113,24 +113,25 @@ export default function ShoppingScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScrollView contentContainerStyle={[styles.container, webCentered]}>
-      <SectionTitle logo>{t('shopping.title')}</SectionTitle>
-
-      {purchasedCount > 0 ? (
-        <Pressable style={styles.purchasedBanner} onPress={() => router.push('/(app)/shopping-purchased')}>
-          <View style={styles.purchasedBannerLeft}>
-            <Ionicons name="bag-check-outline" size={18} color={colors.brand} />
-            <Text style={styles.purchasedBannerText}>{t('shopping.purchasedBanner', { n: purchasedCount })}</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
-        </Pressable>
-      ) : null}
-
       <FlatList
         data={toBuyRows}
         keyExtractor={(row) => row.key}
-        scrollEnabled={false}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.container, webCentered]}
+        ListHeaderComponent={
+          <>
+            <SectionTitle logo>{t('shopping.title')}</SectionTitle>
+
+            {purchasedCount > 0 ? (
+              <Pressable style={styles.purchasedBanner} onPress={() => router.push('/(app)/shopping-purchased')}>
+                <View style={styles.purchasedBannerLeft}>
+                  <Ionicons name="bag-check-outline" size={18} color={colors.brand} />
+                  <Text style={styles.purchasedBannerText}>{t('shopping.purchasedBanner', { n: purchasedCount })}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
+              </Pressable>
+            ) : null}
+          </>
+        }
         ListEmptyComponent={
           <EmptyState
             icon="cart-outline"
@@ -201,8 +202,6 @@ export default function ShoppingScreen() {
           );
         }}
       />
-
-      </ScrollView>
 
       <RestockDialog
         visible={restockTarget !== null}

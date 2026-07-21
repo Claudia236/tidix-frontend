@@ -86,6 +86,14 @@ export default function ExpensesScreen() {
 
   const expenses = expensesQuery.data ?? [];
   const summary = summaryQuery.data;
+  // Chi risulta gia' in credito (o in pari) nel saldo complessivo del mese
+  // non deve vedere le proprie quote come "non pagate" nelle singole spese:
+  // il debito e' gia' compensato da quanto gli altri gli devono altrove.
+  const netBalanceByUser = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const b of summary?.byUser ?? []) map.set(b.userId, b.netBalance);
+    return map;
+  }, [summary]);
 
   return (
     <View style={styles.container}>
@@ -166,7 +174,9 @@ export default function ExpensesScreen() {
               <View style={styles.splitsList}>
                 {item.splits.map((s) => {
                   const isPayer = s.userId === item.paidByUserId;
-                  const settled = !isPayer && s.paidAmount >= s.amount - 0.01;
+                  const actuallyPaid = s.paidAmount >= s.amount - 0.01;
+                  const netSettled = (netBalanceByUser.get(s.userId) ?? 0) >= -0.01;
+                  const settled = !isPayer && (actuallyPaid || netSettled);
                   return (
                     <View key={s.userId} style={styles.splitRow}>
                       <Ionicons
@@ -180,7 +190,9 @@ export default function ExpensesScreen() {
                       </Text>
                       {!isPayer ? (
                         <Text style={[styles.splitPaidStatus, { color: settled ? colors.positive : colors.danger }]}>
-                          {t('expenses.paidOfTotal', { paid: s.paidAmount.toFixed(2), total: s.amount.toFixed(2) })}
+                          {actuallyPaid || !netSettled
+                            ? t('expenses.paidOfTotal', { paid: s.paidAmount.toFixed(2), total: s.amount.toFixed(2) })
+                            : t('expenses.settledByBalance')}
                         </Text>
                       ) : null}
                     </View>

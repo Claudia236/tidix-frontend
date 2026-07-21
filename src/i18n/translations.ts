@@ -588,6 +588,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   'expenses.emptyTitle': { it: 'Nessuna spesa questo mese', en: 'No expenses this month', es: 'Sin gastos este mes' },
   'expenses.emptySubtitle': { it: 'Aggiungi la prima spesa condivisa.', en: 'Add the first shared expense.', es: 'Añade el primer gasto compartido.' },
   'expenses.paidOfTotal': { it: (v) => `${v.paid} di ${v.total} €`, en: (v) => `${v.paid} of ${v.total} €`, es: (v) => `${v.paid} de ${v.total} €` },
+  'expenses.settledByBalance': { it: 'Già coperto dal saldo', en: 'Already covered by balance', es: 'Ya cubierto por el saldo' },
   'expenses.settleTitle': { it: (v) => `Registra pagamento di ${v.name}`, en: (v) => `Record payment from ${v.name}`, es: (v) => `Registrar pago de ${v.name}` },
   'expenses.markPaymentButton': { it: 'Segna pagamento', en: 'Mark payment', es: 'Marcar pago' },
   'expenses.settleHint': {

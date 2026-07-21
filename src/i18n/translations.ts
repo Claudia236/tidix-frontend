@@ -682,6 +682,11 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: 'Open phone settings',
     es: 'Abrir ajustes del teléfono',
   },
+  'household.notificationsWebHint': {
+    it: 'Le notifiche non sono disponibili sulla versione web: installa l\'app sul telefono per ricevere i promemoria su prodotti scaduti, pulizie da fare, raccolta rifiuti e altro.',
+    en: 'Notifications are not available on the web version: install the app on your phone to receive reminders about expired products, chores due, waste collection and more.',
+    es: 'Las notificaciones no están disponibles en la versión web: instala la app en tu teléfono para recibir avisos sobre productos caducados, limpiezas pendientes, recogida de basura y más.',
+  },
   'household.categoriesTitle': { it: 'Categorie prodotti', en: 'Product categories', es: 'Categorías de productos' },
   'household.categoriesHint': {
     it: 'Disattiva le categorie che non usi: non compariranno più tra le scelte disponibili.',

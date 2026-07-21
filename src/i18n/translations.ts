@@ -571,7 +571,7 @@ const ENTRIES: Record<string, EntryTriple> = {
     es: 'Indica cuánto ha aportado cada uno, aunque no coincida exactamente con su parte.',
   },
   'expenses.alreadyPaidFull': { it: 'Ha saldato per intero', en: 'Paid in full', es: 'Ha pagado por completo' },
-  'expenses.percentagesLabel': { it: 'Percentuali (devono sommare a 100)', en: 'Percentages (must add up to 100)', es: 'Porcentajes (deben sumar 100)' },
+  'expenses.percentagesLabel': { it: 'Percentuale (la somma deve essere 100)', en: 'Percentage (must add up to 100)', es: 'Porcentaje (la suma debe ser 100)' },
   'expenses.percentagesErrorTitle': { it: 'Spese', en: 'Expenses', es: 'Gastos' },
   'expenses.percentagesError': {
     it: (v) => `Le percentuali devono sommare a 100 (attualmente ${v.sum}).`,

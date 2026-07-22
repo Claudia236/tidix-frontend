@@ -168,7 +168,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'notif.openedReminder.title': { it: 'Tidix ti ricorda 📦', en: 'Tidix reminder 📦', es: 'Tidix te recuerda 📦' },
   'notif.openedReminder.body': {
-    it: (v) => `${v.name} è aperto da ${v.days} ${v.days === 1 ? 'giorno' : 'giorni'}: l'hai ancora consumato?`,
+    it: (v) => `${v.name} è aperto da ${v.days} ${v.days === 1 ? 'giorno' : 'giorni'}: l'hai consumato?`,
     en: (v) => `${v.name} has been opened for ${v.days} ${v.days === 1 ? 'day' : 'days'}: have you used it up yet?`,
     es: (v) => `${v.name} está abierto desde hace ${v.days} ${v.days === 1 ? 'día' : 'días'}: ¿ya lo has consumido?`,
   },

@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "Tidix",
-    "slug": "logistica-domestica",
-    "scheme": "logisticadomestica",
+    "slug": "tidix",
+    "scheme": "tidix",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,10 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.logisticadomestica.app"
+      "bundleIdentifier": "com.tidix.app"
     },
     "android": {
-      "package": "com.logisticadomestica.app",
+      "package": "com.tidix.app",
       "adaptiveIcon": {
         "backgroundColor": "#EDEFE9",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -32,7 +32,7 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-splash-screen",
+      ["expo-splash-screen", { "backgroundColor": "#EDEFE9", "image": "./assets/splash-icon.png" }],
       "expo-notifications",
       "@react-native-community/datetimepicker",
       ["expo-image-picker", { "microphonePermission": false }]

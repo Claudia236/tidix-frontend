@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.logisticadomestica.app'
+    namespace 'com.tidix.app'
     defaultConfig {
-        applicationId 'com.logisticadomestica.app'
+        applicationId 'com.tidix.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

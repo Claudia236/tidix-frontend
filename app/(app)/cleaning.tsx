@@ -86,24 +86,26 @@ export default function CleaningScreen() {
     });
   }, [tasksQuery.data, search]);
 
+  const isSearching = search.trim().length > 0;
+
   const rows: CleaningRow[] = useMemo(() => {
     const toClean = tasks.filter((task) => task.overdue);
     const done = tasks.filter((task) => !task.overdue);
     const result: CleaningRow[] = [];
     if (toClean.length > 0) {
       result.push({ key: 'header-toClean', type: 'header', group: 'toClean', count: toClean.length });
-      if (!collapsedGroups.has('toClean')) {
+      if (isSearching || !collapsedGroups.has('toClean')) {
         result.push(...toClean.map((task) => ({ key: `item-${task.id}`, type: 'item' as const, data: task })));
       }
     }
     if (done.length > 0) {
       result.push({ key: 'header-done', type: 'header', group: 'done', count: done.length });
-      if (!collapsedGroups.has('done')) {
+      if (isSearching || !collapsedGroups.has('done')) {
         result.push(...done.map((task) => ({ key: `item-${task.id}`, type: 'item' as const, data: task })));
       }
     }
     return result;
-  }, [tasks, collapsedGroups]);
+  }, [tasks, collapsedGroups, isSearching]);
 
   return (
     <View style={styles.container}>
@@ -133,7 +135,7 @@ export default function CleaningScreen() {
         }
         renderItem={({ item: row }) => {
           if (row.type === 'header') {
-            const collapsed = collapsedGroups.has(row.group);
+            const collapsed = !isSearching && collapsedGroups.has(row.group);
             return (
               <Pressable style={styles.groupHeader} onPress={() => toggleGroupCollapsed(row.group)}>
                 <Text style={styles.groupHeaderText}>

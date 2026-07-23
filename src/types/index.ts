@@ -102,6 +102,7 @@ export interface AdjustQuantityInput {
   expirationDate?: string | null;
   clearExpirationDate?: boolean;
   hideFromShoppingList?: boolean;
+  clearOpened?: boolean;
 }
 
 export interface ShoppingNote {

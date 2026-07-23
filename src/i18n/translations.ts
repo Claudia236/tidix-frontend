@@ -436,6 +436,12 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: (v) => `"${v.name}" ran out. Do you want to add it to the shopping list?`,
     es: (v) => `"${v.name}" se ha acabado. ¿Quieres añadirlo a la lista de la compra?`,
   },
+  'stock.removeOpenedTitle': { it: 'Confezione aperta', en: 'Opened package', es: 'Envase abierto' },
+  'stock.removeOpenedMessage': {
+    it: (v) => `"${v.name}" è segnato come aperto. Stai togliendo proprio la confezione aperta?`,
+    en: (v) => `"${v.name}" is marked as opened. Are you removing the opened package?`,
+    es: (v) => `"${v.name}" está marcado como abierto. ¿Estás quitando el envase abierto?`,
+  },
 
   // More screen
   'more.title': { it: 'Altro', en: 'More', es: 'Más' },

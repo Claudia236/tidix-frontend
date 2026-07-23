@@ -100,13 +100,15 @@ export default function StockScreen() {
       expirationDate,
       clearExpirationDate,
       hideFromShoppingList,
+      clearOpened,
     }: {
       id: string;
       delta: number;
       expirationDate?: string | null;
       clearExpirationDate?: boolean;
       hideFromShoppingList?: boolean;
-    }) => itemsApi.adjustQuantity(id, { delta, expirationDate: expirationDate ?? undefined, clearExpirationDate, hideFromShoppingList }),
+      clearOpened?: boolean;
+    }) => itemsApi.adjustQuantity(id, { delta, expirationDate: expirationDate ?? undefined, clearExpirationDate, hideFromShoppingList, clearOpened }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       setRestockTarget(null);
@@ -133,6 +135,14 @@ export default function StockScreen() {
       showAlert(t('stock.outOfStockTitle'), t('stock.outOfStockMessage', { name: item.name }), [
         { text: t('common.no'), style: 'cancel', onPress: () => adjustMutation.mutate({ id: item.id, delta, hideFromShoppingList: true }) },
         { text: t('common.yes'), onPress: () => adjustMutation.mutate({ id: item.id, delta, hideFromShoppingList: false }) },
+      ]);
+      return;
+    }
+
+    if (item.opened && item.quantity > 1) {
+      showAlert(t('stock.removeOpenedTitle'), t('stock.removeOpenedMessage', { name: item.name }), [
+        { text: t('common.no'), style: 'cancel', onPress: () => adjustMutation.mutate({ id: item.id, delta }) },
+        { text: t('common.yes'), onPress: () => adjustMutation.mutate({ id: item.id, delta, clearOpened: true }) },
       ]);
       return;
     }
@@ -164,6 +174,8 @@ export default function StockScreen() {
   // scelto all'interno di ciascun gruppo.
   // Ordinando per data di acquisto invece si vuole un unico elenco su tutte
   // le scorte, senza raggruppamento ne' header.
+  const isSearching = search.trim().length > 0;
+
   const stockRows: StockRow[] = useMemo(() => {
     if (sortBy === 'purchaseDate') {
       return items.map((item) => ({ key: `item-${item.id}`, type: 'item' as const, data: item }));
@@ -180,12 +192,12 @@ export default function StockScreen() {
       const group = byCategory.get(cat.key);
       if (!group || group.length === 0) continue;
       rows.push({ key: `header-${cat.key}`, type: 'header', category: cat.key, count: group.length });
-      if (!collapsedCategories.has(cat.key)) {
+      if (isSearching || !collapsedCategories.has(cat.key)) {
         rows.push(...group.map((item) => ({ key: `item-${item.id}`, type: 'item' as const, data: item })));
       }
     }
     return rows;
-  }, [items, categories, collapsedCategories, sortBy]);
+  }, [items, categories, collapsedCategories, sortBy, isSearching]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -282,7 +294,7 @@ export default function StockScreen() {
           renderItem={({ item: row }) => {
             if (row.type === 'header') {
               const info = findCategoryInfo(categories, row.category);
-              const collapsed = collapsedCategories.has(row.category);
+              const collapsed = !isSearching && collapsedCategories.has(row.category);
               return (
                 <Pressable style={styles.categoryHeader} onPress={() => toggleCategoryCollapsed(row.category)}>
                   <Text style={styles.categoryHeaderText}>

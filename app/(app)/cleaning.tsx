@@ -119,6 +119,11 @@ export default function CleaningScreen() {
             placeholderTextColor={colors.inkSoft}
             style={styles.searchInput}
           />
+          {search.length > 0 ? (
+            <Pressable onPress={() => setSearch('')} hitSlop={8}>
+              <Ionicons name="close-circle" size={18} color={colors.inkSoft} />
+            </Pressable>
+          ) : null}
         </View>
       </View>
 

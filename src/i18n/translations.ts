@@ -194,6 +194,21 @@ const ENTRIES: Record<string, EntryTriple> = {
   'itemCard.openedOn': { it: (v) => `Aperto il ${v.date}`, en: (v) => `Opened on ${v.date}`, es: (v) => `Abierto el ${v.date}` },
 
   // ItemForm
+  'itemForm.voice.permissionDenied': {
+    it: 'Permesso microfono negato. Abilitalo nelle impostazioni per compilare i campi a voce.',
+    en: 'Microphone permission denied. Enable it in settings to fill fields by voice.',
+    es: 'Permiso de micrófono denegado. Actívalo en los ajustes para rellenar los campos por voz.',
+  },
+  'itemForm.voice.error': {
+    it: 'Non sono riuscito a riconoscere la voce. Riprova.',
+    en: "I couldn't recognize your voice. Try again.",
+    es: 'No he podido reconocer la voz. Inténtalo de nuevo.',
+  },
+  'itemForm.voice.dateNotUnderstood': {
+    it: (v) => `Non ho capito la data da "${v.text}". Inseriscila manualmente.`,
+    en: (v) => `I didn't understand the date from "${v.text}". Enter it manually.`,
+    es: (v) => `No he entendido la fecha de "${v.text}". Introdúcela manualmente.`,
+  },
   'itemForm.name.label': { it: 'Nome prodotto', en: 'Product name', es: 'Nombre del producto' },
   'itemForm.name.placeholder': { it: 'Es. Ceci', en: 'e.g. Chickpeas', es: 'ej. Garbanzos' },
   'itemForm.location.label': { it: 'Dove si trova', en: 'Where is it', es: 'Dónde está' },

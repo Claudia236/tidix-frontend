@@ -319,12 +319,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
 
       <View style={styles.field}>
         <Text style={styles.label}>{t('itemForm.category.label')}</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoryScroll}
-          contentContainerStyle={styles.categoryRow}
-        >
+        <View style={styles.categoryGrid}>
           {categories.map((cat) => {
             const active = category === cat.key;
             return (
@@ -338,7 +333,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
               </Pressable>
             );
           })}
-        </ScrollView>
+        </View>
       </View>
 
       <View style={styles.row}>
@@ -575,8 +570,7 @@ function createStyles(COLORS: ColorPalette) {
       alignItems: 'center',
       justifyContent: 'center',
     },
-    categoryScroll: { flexGrow: 0 },
-    categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 2 },
+    categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     categoryChip: {
       alignItems: 'center',
       gap: 4,

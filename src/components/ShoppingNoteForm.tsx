@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelectableCategories } from '../constants/domain';
+import { useVoiceDictation } from '../hooks/useVoiceDictation';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
@@ -10,6 +11,8 @@ import { webCentered } from '../theme/responsive';
 import type { Category } from '../types';
 import { PrimaryButton } from './PrimaryButton';
 import { TextField } from './TextField';
+
+type VoiceTarget = 'name' | 'detail';
 
 export interface ShoppingNoteFormInput {
   text: string;
@@ -37,6 +40,12 @@ export function ShoppingNoteForm({ initial, submitLabel, submitting, onSubmit, o
   const [detail, setDetail] = useState(initial?.detail ?? '');
   const [category, setCategory] = useState<Category | null>(initial?.category ?? null);
 
+  const voice = useVoiceDictation<VoiceTarget>((target, transcript) => {
+    const capitalized = transcript.charAt(0).toUpperCase() + transcript.slice(1);
+    if (target === 'name') setName(capitalized);
+    else setDetail(capitalized);
+  });
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       <ScrollView
@@ -49,12 +58,34 @@ export function ShoppingNoteForm({ initial, submitLabel, submitting, onSubmit, o
         value={name}
         onChangeText={setName}
         autoFocus
+        labelExtra={
+          voice.available ? (
+            <Pressable onPress={() => voice.start('name')} hitSlop={8}>
+              <Ionicons
+                name={voice.target === 'name' ? 'mic' : 'mic-outline'}
+                size={16}
+                color={voice.target === 'name' ? colors.danger : colors.brand}
+              />
+            </Pressable>
+          ) : null
+        }
       />
       <TextField
         label={t('shoppingNote.new.detailLabel')}
         placeholder={t('shoppingNote.new.detailPlaceholder')}
         value={detail}
         onChangeText={setDetail}
+        labelExtra={
+          voice.available ? (
+            <Pressable onPress={() => voice.start('detail')} hitSlop={8}>
+              <Ionicons
+                name={voice.target === 'detail' ? 'mic' : 'mic-outline'}
+                size={16}
+                color={voice.target === 'detail' ? colors.danger : colors.brand}
+              />
+            </Pressable>
+          ) : null
+        }
       />
 
       <View style={styles.field}>

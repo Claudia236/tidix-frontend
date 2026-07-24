@@ -2,13 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import * as ImagePicker from 'expo-image-picker';
-import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { storageLocationsApi } from '../api/storageLocations';
 import { CONSUME_WITHIN_DAYS_CATEGORIES, useSelectableCategories, useLocationColor, useUnitLabel, UNITS } from '../constants/domain';
 import { useStorageLocations } from '../hooks/useStorageLocations';
+import { useVoiceDictation } from '../hooks/useVoiceDictation';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
@@ -84,20 +84,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const [scanPhotos, setScanPhotos] = useState<string[]>([]);
   const [scanRecognizing, setScanRecognizing] = useState(false);
 
-  const [voiceAvailable, setVoiceAvailable] = useState(false);
-  const [voiceTarget, setVoiceTarget] = useState<VoiceTarget | null>(null);
-
-  useEffect(() => {
-    setVoiceAvailable(ExpoSpeechRecognitionModule.isRecognitionAvailable());
-  }, []);
-
-  useSpeechRecognitionEvent('end', () => setVoiceTarget(null));
-
-  useSpeechRecognitionEvent('result', (event) => {
-    if (!voiceTarget || !event.isFinal) return;
-    const transcript = event.results[0]?.transcript?.trim();
-    if (!transcript) return;
-
+  const voice = useVoiceDictation<VoiceTarget>((voiceTarget, transcript) => {
     if (voiceTarget === 'name') {
       setName(transcript.charAt(0).toUpperCase() + transcript.slice(1));
     } else if (voiceTarget === 'expiration') {
@@ -110,31 +97,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
         setExpirationDate(parsed);
       }
     }
-    setVoiceTarget(null);
   });
-
-  useSpeechRecognitionEvent('error', (event) => {
-    setVoiceTarget(null);
-    if (event.error === 'not-allowed') {
-      showAlert(t('common.error'), t('itemForm.voice.permissionDenied'));
-    } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
-      showAlert(t('common.error'), t('itemForm.voice.error'));
-    }
-  });
-
-  async function startVoice(target: VoiceTarget) {
-    if (voiceTarget) {
-      ExpoSpeechRecognitionModule.stop();
-      return;
-    }
-    const permission = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
-    if (!permission.granted) {
-      showAlert(t('common.error'), t('itemForm.voice.permissionDenied'));
-      return;
-    }
-    setVoiceTarget(target);
-    ExpoSpeechRecognitionModule.start({ lang: 'it-IT', interimResults: false });
-  }
 
   const effectiveLocationId = storageLocationId || locations[0]?.id || '';
 
@@ -291,12 +254,12 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
           onChangeText={setName}
           autoFocus
           labelExtra={
-            voiceAvailable ? (
-              <Pressable onPress={() => startVoice('name')} hitSlop={8}>
+            voice.available ? (
+              <Pressable onPress={() => voice.start('name')} hitSlop={8}>
                 <Ionicons
-                  name={voiceTarget === 'name' ? 'mic' : 'mic-outline'}
+                  name={voice.target === 'name' ? 'mic' : 'mic-outline'}
                   size={16}
-                  color={voiceTarget === 'name' ? colors.danger : colors.brand}
+                  color={voice.target === 'name' ? colors.danger : colors.brand}
                 />
               </Pressable>
             ) : null
@@ -427,12 +390,12 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
                     >
                       <Ionicons name="information-circle-outline" size={16} color={colors.brand} />
                     </Pressable>
-                    {voiceAvailable ? (
-                      <Pressable onPress={() => startVoice('expiration')} hitSlop={8}>
+                    {voice.available ? (
+                      <Pressable onPress={() => voice.start('expiration')} hitSlop={8}>
                         <Ionicons
-                          name={voiceTarget === 'expiration' ? 'mic' : 'mic-outline'}
+                          name={voice.target === 'expiration' ? 'mic' : 'mic-outline'}
                           size={16}
-                          color={voiceTarget === 'expiration' ? colors.danger : colors.brand}
+                          color={voice.target === 'expiration' ? colors.danger : colors.brand}
                         />
                       </Pressable>
                     ) : null}
@@ -449,12 +412,12 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
             <>
               <View style={styles.voiceLabelRow}>
                 <Text style={styles.label}>{t('itemForm.expirationDate.label')}</Text>
-                {voiceAvailable ? (
-                  <Pressable onPress={() => startVoice('expiration')} hitSlop={8}>
+                {voice.available ? (
+                  <Pressable onPress={() => voice.start('expiration')} hitSlop={8}>
                     <Ionicons
-                      name={voiceTarget === 'expiration' ? 'mic' : 'mic-outline'}
+                      name={voice.target === 'expiration' ? 'mic' : 'mic-outline'}
                       size={16}
-                      color={voiceTarget === 'expiration' ? colors.danger : colors.brand}
+                      color={voice.target === 'expiration' ? colors.danger : colors.brand}
                     />
                   </Pressable>
                 ) : null}

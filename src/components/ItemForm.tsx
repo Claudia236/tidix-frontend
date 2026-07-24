@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import * as ImagePicker from 'expo-image-picker';
-import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
+import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { storageLocationsApi } from '../api/storageLocations';
@@ -15,11 +16,14 @@ import { webCentered } from '../theme/responsive';
 import type { Category, ItemInput, Unit } from '../types';
 import { daysUntil, toLocalISODate, todayLocalISODate } from '../utils/expiry';
 import { parseExpirationDate, parseProductName } from '../utils/productLabelParser';
+import { parseSpokenDateIT } from '../utils/voiceDate';
 import { showAlert } from './AppAlert';
 import { DatePickerField } from './DatePickerField';
 import { OpenedReminderDialog } from './OpenedReminderDialog';
 import { PrimaryButton } from './PrimaryButton';
 import { TextField } from './TextField';
+
+type VoiceTarget = 'name' | 'expiration';
 
 const MAX_SCAN_PHOTOS = 2;
 
@@ -79,6 +83,58 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   useImperativeHandle(ref, () => ({ openScan: () => setScanModalVisible(true) }), []);
   const [scanPhotos, setScanPhotos] = useState<string[]>([]);
   const [scanRecognizing, setScanRecognizing] = useState(false);
+
+  const [voiceAvailable, setVoiceAvailable] = useState(false);
+  const [voiceTarget, setVoiceTarget] = useState<VoiceTarget | null>(null);
+
+  useEffect(() => {
+    setVoiceAvailable(ExpoSpeechRecognitionModule.isRecognitionAvailable());
+  }, []);
+
+  useSpeechRecognitionEvent('end', () => setVoiceTarget(null));
+
+  useSpeechRecognitionEvent('result', (event) => {
+    if (!voiceTarget || !event.isFinal) return;
+    const transcript = event.results[0]?.transcript?.trim();
+    if (!transcript) return;
+
+    if (voiceTarget === 'name') {
+      setName(transcript.charAt(0).toUpperCase() + transcript.slice(1));
+    } else if (voiceTarget === 'expiration') {
+      const parsed = parseSpokenDateIT(transcript);
+      if (!parsed) {
+        showAlert(t('common.error'), t('itemForm.voice.dateNotUnderstood', { text: transcript }));
+      } else if (CONSUME_WITHIN_DAYS_CATEGORIES.has(category)) {
+        setConsumeWithinDays(String(Math.max(0, daysUntil(parsed))));
+      } else {
+        setExpirationDate(parsed);
+      }
+    }
+    setVoiceTarget(null);
+  });
+
+  useSpeechRecognitionEvent('error', (event) => {
+    setVoiceTarget(null);
+    if (event.error === 'not-allowed') {
+      showAlert(t('common.error'), t('itemForm.voice.permissionDenied'));
+    } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
+      showAlert(t('common.error'), t('itemForm.voice.error'));
+    }
+  });
+
+  async function startVoice(target: VoiceTarget) {
+    if (voiceTarget) {
+      ExpoSpeechRecognitionModule.stop();
+      return;
+    }
+    const permission = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    if (!permission.granted) {
+      showAlert(t('common.error'), t('itemForm.voice.permissionDenied'));
+      return;
+    }
+    setVoiceTarget(target);
+    ExpoSpeechRecognitionModule.start({ lang: 'it-IT', interimResults: false });
+  }
 
   const effectiveLocationId = storageLocationId || locations[0]?.id || '';
 
@@ -228,7 +284,24 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
         contentContainerStyle={[styles.container, { paddingBottom: 40 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
       >
-        <TextField label={t('itemForm.name.label')} placeholder={t('itemForm.name.placeholder')} value={name} onChangeText={setName} autoFocus />
+        <TextField
+          label={t('itemForm.name.label')}
+          placeholder={t('itemForm.name.placeholder')}
+          value={name}
+          onChangeText={setName}
+          autoFocus
+          labelExtra={
+            voiceAvailable ? (
+              <Pressable onPress={() => startVoice('name')} hitSlop={8}>
+                <Ionicons
+                  name={voiceTarget === 'name' ? 'mic' : 'mic-outline'}
+                  size={16}
+                  color={voiceTarget === 'name' ? colors.danger : colors.brand}
+                />
+              </Pressable>
+            ) : null
+          }
+        />
 
       <View style={styles.field}>
         <Text style={styles.label}>{t('itemForm.location.label')}</Text>
@@ -345,14 +418,25 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
               <TextField
                 label={t('itemForm.consumeWithinDays.label')}
                 labelExtra={
-                  <Pressable
-                    hitSlop={8}
-                    onPress={() =>
-                      showAlert(t('itemForm.consumeWithinDays.guideTitle'), t(`itemForm.consumeWithinDays.guide.${category}`))
-                    }
-                  >
-                    <Ionicons name="information-circle-outline" size={16} color={colors.brand} />
-                  </Pressable>
+                  <View style={styles.voiceLabelRow}>
+                    <Pressable
+                      hitSlop={8}
+                      onPress={() =>
+                        showAlert(t('itemForm.consumeWithinDays.guideTitle'), t(`itemForm.consumeWithinDays.guide.${category}`))
+                      }
+                    >
+                      <Ionicons name="information-circle-outline" size={16} color={colors.brand} />
+                    </Pressable>
+                    {voiceAvailable ? (
+                      <Pressable onPress={() => startVoice('expiration')} hitSlop={8}>
+                        <Ionicons
+                          name={voiceTarget === 'expiration' ? 'mic' : 'mic-outline'}
+                          size={16}
+                          color={voiceTarget === 'expiration' ? colors.danger : colors.brand}
+                        />
+                      </Pressable>
+                    ) : null}
+                  </View>
                 }
                 placeholder={t('itemForm.consumeWithinDays.placeholder')}
                 keyboardType="numeric"
@@ -363,7 +447,18 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
             </>
           ) : (
             <>
-              <Text style={styles.label}>{t('itemForm.expirationDate.label')}</Text>
+              <View style={styles.voiceLabelRow}>
+                <Text style={styles.label}>{t('itemForm.expirationDate.label')}</Text>
+                {voiceAvailable ? (
+                  <Pressable onPress={() => startVoice('expiration')} hitSlop={8}>
+                    <Ionicons
+                      name={voiceTarget === 'expiration' ? 'mic' : 'mic-outline'}
+                      size={16}
+                      color={voiceTarget === 'expiration' ? colors.danger : colors.brand}
+                    />
+                  </Pressable>
+                ) : null}
+              </View>
               <DatePickerField value={expirationDate} onChange={setExpirationDate} />
             </>
           )}
@@ -545,6 +640,7 @@ function createStyles(COLORS: ColorPalette) {
     unitChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
     unitChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
     consumeWithinDaysHint: { fontSize: 11, color: COLORS.inkSoft, marginTop: -4 },
+    voiceLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     openedToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     openedToggleText: { fontSize: 13, color: COLORS.ink },
     reminderEditLink: { fontSize: 12, fontWeight: '600', color: COLORS.brand, marginTop: -4 },

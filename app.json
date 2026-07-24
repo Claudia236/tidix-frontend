@@ -35,7 +35,14 @@
       ["expo-splash-screen", { "backgroundColor": "#EDEFE9", "image": "./assets/splash-icon.png" }],
       "expo-notifications",
       "@react-native-community/datetimepicker",
-      ["expo-image-picker", { "microphonePermission": false }]
+      "expo-image-picker",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Consenti a Tidix di usare il microfono per compilare i campi a voce.",
+          "speechRecognitionPermission": "Consenti a Tidix di riconoscere il parlato per compilare i campi a voce."
+        }
+      ]
     ],
     "extra": {
       "router": {},

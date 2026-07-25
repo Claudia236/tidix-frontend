@@ -12,7 +12,8 @@ import { wasteApi } from '../../../src/api/waste';
 import { showAlert } from '../../../src/components/AppAlert';
 import { PrimaryButton } from '../../../src/components/PrimaryButton';
 import { SectionTitle } from '../../../src/components/SectionTitle';
-import { findCategoryInfo, getWasteTypeEmoji, jsWeekdayToDay, useCategories, wasteTypesCollectedOn } from '../../../src/constants/domain';
+import { findCategoryInfo, getWasteTypeEmoji, jsWeekdayToDay, LOCATION_PALETTE, useCategories, wasteTypesCollectedOn } from '../../../src/constants/domain';
+import { useStorageLocations } from '../../../src/hooks/useStorageLocations';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import { syncExpiryReminders } from '../../../src/notifications/expiryReminders';
 import { syncOpenedReminders } from '../../../src/notifications/openedReminders';
@@ -30,6 +31,7 @@ export default function OverviewScreen() {
   const { t, language } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const categories = useCategories();
+  const { byId: locationsById } = useStorageLocations();
 
   const summaryQuery = useQuery({ queryKey: ['items', 'summary'], queryFn: itemsApi.summary });
   const expiredQuery = useQuery({ queryKey: ['items', 'expired'], queryFn: itemsApi.expired });
@@ -43,6 +45,7 @@ export default function OverviewScreen() {
   const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
   const [zoneName, setZoneName] = useState('');
   const [zoneEmoji, setZoneEmoji] = useState('');
+  const [zoneColorIndex, setZoneColorIndex] = useState<number | null>(null);
   const [collapsedCards, setCollapsedCards] = useState<Set<string>>(
     () => new Set(['avanzi', 'opened', 'expiring', 'cleaning'])
   );
@@ -73,7 +76,7 @@ export default function OverviewScreen() {
 
   const saveZoneMutation = useMutation({
     mutationFn: () => {
-      const input = { name: zoneName.trim(), emoji: zoneEmoji.trim() || undefined };
+      const input = { name: zoneName.trim(), emoji: zoneEmoji.trim() || undefined, colorIndex: zoneColorIndex };
       return editingZoneId ? storageLocationsApi.update(editingZoneId, input) : storageLocationsApi.create(input);
     },
     onSuccess: () => {
@@ -96,6 +99,7 @@ export default function OverviewScreen() {
     setEditingZoneId(null);
     setZoneName('');
     setZoneEmoji('');
+    setZoneColorIndex(null);
     setAddingZone(true);
   }
 
@@ -103,6 +107,7 @@ export default function OverviewScreen() {
     setEditingZoneId(zone.storageLocationId);
     setZoneName(zone.name);
     setZoneEmoji(zone.emoji);
+    setZoneColorIndex(locationsById.get(zone.storageLocationId)?.colorIndex ?? null);
     setAddingZone(true);
   }
 
@@ -430,6 +435,30 @@ export default function OverviewScreen() {
               />
             </View>
             <Text style={styles.zoneFormHint}>{t('zone.emojiHint')}</Text>
+
+            <Text style={styles.zoneFormLabel}>{t('zone.colorLabel')}</Text>
+            <View style={styles.zoneColorRow}>
+              <Pressable
+                onPress={() => setZoneColorIndex(null)}
+                style={[styles.zoneColorSwatch, styles.zoneColorAuto, zoneColorIndex === null && styles.zoneColorSwatchActive]}
+              >
+                {zoneColorIndex === null ? <Ionicons name="checkmark" size={16} color={colors.ink} /> : null}
+              </Pressable>
+              {LOCATION_PALETTE[scheme].map((swatch, index) => (
+                <Pressable
+                  key={index}
+                  onPress={() => setZoneColorIndex(index)}
+                  style={[
+                    styles.zoneColorSwatch,
+                    { backgroundColor: swatch.color },
+                    zoneColorIndex === index && styles.zoneColorSwatchActive,
+                  ]}
+                >
+                  {zoneColorIndex === index ? <Ionicons name="checkmark" size={16} color={colors.white} /> : null}
+                </Pressable>
+              ))}
+            </View>
+
             <View style={styles.zoneFormActions}>
               <PrimaryButton
                 label={editingZoneId ? t('common.saveChanges') : t('common.add')}
@@ -583,6 +612,26 @@ function createStyles(COLORS: ColorPalette) {
       color: COLORS.ink,
     },
     zoneFormHint: { fontSize: 11, color: COLORS.inkSoft },
+    zoneFormLabel: {
+      fontSize: 11,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
+      color: COLORS.inkSoft,
+      marginTop: 4,
+    },
+    zoneColorRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+    zoneColorSwatch: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: COLORS.line,
+    },
+    zoneColorAuto: { backgroundColor: COLORS.card, borderStyle: 'dashed' as const },
+    zoneColorSwatchActive: { borderWidth: 2, borderColor: COLORS.ink },
     zoneFormActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
     zoneDeleteButton: {
       width: 44,

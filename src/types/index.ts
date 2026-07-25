@@ -57,11 +57,13 @@ export interface StorageLocation {
   id: string;
   name: string;
   emoji: string;
+  colorIndex: number | null;
 }
 
 export interface StorageLocationInput {
   name: string;
   emoji?: string;
+  colorIndex?: number | null;
 }
 
 export interface Item {

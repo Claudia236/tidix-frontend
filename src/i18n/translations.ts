@@ -332,6 +332,7 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: 'The emoji is optional: paste one in or leave it empty (📦 by default).',
     es: 'El emoji es opcional: pega uno o déjalo vacío (📦 por defecto).',
   },
+  'zone.colorLabel': { it: 'Colore', en: 'Color', es: 'Color' },
   'zone.confirmDeleteTitle': { it: 'Elimina zona', en: 'Delete zone', es: 'Eliminar zona' },
   'zone.confirmDeleteMessage': {
     it: (v) => `Rimuovere "${v.name}"? È possibile solo se non ci sono più prodotti lì.`,

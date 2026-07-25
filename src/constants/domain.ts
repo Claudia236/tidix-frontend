@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { householdApi } from '../api/household';
+import { useStorageLocations } from '../hooks/useStorageLocations';
 import { useI18n, type TranslateFn } from '../i18n/I18nContext';
 import type { ColorPalette, ColorScheme } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
@@ -115,10 +116,11 @@ export function useExpiryStatusColors(): ExpiryStatusColors {
   return useMemo(() => buildExpiryStatusColors(colors), [colors]);
 }
 
-// Le posizioni (frigo/freezer/dispensa/...) sono ormai personalizzate per famiglia
-// e arrivano dall'API: qui deriviamo solo un colore/codice coerenti e stabili
-// a partire dal nome, senza doverli salvare lato server.
-const LOCATION_PALETTE: Record<ColorScheme, { color: string; bg: string }[]> = {
+// Le posizioni (frigo/freezer/dispensa/...) sono personalizzate per famiglia e
+// arrivano dall'API con un colorIndex opzionale scelto dall'utente (vedi
+// schermata "Le zone"): se assente (posizioni create prima dell'introduzione
+// di questo campo), deriviamo un colore coerente e stabile a partire dall'id.
+export const LOCATION_PALETTE: Record<ColorScheme, { color: string; bg: string }[]> = {
   light: [
     { color: '#2E6E8E', bg: '#E1EDF1' },
     { color: '#1F7A8C', bg: '#DCEFF1' },
@@ -148,16 +150,25 @@ function hashString(value: string): number {
 }
 
 // id puo' essere null/undefined per prodotti creati prima dell'introduzione
-// delle posizioni personalizzabili, mai riassegnati a una posizione valida
-export function locationColor(id: string | null | undefined, scheme: ColorScheme = 'light'): { color: string; bg: string } {
+// delle posizioni personalizzabili, mai riassegnati a una posizione valida.
+// colorIndex, se valido, ha sempre la precedenza sul colore derivato dall'id.
+export function locationColor(
+  id: string | null | undefined,
+  scheme: ColorScheme = 'light',
+  colorIndex?: number | null
+): { color: string; bg: string } {
   const palette = LOCATION_PALETTE[scheme];
+  if (colorIndex != null && colorIndex >= 0 && colorIndex < palette.length) {
+    return palette[colorIndex];
+  }
   if (!id) return palette[0];
   return palette[hashString(id) % palette.length];
 }
 
 export function useLocationColor(): (id: string | null | undefined) => { color: string; bg: string } {
   const { scheme } = useTheme();
-  return (id) => locationColor(id, scheme);
+  const { byId } = useStorageLocations();
+  return (id) => locationColor(id, scheme, id ? byId.get(id)?.colorIndex : undefined);
 }
 
 export function locationCode(name: string): string {

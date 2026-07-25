@@ -66,6 +66,14 @@ export default function AppLayout() {
         name="expense/[id]"
         options={{ presentation: 'modal', title: t('appLayout.editExpense'), headerStyle: { backgroundColor: colors.bg } }}
       />
+      <Stack.Screen
+        name="zone/new"
+        options={{ presentation: 'modal', title: t('appLayout.newZone'), headerStyle: { backgroundColor: colors.bg } }}
+      />
+      <Stack.Screen
+        name="zone/[id]"
+        options={{ presentation: 'modal', title: t('appLayout.editZone'), headerStyle: { backgroundColor: colors.bg } }}
+      />
     </Stack>
   );
 }

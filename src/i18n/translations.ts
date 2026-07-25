@@ -489,6 +489,8 @@ const ENTRIES: Record<string, EntryTriple> = {
   'appLayout.editCleaningTask': { it: 'Modifica pulizia', en: 'Edit cleaning task', es: 'Editar limpieza' },
   'appLayout.newExpense': { it: 'Nuova spesa', en: 'New expense', es: 'Nuevo gasto' },
   'appLayout.editExpense': { it: 'Modifica spesa', en: 'Edit expense', es: 'Editar gasto' },
+  'appLayout.newZone': { it: 'Nuova zona', en: 'New zone', es: 'Nueva zona' },
+  'appLayout.editZone': { it: 'Modifica zona', en: 'Edit zone', es: 'Editar zona' },
   'appLayout.household': { it: 'La tua famiglia', en: 'Your household', es: 'Tu familia' },
   'appLayout.purchased': { it: 'Acquistati', en: 'Purchased', es: 'Comprados' },
   'appLayout.scanReceipt': { it: 'Aggiungi da scontrino', en: 'Add from receipt', es: 'Añadir desde recibo' },

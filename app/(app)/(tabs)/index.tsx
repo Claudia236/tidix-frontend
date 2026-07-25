@@ -1,19 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { cleaningApi } from '../../../src/api/cleaning';
-import { getErrorMessage } from '../../../src/api/client';
 import { itemsApi } from '../../../src/api/items';
-import { storageLocationsApi } from '../../../src/api/storageLocations';
 import { wasteApi } from '../../../src/api/waste';
-import { showAlert } from '../../../src/components/AppAlert';
-import { PrimaryButton } from '../../../src/components/PrimaryButton';
 import { SectionTitle } from '../../../src/components/SectionTitle';
-import { findCategoryInfo, getWasteTypeEmoji, jsWeekdayToDay, LOCATION_PALETTE, useCategories, wasteTypesCollectedOn } from '../../../src/constants/domain';
-import { useStorageLocations } from '../../../src/hooks/useStorageLocations';
+import { findCategoryInfo, getWasteTypeEmoji, jsWeekdayToDay, useCategories, wasteTypesCollectedOn } from '../../../src/constants/domain';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import { syncExpiryReminders } from '../../../src/notifications/expiryReminders';
 import { syncOpenedReminders } from '../../../src/notifications/openedReminders';
@@ -31,7 +26,6 @@ export default function OverviewScreen() {
   const { t, language } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const categories = useCategories();
-  const { byId: locationsById } = useStorageLocations();
 
   const summaryQuery = useQuery({ queryKey: ['items', 'summary'], queryFn: itemsApi.summary });
   const expiredQuery = useQuery({ queryKey: ['items', 'expired'], queryFn: itemsApi.expired });
@@ -41,11 +35,6 @@ export default function OverviewScreen() {
   const wasteSchedulesQuery = useQuery({ queryKey: ['waste-schedules'], queryFn: wasteApi.list });
   const allItemsQuery = useQuery({ queryKey: ['items', 'list', 'TUTTI', ''], queryFn: () => itemsApi.list({}) });
 
-  const [addingZone, setAddingZone] = useState(false);
-  const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
-  const [zoneName, setZoneName] = useState('');
-  const [zoneEmoji, setZoneEmoji] = useState('');
-  const [zoneColorIndex, setZoneColorIndex] = useState<number | null>(null);
   const [collapsedCards, setCollapsedCards] = useState<Set<string>>(
     () => new Set(['avanzi', 'opened', 'expiring', 'cleaning'])
   );
@@ -67,61 +56,6 @@ export default function OverviewScreen() {
 
   function categoryEmoji(category: Item['category']): string {
     return findCategoryInfo(categories, category).emoji;
-  }
-
-  function invalidateZones() {
-    queryClient.invalidateQueries({ queryKey: ['storage-locations'] });
-    queryClient.invalidateQueries({ queryKey: ['items', 'summary'] });
-  }
-
-  const saveZoneMutation = useMutation({
-    mutationFn: () => {
-      const input = { name: zoneName.trim(), emoji: zoneEmoji.trim() || undefined, colorIndex: zoneColorIndex };
-      return editingZoneId ? storageLocationsApi.update(editingZoneId, input) : storageLocationsApi.create(input);
-    },
-    onSuccess: () => {
-      invalidateZones();
-      closeZoneForm();
-    },
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
-  });
-
-  const removeZoneMutation = useMutation({
-    mutationFn: (id: string) => storageLocationsApi.remove(id),
-    onSuccess: () => {
-      invalidateZones();
-      closeZoneForm();
-    },
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
-  });
-
-  function openAddZoneForm() {
-    setEditingZoneId(null);
-    setZoneName('');
-    setZoneEmoji('');
-    setZoneColorIndex(null);
-    setAddingZone(true);
-  }
-
-  function openEditZoneForm(zone: ZoneSummary) {
-    setEditingZoneId(zone.storageLocationId);
-    setZoneName(zone.name);
-    setZoneEmoji(zone.emoji);
-    setZoneColorIndex(locationsById.get(zone.storageLocationId)?.colorIndex ?? null);
-    setAddingZone(true);
-  }
-
-  function closeZoneForm() {
-    setAddingZone(false);
-    setEditingZoneId(null);
-  }
-
-  function confirmDeleteZone() {
-    if (!editingZoneId) return;
-    showAlert(t('zone.confirmDeleteTitle'), t('zone.confirmDeleteMessage', { name: zoneName }), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: () => removeZoneMutation.mutate(editingZoneId) },
-    ]);
   }
 
   const overdueCleaning = useMemo(
@@ -402,82 +336,18 @@ export default function OverviewScreen() {
               <Pressable
                 style={styles.zoneEditButton}
                 hitSlop={8}
-                onPress={() => openEditZoneForm(zone)}
+                onPress={() => router.push({ pathname: '/(app)/zone/[id]', params: { id: zone.storageLocationId } })}
               >
                 <Ionicons name="pencil-outline" size={14} color={colors.inkSoft} />
               </Pressable>
             </View>
           ))}
 
-          <Pressable style={styles.zoneAddCard} onPress={() => (addingZone && !editingZoneId ? closeZoneForm() : openAddZoneForm())}>
+          <Pressable style={styles.zoneAddCard} onPress={() => router.push('/(app)/zone/new')}>
             <Ionicons name="add-circle-outline" size={22} color={colors.brand} />
             <Text style={styles.zoneAddText}>{t('zone.add')}</Text>
           </Pressable>
         </View>
-
-        {addingZone ? (
-          <View style={styles.zoneForm}>
-            <View style={styles.zoneFormRow}>
-              <TextInput
-                value={zoneEmoji}
-                onChangeText={(v) => setZoneEmoji(Array.from(v).slice(0, 1).join(''))}
-                placeholder="📦"
-                placeholderTextColor={colors.inkSoft}
-                style={styles.zoneEmojiInput}
-              />
-              <TextInput
-                value={zoneName}
-                onChangeText={setZoneName}
-                placeholder={t('zone.namePlaceholder')}
-                placeholderTextColor={colors.inkSoft}
-                style={styles.zoneNameInput}
-                autoFocus
-              />
-            </View>
-            <Text style={styles.zoneFormHint}>{t('zone.emojiHint')}</Text>
-
-            <Text style={styles.zoneFormLabel}>{t('zone.colorLabel')}</Text>
-            <View style={styles.zoneColorRow}>
-              <Pressable
-                onPress={() => setZoneColorIndex(null)}
-                style={[styles.zoneColorSwatch, styles.zoneColorAuto, zoneColorIndex === null && styles.zoneColorSwatchActive]}
-              >
-                {zoneColorIndex === null ? <Ionicons name="checkmark" size={16} color={colors.ink} /> : null}
-              </Pressable>
-              {LOCATION_PALETTE[scheme].map((swatch, index) => (
-                <Pressable
-                  key={index}
-                  onPress={() => setZoneColorIndex(index)}
-                  style={[
-                    styles.zoneColorSwatch,
-                    { backgroundColor: swatch.color },
-                    zoneColorIndex === index && styles.zoneColorSwatchActive,
-                  ]}
-                >
-                  {zoneColorIndex === index ? <Ionicons name="checkmark" size={16} color={colors.white} /> : null}
-                </Pressable>
-              ))}
-            </View>
-
-            <View style={styles.zoneFormActions}>
-              <PrimaryButton
-                label={editingZoneId ? t('common.saveChanges') : t('common.add')}
-                onPress={() => saveZoneMutation.mutate()}
-                disabled={!zoneName.trim()}
-                loading={saveZoneMutation.isPending}
-                style={{ flex: 1 }}
-              />
-              {editingZoneId ? (
-                <Pressable style={styles.zoneDeleteButton} onPress={confirmDeleteZone} hitSlop={8}>
-                  <Ionicons name="trash-outline" size={18} color={colors.danger} />
-                </Pressable>
-              ) : null}
-            </View>
-            <Pressable onPress={closeZoneForm}>
-              <Text style={styles.zoneFormCancel}>{t('common.cancel')}</Text>
-            </Pressable>
-          </View>
-        ) : null}
       </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -580,69 +450,5 @@ function createStyles(COLORS: ColorPalette) {
       borderColor: COLORS.brand,
     },
     zoneAddText: { fontSize: 11, fontWeight: '700', color: COLORS.brand, textAlign: 'center' },
-    zoneForm: {
-      gap: 10,
-      backgroundColor: COLORS.card,
-      borderRadius: 14,
-      borderWidth: 1,
-      borderColor: COLORS.line,
-      padding: 16,
-    },
-    zoneFormRow: { flexDirection: 'row', gap: 8 },
-    zoneEmojiInput: {
-      width: 56,
-      borderWidth: 1,
-      borderColor: COLORS.line,
-      backgroundColor: COLORS.bg,
-      borderRadius: 10,
-      paddingHorizontal: 10,
-      paddingVertical: 8,
-      fontSize: 18,
-      textAlign: 'center',
-    },
-    zoneNameInput: {
-      flex: 1,
-      borderWidth: 1,
-      borderColor: COLORS.line,
-      backgroundColor: COLORS.bg,
-      borderRadius: 10,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      fontSize: 14,
-      color: COLORS.ink,
-    },
-    zoneFormHint: { fontSize: 11, color: COLORS.inkSoft },
-    zoneFormLabel: {
-      fontSize: 11,
-      fontWeight: '700',
-      textTransform: 'uppercase',
-      letterSpacing: 0.4,
-      color: COLORS.inkSoft,
-      marginTop: 4,
-    },
-    zoneColorRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-    zoneColorSwatch: {
-      width: 30,
-      height: 30,
-      borderRadius: 15,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderWidth: 1,
-      borderColor: COLORS.line,
-    },
-    zoneColorAuto: { backgroundColor: COLORS.card, borderStyle: 'dashed' as const },
-    zoneColorSwatchActive: { borderWidth: 2, borderColor: COLORS.ink },
-    zoneFormActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    zoneDeleteButton: {
-      width: 44,
-      height: 44,
-      borderRadius: 10,
-      borderWidth: 1,
-      borderColor: COLORS.dangerBg,
-      backgroundColor: COLORS.dangerBg,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    zoneFormCancel: { fontSize: 12, fontWeight: '600', color: COLORS.inkSoft, textAlign: 'center' },
   });
 }

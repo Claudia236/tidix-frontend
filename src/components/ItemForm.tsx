@@ -24,6 +24,7 @@ import { PrimaryButton } from './PrimaryButton';
 import { TextField } from './TextField';
 
 type VoiceTarget = 'name' | 'expiration';
+type ConsumeWithinUnit = 'giorni' | 'mesi';
 
 const MAX_SCAN_PHOTOS = 2;
 
@@ -61,11 +62,12 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const [quantity, setQuantity] = useState(String(initial?.quantity ?? 1));
   const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'PZ');
   const [expirationDate, setExpirationDate] = useState<string | null>(initial?.expirationDate ?? null);
-  const [consumeWithinMonths, setConsumeWithinMonths] = useState('');
-  const [consumeWithinDays, setConsumeWithinDays] = useState<string>(() => {
+  const [consumeWithinAmount, setConsumeWithinAmount] = useState<string>(() => {
     if (!initial?.expirationDate || !CONSUME_WITHIN_DAYS_CATEGORIES.has(initial?.category ?? 'ALTRO')) return '';
     return String(Math.max(0, daysUntil(initial.expirationDate)));
   });
+  const [consumeWithinUnit, setConsumeWithinUnit] = useState<ConsumeWithinUnit>('giorni');
+  const [consumeWithinUnitTouched, setConsumeWithinUnitTouched] = useState(false);
   const [purchaseDate, setPurchaseDate] = useState<string | null>(
     initial?.purchaseDate ?? todayLocalISODate()
   );
@@ -93,7 +95,9 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       if (!parsed) {
         showAlert(t('common.error'), t('itemForm.voice.dateNotUnderstood', { text: transcript }));
       } else if (CONSUME_WITHIN_DAYS_CATEGORIES.has(category)) {
-        setConsumeWithinDays(String(Math.max(0, daysUntil(parsed))));
+        setConsumeWithinAmount(String(Math.max(0, daysUntil(parsed))));
+        setConsumeWithinUnit('giorni');
+        setConsumeWithinUnitTouched(true);
       } else {
         setExpirationDate(parsed);
       }
@@ -119,14 +123,25 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const hidesExpiration = category === 'CASA_PULIZIA';
   const hidesOpenedToggle = hidesExpiration || usesConsumeWithinDays;
   const isFreezerLocation = (locations.find((l) => l.id === effectiveLocationId)?.name ?? '').trim().toLowerCase() === 'freezer';
+  const consumeWithinDefaultUnit: ConsumeWithinUnit = isFreezerLocation ? 'mesi' : 'giorni';
+  const effectiveConsumeWithinUnit = consumeWithinUnitTouched ? consumeWithinUnit : consumeWithinDefaultUnit;
 
-  function handleConsumeWithinMonthsChange(text: string) {
-    setConsumeWithinMonths(text);
-    const months = Number(text.trim().replace(',', '.'));
-    if (!text.trim() || !Number.isFinite(months) || months < 0) return;
+  function handleConsumeWithinAmountChange(text: string, unitOverride?: ConsumeWithinUnit) {
+    setConsumeWithinAmount(text);
+    if (usesConsumeWithinDays) return;
+    const amount = Number(text.trim().replace(',', '.'));
+    if (!text.trim() || !Number.isFinite(amount) || amount < 0) return;
+    const unitToUse = unitOverride ?? effectiveConsumeWithinUnit;
     const base = new Date(`${purchaseDate ?? todayLocalISODate()}T00:00:00`);
-    base.setMonth(base.getMonth() + months);
+    if (unitToUse === 'mesi') base.setMonth(base.getMonth() + amount);
+    else base.setDate(base.getDate() + amount);
     setExpirationDate(toLocalISODate(base));
+  }
+
+  function selectConsumeWithinUnit(u: ConsumeWithinUnit) {
+    setConsumeWithinUnit(u);
+    setConsumeWithinUnitTouched(true);
+    if (!usesConsumeWithinDays) handleConsumeWithinAmountChange(consumeWithinAmount, u);
   }
 
   function handleSubmit() {
@@ -135,10 +150,11 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
     if (hidesExpiration) {
       resolvedExpirationDate = null;
     } else if (usesConsumeWithinDays) {
-      const days = Number(consumeWithinDays.trim());
-      if (consumeWithinDays.trim() && Number.isFinite(days) && days >= 0) {
+      const amount = Number(consumeWithinAmount.trim().replace(',', '.'));
+      if (consumeWithinAmount.trim() && Number.isFinite(amount) && amount >= 0) {
         const date = new Date();
-        date.setDate(date.getDate() + days);
+        if (effectiveConsumeWithinUnit === 'mesi') date.setMonth(date.getMonth() + amount);
+        else date.setDate(date.getDate() + amount);
         resolvedExpirationDate = toLocalISODate(date);
       } else {
         resolvedExpirationDate = null;
@@ -238,7 +254,9 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       if (recognizedName) setName(recognizedName);
       if (recognizedDate) {
         if (usesConsumeWithinDays) {
-          setConsumeWithinDays(String(Math.max(0, daysUntil(recognizedDate))));
+          setConsumeWithinAmount(String(Math.max(0, daysUntil(recognizedDate))));
+          setConsumeWithinUnit('giorni');
+          setConsumeWithinUnitTouched(true);
         } else {
           setExpirationDate(recognizedDate);
         }
@@ -384,35 +402,57 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
         <View style={styles.field}>
           {usesConsumeWithinDays ? (
             <>
-              <TextField
-                label={t('itemForm.consumeWithinDays.label')}
-                labelExtra={
-                  <View style={styles.voiceLabelRow}>
-                    <Pressable
-                      hitSlop={8}
-                      onPress={() =>
-                        showAlert(t('itemForm.consumeWithinDays.guideTitle'), t(`itemForm.consumeWithinDays.guide.${category}`))
-                      }
-                    >
-                      <Ionicons name="information-circle-outline" size={16} color={colors.brand} />
-                    </Pressable>
-                    {voice.available ? (
-                      <Pressable onPress={() => voice.start('expiration')} hitSlop={8}>
-                        <Ionicons
-                          name={voice.target === 'expiration' ? 'mic' : 'mic-outline'}
-                          size={16}
-                          color={voice.target === 'expiration' ? colors.danger : colors.brand}
-                        />
-                      </Pressable>
-                    ) : null}
-                  </View>
-                }
-                placeholder={t('itemForm.consumeWithinDays.placeholder')}
-                keyboardType="numeric"
-                value={consumeWithinDays}
-                onChangeText={setConsumeWithinDays}
-              />
-              <Text style={styles.consumeWithinDaysHint}>{t('itemForm.consumeWithinDays.hint')}</Text>
+              <View style={styles.consumeWithinRow}>
+                <View style={{ flex: 1 }}>
+                  <TextField
+                    label={t('itemForm.consumeWithin.label')}
+                    labelExtra={
+                      <View style={styles.voiceLabelRow}>
+                        <Pressable
+                          hitSlop={8}
+                          onPress={() =>
+                            showAlert(t('itemForm.consumeWithinDays.guideTitle'), t(`itemForm.consumeWithinDays.guide.${category}`))
+                          }
+                        >
+                          <Ionicons name="information-circle-outline" size={16} color={colors.brand} />
+                        </Pressable>
+                        {voice.available ? (
+                          <Pressable onPress={() => voice.start('expiration')} hitSlop={8}>
+                            <Ionicons
+                              name={voice.target === 'expiration' ? 'mic' : 'mic-outline'}
+                              size={16}
+                              color={voice.target === 'expiration' ? colors.danger : colors.brand}
+                            />
+                          </Pressable>
+                        ) : null}
+                      </View>
+                    }
+                    placeholder={t('itemForm.consumeWithin.placeholder')}
+                    keyboardType="numeric"
+                    value={consumeWithinAmount}
+                    onChangeText={(text) => handleConsumeWithinAmountChange(text)}
+                  />
+                </View>
+                <View style={styles.consumeWithinUnitGroup}>
+                  <Pressable
+                    onPress={() => selectConsumeWithinUnit('giorni')}
+                    style={[styles.consumeWithinUnitChip, effectiveConsumeWithinUnit === 'giorni' && styles.consumeWithinUnitChipActive]}
+                  >
+                    <Text style={[styles.consumeWithinUnitChipText, effectiveConsumeWithinUnit === 'giorni' && { color: colors.white }]}>
+                      {t('itemForm.consumeWithin.unitDays')}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => selectConsumeWithinUnit('mesi')}
+                    style={[styles.consumeWithinUnitChip, effectiveConsumeWithinUnit === 'mesi' && styles.consumeWithinUnitChipActive]}
+                  >
+                    <Text style={[styles.consumeWithinUnitChipText, effectiveConsumeWithinUnit === 'mesi' && { color: colors.white }]}>
+                      {t('itemForm.consumeWithin.unitMonths')}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+              <Text style={styles.consumeWithinDaysHint}>{t('itemForm.consumeWithin.hintReplace')}</Text>
             </>
           ) : (
             <>
@@ -431,14 +471,36 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
               <DatePickerField value={expirationDate} onChange={setExpirationDate} />
               {isFreezerLocation ? (
                 <>
-                  <TextField
-                    label={t('itemForm.consumeWithinMonths.label')}
-                    placeholder={t('itemForm.consumeWithinMonths.placeholder')}
-                    keyboardType="numeric"
-                    value={consumeWithinMonths}
-                    onChangeText={handleConsumeWithinMonthsChange}
-                  />
-                  <Text style={styles.consumeWithinDaysHint}>{t('itemForm.consumeWithinMonths.hint')}</Text>
+                  <View style={styles.consumeWithinRow}>
+                    <View style={{ flex: 1 }}>
+                      <TextField
+                        label={t('itemForm.consumeWithin.label')}
+                        placeholder={t('itemForm.consumeWithin.placeholder')}
+                        keyboardType="numeric"
+                        value={consumeWithinAmount}
+                        onChangeText={(text) => handleConsumeWithinAmountChange(text)}
+                      />
+                    </View>
+                    <View style={styles.consumeWithinUnitGroup}>
+                      <Pressable
+                        onPress={() => selectConsumeWithinUnit('giorni')}
+                        style={[styles.consumeWithinUnitChip, effectiveConsumeWithinUnit === 'giorni' && styles.consumeWithinUnitChipActive]}
+                      >
+                        <Text style={[styles.consumeWithinUnitChipText, effectiveConsumeWithinUnit === 'giorni' && { color: colors.white }]}>
+                          {t('itemForm.consumeWithin.unitDays')}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => selectConsumeWithinUnit('mesi')}
+                        style={[styles.consumeWithinUnitChip, effectiveConsumeWithinUnit === 'mesi' && styles.consumeWithinUnitChipActive]}
+                      >
+                        <Text style={[styles.consumeWithinUnitChipText, effectiveConsumeWithinUnit === 'mesi' && { color: colors.white }]}>
+                          {t('itemForm.consumeWithin.unitMonths')}
+                        </Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                  <Text style={styles.consumeWithinDaysHint}>{t('itemForm.consumeWithin.hintAdd')}</Text>
                 </>
               ) : null}
             </>
@@ -620,6 +682,18 @@ function createStyles(COLORS: ColorPalette) {
     unitChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
     unitChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
     consumeWithinDaysHint: { fontSize: 11, color: COLORS.inkSoft, marginTop: -4 },
+    consumeWithinRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-end' },
+    consumeWithinUnitGroup: { flexDirection: 'row', gap: 6 },
+    consumeWithinUnitChip: {
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      borderRadius: 10,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      backgroundColor: COLORS.card,
+    },
+    consumeWithinUnitChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
+    consumeWithinUnitChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
     voiceLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     openedToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     openedToggleText: { fontSize: 13, color: COLORS.ink },

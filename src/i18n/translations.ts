@@ -246,6 +246,17 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: '🍝 Cooked dishes (pasta, rice, meat, fish): 3-4 days in the fridge\n🍲 Soups and stews: 3-5 days in the fridge\n❄️ If frozen: up to 2-3 months\n\nAlways store leftovers in a closed container and let them cool down within 2 hours of cooking.',
     es: '🍝 Platos cocinados (pasta, arroz, carne, pescado): 3-4 días en la nevera\n🍲 Sopas y guisos: 3-5 días en la nevera\n❄️ Si están congelados: hasta 2-3 meses\n\nGuarda siempre las sobras en un recipiente cerrado y déjalas enfriar en un plazo de 2 horas tras cocinar.',
   },
+  'itemForm.consumeWithinMonths.label': {
+    it: 'Consumare entro (mesi, opzionale)',
+    en: 'Consume within (months, optional)',
+    es: 'Consumir en (meses, opcional)',
+  },
+  'itemForm.consumeWithinMonths.placeholder': { it: 'Es. 3', en: 'E.g. 3', es: 'Ej. 3' },
+  'itemForm.consumeWithinMonths.hint': {
+    it: 'Per i surgelati senza scadenza stampata: indica tra quanti mesi consumarlo, la data di scadenza verrà calcolata automaticamente.',
+    en: "For frozen food without a printed expiry date: enter after how many months it should be consumed, the expiry date will be calculated automatically.",
+    es: 'Para congelados sin fecha de caducidad impresa: indica en cuántos meses debe consumirse, la fecha de caducidad se calculará automáticamente.',
+  },
   'itemForm.openedToggle': { it: 'Prodotto aperto', en: 'Product opened', es: 'Producto abierto' },
   'itemForm.openedDate.label': { it: 'Aperta il', en: 'Opened on', es: 'Abierto el' },
   'itemForm.openedReminder.title': { it: 'Promemoria consumo', en: 'Consumption reminder', es: 'Recordatorio de consumo' },

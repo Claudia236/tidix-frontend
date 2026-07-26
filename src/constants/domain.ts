@@ -122,22 +122,22 @@ export function useExpiryStatusColors(): ExpiryStatusColors {
 // di questo campo), deriviamo un colore coerente e stabile a partire dall'id.
 export const LOCATION_PALETTE: Record<ColorScheme, { color: string; bg: string }[]> = {
   light: [
-    { color: '#2E6E8E', bg: '#E1EDF1' },
-    { color: '#1F7A8C', bg: '#DCEFF1' },
-    { color: '#96702A', bg: '#F1E8D8' },
-    { color: '#5B5A52', bg: '#EAE8E2' },
-    { color: '#6B4F8C', bg: '#EAE3F1' },
-    { color: '#3F6B52', bg: '#E1EDE5' },
-    { color: '#A3572E', bg: '#F3E4D8' },
+    { color: '#2C5FCC', bg: '#E3EBFB' },
+    { color: '#0E8F82', bg: '#DEF2EF' },
+    { color: '#D9631A', bg: '#FBE7D6' },
+    { color: '#4B5768', bg: '#E7E9EE' },
+    { color: '#7141C9', bg: '#EDE4FA' },
+    { color: '#12915A', bg: '#DCF3E6' },
+    { color: '#C23A6B', bg: '#FAE3EC' },
   ],
   dark: [
-    { color: '#7FB8D8', bg: '#1E2C33' },
-    { color: '#6FCBDB', bg: '#1B2E30' },
-    { color: '#D9B463', bg: '#312A1B' },
-    { color: '#B7B4A8', bg: '#292825' },
-    { color: '#BBA3E0', bg: '#2A2333' },
-    { color: '#7FBF9C', bg: '#1E2C25' },
-    { color: '#E0A06F', bg: '#332419' },
+    { color: '#7DA2F5', bg: '#1B2740' },
+    { color: '#4FD3C4', bg: '#123330' },
+    { color: '#F0954B', bg: '#3A2415' },
+    { color: '#9AA7BD', bg: '#262B36' },
+    { color: '#B393EE', bg: '#2A2140' },
+    { color: '#4FDC9A', bg: '#123424' },
+    { color: '#EB7FAA', bg: '#3A1E2A' },
   ],
 };
 

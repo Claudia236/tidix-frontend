@@ -27,7 +27,7 @@ export function ItemCard({ item, location, onAdjust, onPress }: Props) {
   const expiry = !needsBuying ? getExpiryInfo(item.expirationDate, t, language) : null;
   const { color: locationFg, bg: locationBg } = getLocationColor(item.storageLocationId);
 
-  let stripeColor: string = colors.line;
+  let stripeColor: string = 'transparent';
   let noteText: string | null = null;
   let noteColor: string = colors.inkSoft;
 
@@ -36,9 +36,11 @@ export function ItemCard({ item, location, onAdjust, onPress }: Props) {
     noteText = t('itemCard.needsBuying');
     noteColor = colors.danger;
   } else if (expiry) {
-    stripeColor = expiryStatusColors[expiry.status].fg;
     noteText = expiry.label;
     noteColor = expiryStatusColors[expiry.status].fg;
+    if (expiry.status !== 'ok') {
+      stripeColor = colors.danger;
+    }
   }
 
   return (

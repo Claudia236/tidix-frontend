@@ -66,8 +66,17 @@ export default function StockScreen() {
   const paramsRef = useRef(params);
   paramsRef.current = params;
 
+  // Se si sta tornando dalla modifica di una scorta (vedi onPress della
+  // ItemCard sotto), i filtri/l'ordinamento e le categorie collassate vanno
+  // lasciati come l'utente li aveva impostati, non ripristinati.
+  const skipNextResetRef = useRef(false);
+
   useFocusEffect(
     useCallback(() => {
+      if (skipNextResetRef.current) {
+        skipNextResetRef.current = false;
+        return;
+      }
       const zoneId = paramsRef.current.storageLocationId;
       if (zoneId) {
         setFilterLocationId(zoneId);
@@ -316,7 +325,10 @@ export default function StockScreen() {
                 item={item}
                 location={byId.get(item.storageLocationId)}
                 onAdjust={(delta) => handleAdjust(item, delta)}
-                onPress={() => router.push({ pathname: '/(app)/item/[id]', params: { id: item.id } })}
+                onPress={() => {
+                  skipNextResetRef.current = true;
+                  router.push({ pathname: '/(app)/item/[id]', params: { id: item.id } });
+                }}
               />
             );
           }}

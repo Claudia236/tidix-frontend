@@ -9,6 +9,7 @@ import { storageLocationsApi } from '../api/storageLocations';
 import { CONSUME_WITHIN_DAYS_CATEGORIES, useSelectableCategories, useLocationColor, useUnitLabel, UNITS } from '../constants/domain';
 import { useStorageLocations } from '../hooks/useStorageLocations';
 import { useVoiceDictation } from '../hooks/useVoiceDictation';
+import type { TranslateFn } from '../i18n/I18nContext';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
@@ -19,7 +20,6 @@ import { parseExpirationDate, parseProductName } from '../utils/productLabelPars
 import { parseSpokenDateIT } from '../utils/voiceDate';
 import { showAlert } from './AppAlert';
 import { DatePickerField } from './DatePickerField';
-import { OpenedReminderDialog } from './OpenedReminderDialog';
 import { PrimaryButton } from './PrimaryButton';
 import { TextField } from './TextField';
 
@@ -40,6 +40,94 @@ interface Props {
 
 export interface ItemFormHandle {
   openScan: () => void;
+}
+
+function computeDaysBetween(amount: number, unit: ConsumeWithinUnit, baseDateStr: string): number {
+  const base = new Date(`${baseDateStr}T00:00:00`);
+  const target = new Date(base);
+  if (unit === 'mesi') target.setMonth(target.getMonth() + amount);
+  else target.setDate(target.getDate() + amount);
+  return Math.max(1, Math.round((target.getTime() - base.getTime()) / 86_400_000));
+}
+
+interface ConsumeWithinFieldsProps {
+  colors: ColorPalette;
+  t: TranslateFn;
+  styles: ReturnType<typeof createStyles>;
+  label: string;
+  amount: string;
+  onChangeAmount: (text: string) => void;
+  unit: ConsumeWithinUnit;
+  onSelectUnit: (u: ConsumeWithinUnit) => void;
+  hint: string;
+  guideOnPress?: () => void;
+  voice?: { active: boolean; onPress: () => void };
+}
+
+function ConsumeWithinFields({
+  colors,
+  t,
+  styles,
+  label,
+  amount,
+  onChangeAmount,
+  unit,
+  onSelectUnit,
+  hint,
+  guideOnPress,
+  voice,
+}: ConsumeWithinFieldsProps) {
+  const labelExtra =
+    guideOnPress || voice ? (
+      <View style={styles.voiceLabelRow}>
+        {guideOnPress ? (
+          <Pressable hitSlop={8} onPress={guideOnPress}>
+            <Ionicons name="information-circle-outline" size={16} color={colors.brand} />
+          </Pressable>
+        ) : null}
+        {voice ? (
+          <Pressable onPress={voice.onPress} hitSlop={8}>
+            <Ionicons name={voice.active ? 'mic' : 'mic-outline'} size={16} color={voice.active ? colors.danger : colors.brand} />
+          </Pressable>
+        ) : null}
+      </View>
+    ) : undefined;
+
+  return (
+    <>
+      <View style={styles.consumeWithinRow}>
+        <View style={{ flex: 1 }}>
+          <TextField
+            label={label}
+            labelExtra={labelExtra}
+            placeholder={t('itemForm.consumeWithin.placeholder')}
+            keyboardType="numeric"
+            value={amount}
+            onChangeText={onChangeAmount}
+          />
+        </View>
+        <View style={styles.consumeWithinUnitGroup}>
+          <Pressable
+            onPress={() => onSelectUnit('giorni')}
+            style={[styles.consumeWithinUnitChip, unit === 'giorni' && styles.consumeWithinUnitChipActive]}
+          >
+            <Text style={[styles.consumeWithinUnitChipText, unit === 'giorni' && { color: colors.white }]}>
+              {t('itemForm.consumeWithin.unitDays')}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => onSelectUnit('mesi')}
+            style={[styles.consumeWithinUnitChip, unit === 'mesi' && styles.consumeWithinUnitChipActive]}
+          >
+            <Text style={[styles.consumeWithinUnitChipText, unit === 'mesi' && { color: colors.white }]}>
+              {t('itemForm.consumeWithin.unitMonths')}
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+      <Text style={styles.consumeWithinDaysHint}>{hint}</Text>
+    </>
+  );
 }
 
 export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
@@ -63,7 +151,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'PZ');
   const [expirationDate, setExpirationDate] = useState<string | null>(initial?.expirationDate ?? null);
   const [consumeWithinAmount, setConsumeWithinAmount] = useState<string>(() => {
-    if (!initial?.expirationDate || !CONSUME_WITHIN_DAYS_CATEGORIES.has(initial?.category ?? 'ALTRO')) return '';
+    if (!initial?.expirationDate || initial?.category !== 'AVANZI') return '';
     return String(Math.max(0, daysUntil(initial.expirationDate)));
   });
   const [consumeWithinUnit, setConsumeWithinUnit] = useState<ConsumeWithinUnit>('giorni');
@@ -75,9 +163,10 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const [openedDate, setOpenedDate] = useState<string | null>(
     initial?.openedDate ?? todayLocalISODate()
   );
-  const [openedReminderEnabled, setOpenedReminderEnabled] = useState(initial?.openedReminderEnabled ?? false);
-  const [openedReminderDays, setOpenedReminderDays] = useState(initial?.openedReminderDays ?? 3);
-  const [reminderDialogVisible, setReminderDialogVisible] = useState(false);
+  const [openedConsumeWithinAmount, setOpenedConsumeWithinAmount] = useState<string>(() =>
+    initial?.openedReminderEnabled && initial?.openedReminderDays ? String(initial.openedReminderDays) : ''
+  );
+  const [openedConsumeWithinUnit, setOpenedConsumeWithinUnit] = useState<ConsumeWithinUnit>('giorni');
   const [addingLocation, setAddingLocation] = useState(false);
   const [newLocationName, setNewLocationName] = useState('');
   const [newLocationEmoji, setNewLocationEmoji] = useState('');
@@ -87,6 +176,9 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const [scanPhotos, setScanPhotos] = useState<string[]>([]);
   const [scanRecognizing, setScanRecognizing] = useState(false);
 
+  const isAvanzi = category === 'AVANZI';
+  const replacesExpirationWithConsumeWithin = isAvanzi;
+
   const voice = useVoiceDictation<VoiceTarget>((voiceTarget, transcript) => {
     if (voiceTarget === 'name') {
       setName(transcript.charAt(0).toUpperCase() + transcript.slice(1));
@@ -94,7 +186,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       const parsed = parseSpokenDateIT(transcript);
       if (!parsed) {
         showAlert(t('common.error'), t('itemForm.voice.dateNotUnderstood', { text: transcript }));
-      } else if (CONSUME_WITHIN_DAYS_CATEGORIES.has(category)) {
+      } else if (replacesExpirationWithConsumeWithin) {
         setConsumeWithinAmount(String(Math.max(0, daysUntil(parsed))));
         setConsumeWithinUnit('giorni');
         setConsumeWithinUnitTouched(true);
@@ -118,17 +210,17 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   });
 
   const canSubmit = name.trim().length > 0 && !!effectiveLocationId;
-  const usesConsumeWithinDays = CONSUME_WITHIN_DAYS_CATEGORIES.has(category);
-  const isAvanzi = category === 'AVANZI';
   const hidesExpiration = category === 'CASA_PULIZIA';
-  const hidesOpenedToggle = hidesExpiration || usesConsumeWithinDays;
+  const hidesOpenedToggle = hidesExpiration || replacesExpirationWithConsumeWithin;
   const isFreezerLocation = (locations.find((l) => l.id === effectiveLocationId)?.name ?? '').trim().toLowerCase() === 'freezer';
+  const showsAdditionalConsumeWithin = !replacesExpirationWithConsumeWithin && !hidesExpiration && (category === 'ORTOFRUTTA' || isFreezerLocation);
+  const showsConsumeWithinGuide = CONSUME_WITHIN_DAYS_CATEGORIES.has(category);
   const consumeWithinDefaultUnit: ConsumeWithinUnit = isFreezerLocation ? 'mesi' : 'giorni';
   const effectiveConsumeWithinUnit = consumeWithinUnitTouched ? consumeWithinUnit : consumeWithinDefaultUnit;
 
   function handleConsumeWithinAmountChange(text: string, unitOverride?: ConsumeWithinUnit) {
     setConsumeWithinAmount(text);
-    if (usesConsumeWithinDays) return;
+    if (replacesExpirationWithConsumeWithin) return;
     const amount = Number(text.trim().replace(',', '.'));
     if (!text.trim() || !Number.isFinite(amount) || amount < 0) return;
     const unitToUse = unitOverride ?? effectiveConsumeWithinUnit;
@@ -141,7 +233,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   function selectConsumeWithinUnit(u: ConsumeWithinUnit) {
     setConsumeWithinUnit(u);
     setConsumeWithinUnitTouched(true);
-    if (!usesConsumeWithinDays) handleConsumeWithinAmountChange(consumeWithinAmount, u);
+    if (!replacesExpirationWithConsumeWithin) handleConsumeWithinAmountChange(consumeWithinAmount, u);
   }
 
   function handleSubmit() {
@@ -149,7 +241,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
     let resolvedExpirationDate = expirationDate;
     if (hidesExpiration) {
       resolvedExpirationDate = null;
-    } else if (usesConsumeWithinDays) {
+    } else if (replacesExpirationWithConsumeWithin) {
       const amount = Number(consumeWithinAmount.trim().replace(',', '.'));
       if (consumeWithinAmount.trim() && Number.isFinite(amount) && amount >= 0) {
         const date = new Date();
@@ -160,7 +252,18 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
         resolvedExpirationDate = null;
       }
     }
+
     const effectiveOpened = !hidesOpenedToggle && opened;
+    let resolvedOpenedReminderEnabled = false;
+    let resolvedOpenedReminderDays = 3;
+    if (effectiveOpened) {
+      const amount = Number(openedConsumeWithinAmount.trim().replace(',', '.'));
+      if (openedConsumeWithinAmount.trim() && Number.isFinite(amount) && amount > 0) {
+        resolvedOpenedReminderEnabled = true;
+        resolvedOpenedReminderDays = computeDaysBetween(amount, openedConsumeWithinUnit, openedDate ?? todayLocalISODate());
+      }
+    }
+
     onSubmit({
       name: name.trim(),
       storageLocationId: effectiveLocationId,
@@ -171,32 +274,13 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       purchaseDate,
       opened: effectiveOpened,
       openedDate: effectiveOpened ? openedDate : null,
-      openedReminderEnabled: effectiveOpened ? openedReminderEnabled : false,
-      openedReminderDays: effectiveOpened && openedReminderEnabled ? openedReminderDays : 3,
+      openedReminderEnabled: resolvedOpenedReminderEnabled,
+      openedReminderDays: resolvedOpenedReminderDays,
     });
   }
 
   function handleToggleOpened() {
-    setOpened((prev) => {
-      const next = !prev;
-      if (next) {
-        setReminderDialogVisible(true);
-      } else {
-        setOpenedReminderEnabled(false);
-      }
-      return next;
-    });
-  }
-
-  function handleReminderConfirm(days: number) {
-    setOpenedReminderEnabled(true);
-    setOpenedReminderDays(days);
-    setReminderDialogVisible(false);
-  }
-
-  function handleReminderCancel() {
-    setOpenedReminderEnabled(false);
-    setReminderDialogVisible(false);
+    setOpened((prev) => !prev);
   }
 
   function handleCreateLocation() {
@@ -253,7 +337,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
 
       if (recognizedName) setName(recognizedName);
       if (recognizedDate) {
-        if (usesConsumeWithinDays) {
+        if (replacesExpirationWithConsumeWithin) {
           setConsumeWithinAmount(String(Math.max(0, daysUntil(recognizedDate))));
           setConsumeWithinUnit('giorni');
           setConsumeWithinUnitTouched(true);
@@ -400,60 +484,24 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
 
       {!hidesExpiration ? (
         <View style={styles.field}>
-          {usesConsumeWithinDays ? (
-            <>
-              <View style={styles.consumeWithinRow}>
-                <View style={{ flex: 1 }}>
-                  <TextField
-                    label={t('itemForm.consumeWithin.label')}
-                    labelExtra={
-                      <View style={styles.voiceLabelRow}>
-                        <Pressable
-                          hitSlop={8}
-                          onPress={() =>
-                            showAlert(t('itemForm.consumeWithinDays.guideTitle'), t(`itemForm.consumeWithinDays.guide.${category}`))
-                          }
-                        >
-                          <Ionicons name="information-circle-outline" size={16} color={colors.brand} />
-                        </Pressable>
-                        {voice.available ? (
-                          <Pressable onPress={() => voice.start('expiration')} hitSlop={8}>
-                            <Ionicons
-                              name={voice.target === 'expiration' ? 'mic' : 'mic-outline'}
-                              size={16}
-                              color={voice.target === 'expiration' ? colors.danger : colors.brand}
-                            />
-                          </Pressable>
-                        ) : null}
-                      </View>
-                    }
-                    placeholder={t('itemForm.consumeWithin.placeholder')}
-                    keyboardType="numeric"
-                    value={consumeWithinAmount}
-                    onChangeText={(text) => handleConsumeWithinAmountChange(text)}
-                  />
-                </View>
-                <View style={styles.consumeWithinUnitGroup}>
-                  <Pressable
-                    onPress={() => selectConsumeWithinUnit('giorni')}
-                    style={[styles.consumeWithinUnitChip, effectiveConsumeWithinUnit === 'giorni' && styles.consumeWithinUnitChipActive]}
-                  >
-                    <Text style={[styles.consumeWithinUnitChipText, effectiveConsumeWithinUnit === 'giorni' && { color: colors.white }]}>
-                      {t('itemForm.consumeWithin.unitDays')}
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => selectConsumeWithinUnit('mesi')}
-                    style={[styles.consumeWithinUnitChip, effectiveConsumeWithinUnit === 'mesi' && styles.consumeWithinUnitChipActive]}
-                  >
-                    <Text style={[styles.consumeWithinUnitChipText, effectiveConsumeWithinUnit === 'mesi' && { color: colors.white }]}>
-                      {t('itemForm.consumeWithin.unitMonths')}
-                    </Text>
-                  </Pressable>
-                </View>
-              </View>
-              <Text style={styles.consumeWithinDaysHint}>{t('itemForm.consumeWithin.hintReplace')}</Text>
-            </>
+          {replacesExpirationWithConsumeWithin ? (
+            <ConsumeWithinFields
+              colors={colors}
+              t={t}
+              styles={styles}
+              label={t('itemForm.consumeWithin.label')}
+              amount={consumeWithinAmount}
+              onChangeAmount={(text) => handleConsumeWithinAmountChange(text)}
+              unit={effectiveConsumeWithinUnit}
+              onSelectUnit={selectConsumeWithinUnit}
+              hint={t('itemForm.consumeWithin.hintReplace')}
+              guideOnPress={
+                showsConsumeWithinGuide
+                  ? () => showAlert(t('itemForm.consumeWithinDays.guideTitle'), t(`itemForm.consumeWithinDays.guide.${category}`))
+                  : undefined
+              }
+              voice={voice.available ? { active: voice.target === 'expiration', onPress: () => voice.start('expiration') } : undefined}
+            />
           ) : (
             <>
               <View style={styles.voiceLabelRow}>
@@ -469,39 +517,23 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
                 ) : null}
               </View>
               <DatePickerField value={expirationDate} onChange={setExpirationDate} />
-              {isFreezerLocation ? (
-                <>
-                  <View style={styles.consumeWithinRow}>
-                    <View style={{ flex: 1 }}>
-                      <TextField
-                        label={t('itemForm.consumeWithin.label')}
-                        placeholder={t('itemForm.consumeWithin.placeholder')}
-                        keyboardType="numeric"
-                        value={consumeWithinAmount}
-                        onChangeText={(text) => handleConsumeWithinAmountChange(text)}
-                      />
-                    </View>
-                    <View style={styles.consumeWithinUnitGroup}>
-                      <Pressable
-                        onPress={() => selectConsumeWithinUnit('giorni')}
-                        style={[styles.consumeWithinUnitChip, effectiveConsumeWithinUnit === 'giorni' && styles.consumeWithinUnitChipActive]}
-                      >
-                        <Text style={[styles.consumeWithinUnitChipText, effectiveConsumeWithinUnit === 'giorni' && { color: colors.white }]}>
-                          {t('itemForm.consumeWithin.unitDays')}
-                        </Text>
-                      </Pressable>
-                      <Pressable
-                        onPress={() => selectConsumeWithinUnit('mesi')}
-                        style={[styles.consumeWithinUnitChip, effectiveConsumeWithinUnit === 'mesi' && styles.consumeWithinUnitChipActive]}
-                      >
-                        <Text style={[styles.consumeWithinUnitChipText, effectiveConsumeWithinUnit === 'mesi' && { color: colors.white }]}>
-                          {t('itemForm.consumeWithin.unitMonths')}
-                        </Text>
-                      </Pressable>
-                    </View>
-                  </View>
-                  <Text style={styles.consumeWithinDaysHint}>{t('itemForm.consumeWithin.hintAdd')}</Text>
-                </>
+              {showsAdditionalConsumeWithin ? (
+                <ConsumeWithinFields
+                  colors={colors}
+                  t={t}
+                  styles={styles}
+                  label={t('itemForm.consumeWithin.label')}
+                  amount={consumeWithinAmount}
+                  onChangeAmount={(text) => handleConsumeWithinAmountChange(text)}
+                  unit={effectiveConsumeWithinUnit}
+                  onSelectUnit={selectConsumeWithinUnit}
+                  hint={t('itemForm.consumeWithin.hintAdd')}
+                  guideOnPress={
+                    showsConsumeWithinGuide
+                      ? () => showAlert(t('itemForm.consumeWithinDays.guideTitle'), t(`itemForm.consumeWithinDays.guide.${category}`))
+                      : undefined
+                  }
+                />
               ) : null}
             </>
           )}
@@ -518,13 +550,17 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
             <>
               <Text style={styles.label}>{t('itemForm.openedDate.label')}</Text>
               <DatePickerField value={openedDate} onChange={setOpenedDate} allowClear={false} />
-              {openedReminderEnabled ? (
-                <Pressable onPress={() => setReminderDialogVisible(true)} hitSlop={8}>
-                  <Text style={styles.reminderEditLink}>
-                    {t('itemForm.openedReminder.editLink', { n: openedReminderDays })}
-                  </Text>
-                </Pressable>
-              ) : null}
+              <ConsumeWithinFields
+                colors={colors}
+                t={t}
+                styles={styles}
+                label={t('itemForm.openedReminder.label')}
+                amount={openedConsumeWithinAmount}
+                onChangeAmount={setOpenedConsumeWithinAmount}
+                unit={openedConsumeWithinUnit}
+                onSelectUnit={setOpenedConsumeWithinUnit}
+                hint={t('itemForm.openedReminder.hint')}
+              />
             </>
           ) : null}
         </View>
@@ -581,13 +617,6 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
           </View>
         </Modal>
       ) : null}
-
-      <OpenedReminderDialog
-        visible={reminderDialogVisible}
-        initialDays={openedReminderDays}
-        onConfirm={handleReminderConfirm}
-        onCancel={handleReminderCancel}
-      />
     </KeyboardAvoidingView>
   );
 });
@@ -697,7 +726,6 @@ function createStyles(COLORS: ColorPalette) {
     voiceLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     openedToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     openedToggleText: { fontSize: 13, color: COLORS.ink },
-    reminderEditLink: { fontSize: 12, fontWeight: '600', color: COLORS.brand, marginTop: -4 },
     actions: { flexDirection: 'row', gap: 12, marginTop: 8 },
     scanBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center', padding: 24 },
     scanCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 14, width: '100%', maxWidth: 360 },

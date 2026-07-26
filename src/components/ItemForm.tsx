@@ -61,6 +61,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const [quantity, setQuantity] = useState(String(initial?.quantity ?? 1));
   const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'PZ');
   const [expirationDate, setExpirationDate] = useState<string | null>(initial?.expirationDate ?? null);
+  const [consumeWithinMonths, setConsumeWithinMonths] = useState('');
   const [consumeWithinDays, setConsumeWithinDays] = useState<string>(() => {
     if (!initial?.expirationDate || !CONSUME_WITHIN_DAYS_CATEGORIES.has(initial?.category ?? 'ALTRO')) return '';
     return String(Math.max(0, daysUntil(initial.expirationDate)));
@@ -117,6 +118,16 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const isAvanzi = category === 'AVANZI';
   const hidesExpiration = category === 'CASA_PULIZIA';
   const hidesOpenedToggle = hidesExpiration || usesConsumeWithinDays;
+  const isFreezerLocation = (locations.find((l) => l.id === effectiveLocationId)?.name ?? '').trim().toLowerCase() === 'freezer';
+
+  function handleConsumeWithinMonthsChange(text: string) {
+    setConsumeWithinMonths(text);
+    const months = Number(text.trim().replace(',', '.'));
+    if (!text.trim() || !Number.isFinite(months) || months < 0) return;
+    const base = new Date(`${purchaseDate ?? todayLocalISODate()}T00:00:00`);
+    base.setMonth(base.getMonth() + months);
+    setExpirationDate(toLocalISODate(base));
+  }
 
   function handleSubmit() {
     if (!canSubmit) return;
@@ -418,6 +429,18 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
                 ) : null}
               </View>
               <DatePickerField value={expirationDate} onChange={setExpirationDate} />
+              {isFreezerLocation ? (
+                <>
+                  <TextField
+                    label={t('itemForm.consumeWithinMonths.label')}
+                    placeholder={t('itemForm.consumeWithinMonths.placeholder')}
+                    keyboardType="numeric"
+                    value={consumeWithinMonths}
+                    onChangeText={handleConsumeWithinMonthsChange}
+                  />
+                  <Text style={styles.consumeWithinDaysHint}>{t('itemForm.consumeWithinMonths.hint')}</Text>
+                </>
+              ) : null}
             </>
           )}
         </View>

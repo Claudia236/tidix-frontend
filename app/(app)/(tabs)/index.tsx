@@ -76,7 +76,18 @@ export default function OverviewScreen() {
     return combined.filter((i) => i.category !== 'AVANZI' && !i.opened).sort((a, b) => (a.daysUntilExpiration ?? 0) - (b.daysUntilExpiration ?? 0));
   }, [expiredQuery.data, expiringQuery.data]);
 
-  const openedItems = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.opened), [allItemsQuery.data]);
+  const openedItems = useMemo(
+    () =>
+      (allItemsQuery.data ?? [])
+        .filter((i) => i.opened)
+        .sort((a, b) => {
+          if (!a.openedDate && !b.openedDate) return 0;
+          if (!a.openedDate) return 1;
+          if (!b.openedDate) return -1;
+          return a.openedDate.localeCompare(b.openedDate);
+        }),
+    [allItemsQuery.data]
+  );
 
   const avanziItems = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.category === 'AVANZI'), [allItemsQuery.data]);
 

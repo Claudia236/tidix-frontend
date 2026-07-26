@@ -54,8 +54,11 @@ export default function StockScreen() {
     [locations, t]
   );
 
-  // Ogni volta che la schermata prende il focus (tab premuto o navigazione da
-  // una zona), riparte da "Tutti" a meno che non arrivi un filtro esplicito.
+  // La primissima volta che la schermata prende il focus si parte da "Tutti"
+  // con le categorie collassate. Nei focus successivi (tab ripremuto,
+  // ritorno dalla modifica di una scorta, ecc.) filtri/ordinamento/categorie
+  // restano quelli scelti dall'utente: si resetta solo quando si arriva da un
+  // link esplicito a una zona (es. da una card della Panoramica).
   // Il parametro viene "consumato" subito con setParams: altrimenti expo-router
   // lo ripropone anche ai focus successivi (es. ri-premendo il tab Scorte),
   // facendo restare la schermata bloccata sull'ultima zona aperta da un link.
@@ -66,25 +69,20 @@ export default function StockScreen() {
   const paramsRef = useRef(params);
   paramsRef.current = params;
 
-  // Se si sta tornando dalla modifica di una scorta (vedi onPress della
-  // ItemCard sotto), i filtri/l'ordinamento e le categorie collassate vanno
-  // lasciati come l'utente li aveva impostati, non ripristinati.
-  const skipNextResetRef = useRef(false);
+  const hasFocusedBeforeRef = useRef(false);
 
   useFocusEffect(
     useCallback(() => {
-      if (skipNextResetRef.current) {
-        skipNextResetRef.current = false;
-        return;
-      }
       const zoneId = paramsRef.current.storageLocationId;
       if (zoneId) {
         setFilterLocationId(zoneId);
         router.setParams({ storageLocationId: undefined });
-      } else {
+        setCollapsedCategories(new Set(categories.map((c) => c.key)));
+      } else if (!hasFocusedBeforeRef.current) {
         setFilterLocationId('TUTTI');
+        setCollapsedCategories(new Set(categories.map((c) => c.key)));
       }
-      setCollapsedCategories(new Set(categories.map((c) => c.key)));
+      hasFocusedBeforeRef.current = true;
     }, [categories])
   );
 
@@ -325,10 +323,7 @@ export default function StockScreen() {
                 item={item}
                 location={byId.get(item.storageLocationId)}
                 onAdjust={(delta) => handleAdjust(item, delta)}
-                onPress={() => {
-                  skipNextResetRef.current = true;
-                  router.push({ pathname: '/(app)/item/[id]', params: { id: item.id } });
-                }}
+                onPress={() => router.push({ pathname: '/(app)/item/[id]', params: { id: item.id } })}
               />
             );
           }}

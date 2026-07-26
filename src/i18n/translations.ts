@@ -220,16 +220,23 @@ const ENTRIES: Record<string, EntryTriple> = {
   'itemForm.purchaseDate.label': { it: 'Data di acquisto', en: 'Purchase date', es: 'Fecha de compra' },
   'itemForm.cookedDate.label': { it: 'Data in cui è stato cucinato', en: 'Date it was cooked', es: 'Fecha en que se cocinó' },
   'itemForm.expirationDate.label': { it: 'Scadenza (opzionale)', en: 'Expiry date (optional)', es: 'Caducidad (opcional)' },
-  'itemForm.consumeWithinDays.label': {
-    it: 'Consumare entro (giorni, opzionale)',
-    en: 'Consume within (days, optional)',
-    es: 'Consumir en (días, opcional)',
+  'itemForm.consumeWithin.label': {
+    it: 'Consumare entro (opzionale)',
+    en: 'Consume within (optional)',
+    es: 'Consumir en (opcional)',
   },
-  'itemForm.consumeWithinDays.placeholder': { it: 'Es. 5', en: 'E.g. 5', es: 'Ej. 5' },
-  'itemForm.consumeWithinDays.hint': {
-    it: 'Prodotto senza data di scadenza stampata: indica dopo quanti giorni consumarlo, verrà usato come promemoria.',
-    en: "Product without a printed expiry date: enter how many days until it should be consumed, it'll be used as a reminder.",
-    es: 'Producto sin fecha de caducidad impresa: indica en cuántos días debe consumirse, se usará como recordatorio.',
+  'itemForm.consumeWithin.placeholder': { it: 'Es. 5', en: 'E.g. 5', es: 'Ej. 5' },
+  'itemForm.consumeWithin.unitDays': { it: 'Giorni', en: 'Days', es: 'Días' },
+  'itemForm.consumeWithin.unitMonths': { it: 'Mesi', en: 'Months', es: 'Meses' },
+  'itemForm.consumeWithin.hintReplace': {
+    it: 'Prodotto senza data di scadenza stampata: indica tra quanto consumarlo, verrà usato come promemoria.',
+    en: "Product without a printed expiry date: enter how long until it should be consumed, it'll be used as a reminder.",
+    es: 'Producto sin fecha de caducidad impresa: indica en cuánto tiempo debe consumirse, se usará como recordatorio.',
+  },
+  'itemForm.consumeWithin.hintAdd': {
+    it: 'Per i surgelati senza scadenza stampata: indica tra quanto consumarlo, la data di scadenza sopra verrà calcolata automaticamente.',
+    en: "For frozen food without a printed expiry date: enter how long until it should be consumed, the expiry date above will be calculated automatically.",
+    es: 'Para congelados sin fecha de caducidad impresa: indica en cuánto tiempo debe consumirse, la fecha de caducidad de arriba se calculará automáticamente.',
   },
   'itemForm.consumeWithinDays.guideTitle': {
     it: 'Quanto si conserva?',
@@ -245,17 +252,6 @@ const ENTRIES: Record<string, EntryTriple> = {
     it: '🍝 Piatti cotti (pasta, riso, carne, pesce): 3-4 giorni in frigo\n🍲 Zuppe e minestre: 3-5 giorni in frigo\n❄️ Se congelati: fino a 2-3 mesi\n\nConserva sempre gli avanzi in un contenitore chiuso e raffreddali entro 2 ore dalla cottura.',
     en: '🍝 Cooked dishes (pasta, rice, meat, fish): 3-4 days in the fridge\n🍲 Soups and stews: 3-5 days in the fridge\n❄️ If frozen: up to 2-3 months\n\nAlways store leftovers in a closed container and let them cool down within 2 hours of cooking.',
     es: '🍝 Platos cocinados (pasta, arroz, carne, pescado): 3-4 días en la nevera\n🍲 Sopas y guisos: 3-5 días en la nevera\n❄️ Si están congelados: hasta 2-3 meses\n\nGuarda siempre las sobras en un recipiente cerrado y déjalas enfriar en un plazo de 2 horas tras cocinar.',
-  },
-  'itemForm.consumeWithinMonths.label': {
-    it: 'Consumare entro (mesi, opzionale)',
-    en: 'Consume within (months, optional)',
-    es: 'Consumir en (meses, opcional)',
-  },
-  'itemForm.consumeWithinMonths.placeholder': { it: 'Es. 3', en: 'E.g. 3', es: 'Ej. 3' },
-  'itemForm.consumeWithinMonths.hint': {
-    it: 'Per i surgelati senza scadenza stampata: indica tra quanti mesi consumarlo, la data di scadenza verrà calcolata automaticamente.',
-    en: "For frozen food without a printed expiry date: enter after how many months it should be consumed, the expiry date will be calculated automatically.",
-    es: 'Para congelados sin fecha de caducidad impresa: indica en cuántos meses debe consumirse, la fecha de caducidad se calculará automáticamente.',
   },
   'itemForm.openedToggle': { it: 'Prodotto aperto', en: 'Product opened', es: 'Producto abierto' },
   'itemForm.openedDate.label': { it: 'Aperta il', en: 'Opened on', es: 'Abierto el' },

@@ -255,17 +255,15 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'itemForm.openedToggle': { it: 'Prodotto aperto', en: 'Product opened', es: 'Producto abierto' },
   'itemForm.openedDate.label': { it: 'Aperta il', en: 'Opened on', es: 'Abierto el' },
-  'itemForm.openedReminder.title': { it: 'Promemoria consumo', en: 'Consumption reminder', es: 'Recordatorio de consumo' },
-  'itemForm.openedReminder.message': {
-    it: 'Vuoi ricevere una notifica se questo prodotto risulta ancora aperto e non consumato? Scegli tra quanti giorni.',
-    en: 'Do you want to receive a notification if this product is still opened and not used up? Choose after how many days.',
-    es: '¿Quieres recibir una notificación si este producto sigue abierto y sin consumir? Elige en cuántos días.',
+  'itemForm.openedReminder.label': {
+    it: 'Promemoria consumo (opzionale)',
+    en: 'Consumption reminder (optional)',
+    es: 'Recordatorio de consumo (opcional)',
   },
-  'itemForm.openedReminder.daysLabel': { it: 'Tra quanti giorni', en: 'After how many days', es: 'En cuántos días' },
-  'itemForm.openedReminder.editLink': {
-    it: (v) => `Promemoria tra ${v.n} ${v.n === 1 ? 'giorno' : 'giorni'} · Modifica`,
-    en: (v) => `Reminder in ${v.n} ${v.n === 1 ? 'day' : 'days'} · Edit`,
-    es: (v) => `Recordatorio en ${v.n} ${v.n === 1 ? 'día' : 'días'} · Editar`,
+  'itemForm.openedReminder.hint': {
+    it: 'Se compilato, riceverai una notifica se il prodotto risulta ancora aperto dopo questo periodo.',
+    en: "If filled in, you'll get a notification if the product is still opened after this period.",
+    es: 'Si se rellena, recibirás una notificación si el producto sigue abierto después de este período.',
   },
 
   // Overview (Panoramica)

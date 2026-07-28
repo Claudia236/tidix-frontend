@@ -1,9 +1,13 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useVoiceDictation } from '../hooks/useVoiceDictation';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
 import { formatFullDate } from '../utils/expiry';
+import { parseSpokenDateIT } from '../utils/voiceDate';
+import { showAlert } from './AppAlert';
 import { DatePickerField } from './DatePickerField';
 import { PrimaryButton } from './PrimaryButton';
 
@@ -27,6 +31,15 @@ export function RestockDialog({ visible, itemName, currentExpirationDate, submit
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [choosingNewDate, setChoosingNewDate] = useState(false);
   const [newDate, setNewDate] = useState<string | null>(currentExpirationDate);
+
+  const voice = useVoiceDictation<'newDate'>((_, transcript) => {
+    const parsed = parseSpokenDateIT(transcript);
+    if (!parsed) {
+      showAlert(t('common.error'), t('itemForm.voice.dateNotUnderstood', { text: transcript }));
+    } else {
+      setNewDate(parsed);
+    }
+  });
 
   useEffect(() => {
     if (visible) {
@@ -69,7 +82,18 @@ export function RestockDialog({ visible, itemName, currentExpirationDate, submit
             </>
           ) : (
             <>
-              <Text style={styles.subtitle}>{t('restock.newBatchHint')}</Text>
+              <View style={styles.dateLabelRow}>
+                <Text style={styles.subtitle}>{t('restock.newBatchHint')}</Text>
+                {voice.available ? (
+                  <Pressable onPress={() => voice.start('newDate')} hitSlop={8}>
+                    <Ionicons
+                      name={voice.target === 'newDate' ? 'mic' : 'mic-outline'}
+                      size={16}
+                      color={voice.target === 'newDate' ? colors.danger : colors.brand}
+                    />
+                  </Pressable>
+                ) : null}
+              </View>
               <DatePickerField value={newDate} onChange={setNewDate} />
               <PrimaryButton label={t('common.confirm')} onPress={handleConfirmNewDate} loading={submitting} />
             </>
@@ -90,6 +114,7 @@ function createStyles(COLORS: ColorPalette) {
     card: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 14, width: '100%', maxWidth: 360 },
     title: { fontSize: 15, fontWeight: '700', color: COLORS.ink },
     subtitle: { fontSize: 13, color: COLORS.inkSoft, lineHeight: 18 },
+    dateLabelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
     actions: { flexDirection: 'row', gap: 10, marginTop: 4 },
     cancel: { textAlign: 'center', fontSize: 13, color: COLORS.inkSoft, marginTop: 4 },
   });

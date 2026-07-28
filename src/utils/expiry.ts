@@ -19,7 +19,7 @@ export function daysUntil(dateStr: string): number {
 
 export function formatShortDate(dateStr: string, language: Language = 'it'): string {
   const d = new Date(`${dateStr}T00:00:00`);
-  return d.toLocaleDateString(LOCALE_MAP[language] ?? 'it-IT', { day: 'numeric', month: 'short' });
+  return d.toLocaleDateString(LOCALE_MAP[language] ?? 'it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export function formatFullDate(dateStr: string, language: Language = 'it'): string {

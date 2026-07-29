@@ -232,7 +232,7 @@ export default function ShoppingScreen() {
 function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: COLORS.bg },
-    container: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 120, gap: 12 },
+    container: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 120 },
     categoryTag: {
       width: 26,
       height: 26,

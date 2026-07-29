@@ -20,8 +20,8 @@ import { webCentered } from '../../../src/theme/responsive';
 import type { Category, Item, ItemInput } from '../../../src/types';
 
 type StockRow = { key: string; type: 'header'; category: Category; count: number } | { key: string; type: 'item'; data: Item };
-type SortBy = 'name' | 'purchaseDate';
-type PurchaseDateDirection = 'oldestFirst' | 'newestFirst';
+type SortBy = 'name' | 'purchaseDate' | 'expirationDate';
+type DateSortDirection = 'oldestFirst' | 'newestFirst';
 
 export default function StockScreen() {
   const router = useRouter();
@@ -36,7 +36,8 @@ export default function StockScreen() {
   const [search, setSearch] = useState('');
   const [onlyOpened, setOnlyOpened] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>('name');
-  const [purchaseDateDirection, setPurchaseDateDirection] = useState<PurchaseDateDirection>('oldestFirst');
+  const [purchaseDateDirection, setPurchaseDateDirection] = useState<DateSortDirection>('oldestFirst');
+  const [expirationDateDirection, setExpirationDateDirection] = useState<DateSortDirection>('oldestFirst');
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<Category>>(new Set());
 
@@ -171,8 +172,19 @@ export default function StockScreen() {
         return sign * a.purchaseDate.localeCompare(b.purchaseDate);
       });
     }
+    if (sortBy === 'expirationDate') {
+      // Chi non ha una scadenza va sempre in fondo, indipendentemente dalla
+      // direzione scelta.
+      const sign = expirationDateDirection === 'oldestFirst' ? 1 : -1;
+      return [...filtered].sort((a, b) => {
+        if (!a.expirationDate && !b.expirationDate) return 0;
+        if (!a.expirationDate) return 1;
+        if (!b.expirationDate) return -1;
+        return sign * a.expirationDate.localeCompare(b.expirationDate);
+      });
+    }
     return filtered;
-  }, [itemsQuery.data, onlyOpened, sortBy, purchaseDateDirection]);
+  }, [itemsQuery.data, onlyOpened, sortBy, purchaseDateDirection, expirationDateDirection]);
   const openedCount = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.opened).length, [allItemsQuery.data]);
 
   // Ordinando per categoria (default), il backend restituisce gia' gli item
@@ -184,7 +196,7 @@ export default function StockScreen() {
   const isSearching = search.trim().length > 0;
 
   const stockRows: StockRow[] = useMemo(() => {
-    if (sortBy === 'purchaseDate') {
+    if (sortBy === 'purchaseDate' || sortBy === 'expirationDate') {
       return items.map((item) => ({ key: `item-${item.id}`, type: 'item' as const, data: item }));
     }
 
@@ -227,8 +239,13 @@ export default function StockScreen() {
           ) : null}
         </View>
 
-        <View style={styles.sortRow}>
-          <Text style={styles.sortLabel}>{t('stock.sortLabel')}</Text>
+        <Text style={styles.sortLabel}>{t('stock.sortLabel')}</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.sortRowScroll}
+          contentContainerStyle={styles.sortRow}
+        >
           <Pressable
             onPress={() => setSortBy('name')}
             style={[styles.sortChip, sortBy === 'name' && styles.sortChipActive]}
@@ -258,7 +275,28 @@ export default function StockScreen() {
               />
             ) : null}
           </Pressable>
-        </View>
+          <Pressable
+            onPress={() => {
+              if (sortBy === 'expirationDate') {
+                setExpirationDateDirection((d) => (d === 'oldestFirst' ? 'newestFirst' : 'oldestFirst'));
+              } else {
+                setSortBy('expirationDate');
+              }
+            }}
+            style={[styles.sortChip, styles.sortChipRow, sortBy === 'expirationDate' && styles.sortChipActive]}
+          >
+            <Text style={[styles.sortChipText, sortBy === 'expirationDate' && styles.sortChipTextActive]}>
+              {t('stock.sortByExpirationDate')}
+            </Text>
+            {sortBy === 'expirationDate' ? (
+              <Ionicons
+                name={expirationDateDirection === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
+                size={12}
+                color={colors.white}
+              />
+            ) : null}
+          </Pressable>
+        </ScrollView>
 
         <ScrollView
           horizontal
@@ -372,7 +410,8 @@ function createStyles(COLORS: ColorPalette) {
       paddingVertical: 8,
     },
     searchInput: { flex: 1, fontSize: 13, color: COLORS.ink },
-    sortRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    sortRowScroll: { flexGrow: 0, flexShrink: 0 },
+    sortRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingRight: 20 },
     sortLabel: { fontSize: 11, fontWeight: '700', color: COLORS.inkSoft, textTransform: 'uppercase', letterSpacing: 0.4 },
     sortChip: {
       borderWidth: 1,

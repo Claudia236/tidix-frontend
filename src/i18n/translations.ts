@@ -445,6 +445,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   'stock.sortLabel': { it: 'Ordina per', en: 'Sort by', es: 'Ordenar por' },
   'stock.sortByName': { it: 'Categoria', en: 'Category', es: 'Categoría' },
   'stock.sortByPurchaseDate': { it: 'Data di acquisto', en: 'Purchase date', es: 'Fecha de compra' },
+  'stock.sortByExpirationDate': { it: 'Data di scadenza', en: 'Expiry date', es: 'Fecha de caducidad' },
   'stock.emptyTitle': { it: 'Nessun prodotto trovato', en: 'No products found', es: 'No se encontraron productos' },
   'stock.emptySubtitle': {
     it: 'Prova a modificare la ricerca o aggiungi un nuovo prodotto.',

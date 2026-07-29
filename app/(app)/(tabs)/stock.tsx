@@ -410,7 +410,7 @@ function createStyles(COLORS: ColorPalette) {
       paddingVertical: 8,
     },
     searchInput: { flex: 1, fontSize: 13, color: COLORS.ink },
-    sortRowScroll: { flexGrow: 0, flexShrink: 0 },
+    sortRowScroll: { flexGrow: 0, flexShrink: 0, marginBottom: 8 },
     sortRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingRight: 20 },
     sortLabel: { fontSize: 11, fontWeight: '700', color: COLORS.inkSoft, textTransform: 'uppercase', letterSpacing: 0.4 },
     sortChip: {

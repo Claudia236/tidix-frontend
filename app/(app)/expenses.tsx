@@ -16,7 +16,7 @@ import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
 import type { UserBalance } from '../../src/types';
-import { computeFifoSettlement, totalOwedByUser } from '../../src/utils/expenseSettlement';
+import { computeAllTimeNetBalances, computeFifoSettlement, totalOwedByUser } from '../../src/utils/expenseSettlement';
 import { formatDashDate } from '../../src/utils/expiry';
 
 function currentMonth(): string {
@@ -86,14 +86,13 @@ export default function ExpensesScreen() {
 
   const expenses = expensesQuery.data ?? [];
   const summary = summaryQuery.data;
-  // Chi risulta gia' in credito (o in pari) nel saldo complessivo del mese
-  // non deve vedere le proprie quote come "non pagate" nelle singole spese:
-  // il debito e' gia' compensato da quanto gli altri gli devono altrove.
-  const netBalanceByUser = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const b of summary?.byUser ?? []) map.set(b.userId, b.netBalance);
-    return map;
-  }, [summary]);
+  // Il saldo (chi deve dare/ricevere) e' complessivo su tutte le spese di
+  // sempre, non solo su quelle del mese selezionato: solo il totale speso
+  // mostrato sopra resta filtrato per mese.
+  const netBalanceByUser = useMemo(
+    () => computeAllTimeNetBalances(allExpensesQuery.data ?? []),
+    [allExpensesQuery.data]
+  );
 
   return (
     <View style={styles.container}>
@@ -117,7 +116,8 @@ export default function ExpensesScreen() {
               <View style={styles.summaryCard}>
                 <Text style={styles.summaryTotal}>{t('expenses.total')}: {summary.totalAmount.toFixed(2)} €</Text>
                 {summary.byUser.map((b) => {
-                  const owesMoney = b.netBalance < -0.01;
+                  const netBalance = netBalanceByUser.get(b.userId) ?? 0;
+                  const owesMoney = netBalance < -0.01;
                   return (
                     <View key={b.userId} style={styles.balanceRow}>
                       <View style={styles.balanceRowText}>
@@ -125,13 +125,13 @@ export default function ExpensesScreen() {
                         <Text
                           style={[
                             styles.balanceNet,
-                            { color: b.netBalance > 0.01 ? colors.positive : owesMoney ? colors.danger : colors.inkSoft },
+                            { color: netBalance > 0.01 ? colors.positive : owesMoney ? colors.danger : colors.inkSoft },
                           ]}
                         >
-                          {b.netBalance > 0.01
-                            ? t('expenses.deveRicevere', { amount: b.netBalance.toFixed(2) })
+                          {netBalance > 0.01
+                            ? t('expenses.deveRicevere', { amount: netBalance.toFixed(2) })
                             : owesMoney
-                              ? t('expenses.deveDare', { amount: Math.abs(b.netBalance).toFixed(2) })
+                              ? t('expenses.deveDare', { amount: Math.abs(netBalance).toFixed(2) })
                               : t('expenses.inPari')}
                         </Text>
                       </View>

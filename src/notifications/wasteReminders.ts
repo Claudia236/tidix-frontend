@@ -41,7 +41,7 @@ export async function syncWasteReminders(schedules: WasteSchedule[], t: Translat
         identifier: `${PREFIX}${schedule.type}-${day}`,
         content: {
           title: t('notif.wasteReminder.title'),
-          body: t('notif.wasteReminder.body', { type: t(`wasteNotif.${schedule.type}`), emoji: getWasteTypeEmoji(schedule.type) }),
+          body: t('notif.wasteReminder.body', { type: t(`wastePartitive.${schedule.type}`), emoji: getWasteTypeEmoji(schedule.type) }),
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.WEEKLY,

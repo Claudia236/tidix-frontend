@@ -298,6 +298,7 @@ export default function StockScreen() {
           </Pressable>
         </ScrollView>
 
+        <Text style={styles.filterLabel}>{t('stock.filterLabel')}</Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -305,15 +306,18 @@ export default function StockScreen() {
           contentContainerStyle={styles.filters}
         >
           {openedCount > 0 && (
-            <Pressable
-              onPress={() => setOnlyOpened((v) => !v)}
-              style={[styles.filterChip, onlyOpened && styles.filterChipActive]}
-            >
-              <Ionicons name="lock-open-outline" size={12} color={onlyOpened ? colors.white : colors.gold} />
-              <Text style={[styles.filterChipText, onlyOpened && styles.filterChipTextActive]}>
-                {t('stock.openedFilter', { n: openedCount })}
-              </Text>
-            </Pressable>
+            <>
+              <Pressable
+                onPress={() => setOnlyOpened((v) => !v)}
+                style={[styles.filterChip, onlyOpened && styles.filterChipActive]}
+              >
+                <Ionicons name="lock-open-outline" size={12} color={onlyOpened ? colors.white : colors.gold} />
+                <Text style={[styles.filterChipText, onlyOpened && styles.filterChipTextActive]}>
+                  {t('stock.openedFilter', { n: openedCount })}
+                </Text>
+              </Pressable>
+              <View style={styles.filterDivider} />
+            </>
           )}
           {filters.map((f) => {
             const active = filterLocationId === f.key;
@@ -425,8 +429,16 @@ function createStyles(COLORS: ColorPalette) {
     sortChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
     sortChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
     sortChipTextActive: { color: COLORS.white },
+    filterLabel: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: COLORS.inkSoft,
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
+    },
     filtersScroll: { flexGrow: 0, flexShrink: 0 },
     filters: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingBottom: 4, paddingRight: 20 },
+    filterDivider: { width: 1, alignSelf: 'stretch', marginVertical: 4, backgroundColor: COLORS.line },
     filterChip: {
       flexDirection: 'row',
       alignItems: 'center',

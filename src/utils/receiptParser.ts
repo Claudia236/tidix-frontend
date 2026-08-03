@@ -50,12 +50,14 @@ function looksLikeProductLine(rawLine: string): boolean {
   return true;
 }
 
-// Ripulisce una riga candidata togliendo il prezzo finale e i codici a barre
-// numerici lasciati in coda (es. "POMODORI RAMATO 2,49" -> "POMODORI RAMATO").
+// Ripulisce una riga candidata togliendo il prezzo finale, l'aliquota IVA
+// (colonna che precede il prezzo, es. "4%"/"10%"/"22%") e i codici a barre
+// numerici lasciati in coda (es. "POMODORI RAMATO 4% 2,49" -> "POMODORI RAMATO").
 function cleanProductLine(rawLine: string): string {
   return rawLine
     .trim()
     .replace(/[€$]?\s*\d+[.,]\d{2}\s*[€$]?\s*$/, '')
+    .replace(/\s+\d{1,2}%\s*$/, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
 }

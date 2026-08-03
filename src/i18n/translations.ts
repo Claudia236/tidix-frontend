@@ -150,9 +150,9 @@ const ENTRIES: Record<string, EntryTriple> = {
   // notifications
   'notif.wasteReminder.title': { it: 'Tidix ti ricorda 🗑️', en: 'Tidix reminder 🗑️', es: 'Tidix te recuerda 🗑️' },
   'notif.wasteReminder.body': {
-    it: (v) => `Ehi! Domani è l'ora di buttare ${v.type} ${v.emoji} Non dimenticare di mettere fuori il secchio stasera!`,
-    en: (v) => `Hey! Tomorrow it's time to take out ${v.type} ${v.emoji} Don't forget to put the bin out tonight!`,
-    es: (v) => `¡Oye! Mañana toca sacar ${v.type} ${v.emoji} ¡No olvides sacar el cubo esta noche!`,
+    it: (v) => `Ehi! Non dimenticare di mettere fuori il secchio ${v.type} ${v.emoji}`,
+    en: (v) => `Hey! Don't forget to put out the bin for ${v.type} ${v.emoji}`,
+    es: (v) => `Oye, no olvides sacar el cubo de ${v.type} ${v.emoji}`,
   },
   'notif.cleaningReminder.title': { it: 'Tidix ti ricorda 🧽', en: 'Tidix reminder 🧽', es: 'Tidix te recuerda 🧽' },
   'notif.cleaningReminder.body': {
@@ -173,15 +173,8 @@ const ENTRIES: Record<string, EntryTriple> = {
     es: (v) => `${v.name} está abierto desde hace ${v.days} ${v.days === 1 ? 'día' : 'días'}: ¿ya lo has consumido?`,
   },
 
-  // waste type names with article, used inside the friendly notification body
-  'wasteNotif.ORGANICO': { it: "l'organico", en: 'the organic waste', es: 'el orgánico' },
-  'wasteNotif.PLASTICA': { it: 'la plastica', en: 'the plastic', es: 'el plástico' },
-  'wasteNotif.CARTA_CARTONE': { it: 'la carta', en: 'the paper', es: 'el papel' },
-  'wasteNotif.VETRO': { it: 'il vetro', en: 'the glass', es: 'el vidrio' },
-  'wasteNotif.INDIFFERENZIATO': { it: "l'indifferenziato", en: 'the general waste', es: 'el resto' },
-  'wasteNotif.ALTRO': { it: 'gli altri rifiuti', en: 'the rest', es: 'los demás residuos' },
-
   // waste type names contracted after "di" (dell'/della/del/degli), used in the Panoramica banner
+  // and in the push notification body (stesso testo, vedi notif.wasteReminder.body)
   'wastePartitive.ORGANICO': { it: "dell'organico", en: 'the organic waste', es: 'el orgánico' },
   'wastePartitive.PLASTICA': { it: 'della plastica', en: 'the plastic', es: 'el plástico' },
   'wastePartitive.CARTA_CARTONE': { it: 'della carta', en: 'the paper', es: 'el papel' },

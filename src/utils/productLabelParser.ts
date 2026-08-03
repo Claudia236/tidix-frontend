@@ -62,6 +62,9 @@ const NAME_NOISE_KEYWORDS = [
   'stabilimento',
   'www.',
   'http',
+  'suggerimento di presentazione',
+  'foto non vincolante',
+  'immagine non vincolante',
 ];
 
 function looksLikeNameLine(rawLine: string): boolean {

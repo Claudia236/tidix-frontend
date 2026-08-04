@@ -82,8 +82,9 @@ export function RestockDialog({ visible, itemName, currentExpirationDate, submit
             </>
           ) : (
             <>
+              <Text style={styles.subtitle}>{t('restock.newBatchHint')}</Text>
               <View style={styles.dateLabelRow}>
-                <Text style={styles.subtitle}>{t('restock.newBatchHint')}</Text>
+                <Text style={styles.label}>{t('restock.newDateLabel')}</Text>
                 {voice.available ? (
                   <Pressable onPress={() => voice.start('newDate')} hitSlop={8}>
                     <Ionicons
@@ -114,7 +115,8 @@ function createStyles(COLORS: ColorPalette) {
     card: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 14, width: '100%', maxWidth: 360 },
     title: { fontSize: 15, fontWeight: '700', color: COLORS.ink },
     subtitle: { fontSize: 13, color: COLORS.inkSoft, lineHeight: 18 },
-    dateLabelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+    label: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4, color: COLORS.inkSoft },
+    dateLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     actions: { flexDirection: 'row', gap: 10, marginTop: 4 },
     cancel: { textAlign: 'center', fontSize: 13, color: COLORS.inkSoft, marginTop: 4 },
   });

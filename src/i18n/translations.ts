@@ -58,6 +58,7 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: 'A new separate entry will be added to your stock with this expiry date, without touching the one you already have.',
     es: 'Se añadirá una nueva entrada separada al inventario con esta fecha de caducidad, sin tocar la que ya tienes.',
   },
+  'restock.newDateLabel': { it: 'Nuova scadenza', en: 'New expiry date', es: 'Nueva caducidad' },
 
   // categories
   'category.AVANZI.label': { it: 'Avanzi', en: 'Leftovers', es: 'Sobras' },

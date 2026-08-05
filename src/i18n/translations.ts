@@ -380,6 +380,15 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: 'When you check off an item in the shopping list you\'ll find it here, ready to be added to stock.',
     es: 'Cuando marques un artículo en la lista de la compra lo encontrarás aquí, listo para añadir al inventario.',
   },
+  'purchased.selectAll': { it: 'Seleziona tutti', en: 'Select all', es: 'Seleccionar todos' },
+  'purchased.deselectAll': { it: 'Deseleziona tutti', en: 'Deselect all', es: 'Deseleccionar todos' },
+  'purchased.selectedCount': { it: (v) => `${v.n} selezionati`, en: (v) => `${v.n} selected`, es: (v) => `${v.n} seleccionados` },
+  'purchased.confirmDeleteSelectedTitle': { it: 'Elimina prodotti', en: 'Delete products', es: 'Eliminar productos' },
+  'purchased.confirmDeleteSelectedMessage': {
+    it: (v) => `Vuoi eliminare ${v.n} ${v.n === 1 ? 'prodotto' : 'prodotti'} dagli acquistati?`,
+    en: (v) => `Delete ${v.n} ${v.n === 1 ? 'product' : 'products'} from purchased?`,
+    es: (v) => `¿Eliminar ${v.n} ${v.n === 1 ? 'producto' : 'productos'} de comprados?`,
+  },
 
   // Cleaning
   'cleaning.addToggle': { it: 'Aggiungi ambiente', en: 'Add room', es: 'Añadir espacio' },

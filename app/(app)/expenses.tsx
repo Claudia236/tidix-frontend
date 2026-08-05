@@ -50,6 +50,7 @@ export default function ExpensesScreen() {
   const expensesQuery = useQuery({ queryKey: ['expenses', month], queryFn: () => expensesApi.list(month) });
   const summaryQuery = useQuery({ queryKey: ['expenses', 'summary', month], queryFn: () => expensesApi.summary(month) });
   const allExpensesQuery = useQuery({ queryKey: ['expenses', 'all'], queryFn: () => expensesApi.list() });
+  const settlementsQuery = useQuery({ queryKey: ['settlements'], queryFn: () => settlementsApi.list() });
 
   const removeMutation = useMutation({
     mutationFn: (id: string) => expensesApi.remove(id),
@@ -87,8 +88,8 @@ export default function ExpensesScreen() {
   // sempre, non solo su quelle del mese selezionato: solo il totale speso
   // mostrato sopra resta filtrato per mese.
   const netBalanceByUser = useMemo(
-    () => computeAllTimeNetBalances(allExpensesQuery.data ?? []),
-    [allExpensesQuery.data]
+    () => computeAllTimeNetBalances(allExpensesQuery.data ?? [], settlementsQuery.data ?? []),
+    [allExpensesQuery.data, settlementsQuery.data]
   );
 
   return (

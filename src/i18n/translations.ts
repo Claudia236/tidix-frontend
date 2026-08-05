@@ -495,6 +495,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   'appLayout.household': { it: 'La tua famiglia', en: 'Your household', es: 'Tu familia' },
   'appLayout.purchased': { it: 'Acquistati', en: 'Purchased', es: 'Comprados' },
   'appLayout.scanReceipt': { it: 'Aggiungi da scontrino', en: 'Add from receipt', es: 'Añadir desde recibo' },
+  'appLayout.settlements': { it: 'Pagamenti registrati', en: 'Recorded payments', es: 'Pagos registrados' },
 
   // Scan receipt
   'scanReceipt.intro': {
@@ -642,6 +643,35 @@ const ENTRIES: Record<string, EntryTriple> = {
     it: (v) => `Pagamento allocato su ${v.n} ${v.n === 1 ? 'spesa' : 'spese'}. Avanzano ${v.leftover} € non dovuti.`,
     en: (v) => `Payment allocated across ${v.n} ${v.n === 1 ? 'expense' : 'expenses'}. ${v.leftover} € left over, not owed.`,
     es: (v) => `Pago asignado a ${v.n} ${v.n === 1 ? 'gasto' : 'gastos'}. Sobran ${v.leftover} € no adeudados.`,
+  },
+  'expenses.settlementsInfoLabel': { it: 'Vedi i pagamenti registrati', en: 'View recorded payments', es: 'Ver pagos registrados' },
+
+  // Settlements (pagamenti forfettari "Segna pagamento")
+  'settlements.title': { it: 'Pagamenti registrati', en: 'Recorded payments', es: 'Pagos registrados' },
+  'settlements.emptyTitle': { it: 'Nessun pagamento registrato', en: 'No payments recorded', es: 'Ningún pago registrado' },
+  'settlements.emptySubtitle': {
+    it: 'I pagamenti forfettari da "Segna pagamento" appariranno qui.',
+    en: 'Lump-sum payments from "Mark payment" will show up here.',
+    es: 'Los pagos globales desde "Marcar pago" aparecerán aquí.',
+  },
+  'settlements.paidBy': { it: (v) => `Pagamento di ${v.name}`, en: (v) => `Payment from ${v.name}`, es: (v) => `Pago de ${v.name}` },
+  'settlements.allocatedTo': { it: 'Applicato a:', en: 'Applied to:', es: 'Aplicado a:' },
+  'settlements.leftoverNote': {
+    it: (v) => `${v.amount} € non allocati (nessuna quota residua da saldare)`,
+    en: (v) => `${v.amount} € left unallocated (no remaining share to settle)`,
+    es: (v) => `${v.amount} € sin asignar (no queda ninguna parte por saldar)`,
+  },
+  'settlements.editTitle': { it: 'Modifica pagamento', en: 'Edit payment', es: 'Editar pago' },
+  'settlements.editHint': {
+    it: 'Il nuovo importo verrà ridistribuito da zero sulle quote non saldate, dalla spesa più vecchia alla più recente.',
+    en: 'The new amount will be redistributed from scratch across unpaid shares, oldest expense first.',
+    es: 'El nuevo importe se redistribuirá desde cero entre las partes no saldadas, empezando por el gasto más antiguo.',
+  },
+  'settlements.confirmDeleteTitle': { it: 'Elimina pagamento', en: 'Delete payment', es: 'Eliminar pago' },
+  'settlements.confirmDeleteMessage': {
+    it: 'Il pagamento verrà cancellato e le quote che aveva saldato torneranno non pagate. Continuare?',
+    en: 'The payment will be deleted and the shares it settled will become unpaid again. Continue?',
+    es: 'El pago se eliminará y las partes que había saldado volverán a quedar pendientes. ¿Continuar?',
   },
 
   // Household

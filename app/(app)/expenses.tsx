@@ -6,6 +6,7 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { expensesApi } from '../../src/api/expenses';
+import { settlementsApi } from '../../src/api/settlements';
 import { showAlert } from '../../src/components/AppAlert';
 import { AddFab } from '../../src/components/AddFab';
 import { EmptyState } from '../../src/components/EmptyState';
@@ -16,7 +17,7 @@ import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
 import type { UserBalance } from '../../src/types';
-import { computeAllTimeNetBalances, computeFifoSettlement, totalOwedByUser } from '../../src/utils/expenseSettlement';
+import { computeAllTimeNetBalances, totalOwedByUser } from '../../src/utils/expenseSettlement';
 import { formatDashDate } from '../../src/utils/expiry';
 
 function currentMonth(): string {
@@ -57,15 +58,11 @@ export default function ExpensesScreen() {
   });
 
   const settleMutation = useMutation({
-    mutationFn: async ({ debtorUserId, amount }: { debtorUserId: string; amount: number }) => {
-      const result = computeFifoSettlement(allExpensesQuery.data ?? [], debtorUserId, amount);
-      for (const a of result.allocations) {
-        await expensesApi.setSplitPaidAmount(a.expenseId, debtorUserId, a.newPaidAmount);
-      }
-      return result;
-    },
+    mutationFn: ({ debtorUserId, amount }: { debtorUserId: string; amount: number }) =>
+      settlementsApi.create(debtorUserId, amount),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['settlements'] });
       setSettleTarget(null);
       showAlert(
         t('expenses.settleTitle', { name: settleTarget?.userName ?? '' }),
@@ -114,7 +111,16 @@ export default function ExpensesScreen() {
 
             {summary ? (
               <View style={styles.summaryCard}>
-                <Text style={styles.summaryTotal}>{t('expenses.total')}: {summary.totalAmount.toFixed(2)} €</Text>
+                <View style={styles.summaryTotalRow}>
+                  <Text style={styles.summaryTotal}>{t('expenses.total')}: {summary.totalAmount.toFixed(2)} €</Text>
+                  <Pressable
+                    onPress={() => router.push('/(app)/settlements')}
+                    hitSlop={8}
+                    accessibilityLabel={t('expenses.settlementsInfoLabel')}
+                  >
+                    <Ionicons name="information-circle-outline" size={20} color={colors.inkSoft} />
+                  </Pressable>
+                </View>
                 {summary.byUser.map((b) => {
                   const netBalance = netBalanceByUser.get(b.userId) ?? 0;
                   const owesMoney = netBalance < -0.01;
@@ -234,6 +240,7 @@ function createStyles(COLORS: ColorPalette) {
       padding: 16,
       gap: 10,
     },
+    summaryTotalRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
     summaryTotal: { fontSize: 15, fontWeight: '800', color: COLORS.ink },
     balanceRow: {
       flexDirection: 'row',

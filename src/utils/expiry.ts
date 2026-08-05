@@ -27,6 +27,19 @@ export function formatFullDate(dateStr: string, language: Language = 'it'): stri
   return d.toLocaleDateString(LOCALE_MAP[language] ?? 'it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+// Formatta un timestamp ISO completo (es. Instant di createdAt) con data e ora,
+// a differenza delle altre formatFn che assumono una data "YYYY-MM-DD" pura.
+export function formatDateTime(isoInstant: string, language: Language = 'it'): string {
+  const d = new Date(isoInstant);
+  return d.toLocaleString(LOCALE_MAP[language] ?? 'it-IT', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 // Converte "YYYY-MM-DD" in "DD-MM-YYYY".
 export function formatDashDate(dateStr: string): string {
   const [y, m, d] = dateStr.split('-');

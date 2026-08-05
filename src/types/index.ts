@@ -196,6 +196,22 @@ export interface ExpenseSummary {
   byUser: UserBalance[];
 }
 
+export interface SettlementAllocation {
+  expenseId: string;
+  expenseDescription: string;
+  amountApplied: number;
+}
+
+export interface Settlement {
+  id: string;
+  debtorUserId: string;
+  debtorName: string;
+  amount: number;
+  allocations: SettlementAllocation[];
+  leftover: number;
+  createdAt: string;
+}
+
 export interface ApiErrorBody {
   timestamp: string;
   status: number;

@@ -1,8 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { ParamListBase } from '@react-navigation/native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../../src/api/client';
 import { itemsApi } from '../../../src/api/items';
@@ -25,6 +27,7 @@ type DateSortDirection = 'oldestFirst' | 'newestFirst';
 
 export default function StockScreen() {
   const router = useRouter();
+  const navigation = useNavigation<BottomTabNavigationProp<ParamListBase>>();
   const queryClient = useQueryClient();
   const { colors } = useTheme();
   const { t } = useI18n();
@@ -40,6 +43,7 @@ export default function StockScreen() {
   const [expirationDateDirection, setExpirationDateDirection] = useState<DateSortDirection>('oldestFirst');
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<Category>>(new Set());
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   function toggleCategoryCollapsed(category: Category) {
     setCollapsedCategories((prev) => {
@@ -55,22 +59,16 @@ export default function StockScreen() {
     [locations, t]
   );
 
-  // La primissima volta che la schermata prende il focus si parte da "Tutti"
-  // con le categorie collassate. Nei focus successivi (tab ripremuto,
-  // ritorno dalla modifica di una scorta, ecc.) filtri/ordinamento/categorie
-  // restano quelli scelti dall'utente: si resetta solo quando si arriva da un
-  // link esplicito a una zona (es. da una card della Panoramica).
-  // Il parametro viene "consumato" subito con setParams: altrimenti expo-router
-  // lo ripropone anche ai focus successivi (es. ri-premendo il tab Scorte),
-  // facendo restare la schermata bloccata sull'ultima zona aperta da un link.
-  // Si legge da un ref (invece che dalle dipendenze dell'effect) perche'
-  // chiamare setParams qui dentro cambierebbe params.storageLocationId mentre
-  // la schermata e' ancora a fuoco: se fosse nelle dipendenze, l'effect si
-  // ririeseguirebbe subito e annullerebbe il filtro appena impostato.
+  // Il parametro storageLocationId (link esplicito a una zona, es. da una
+  // card della Panoramica) viene "consumato" subito con setParams: altrimenti
+  // expo-router lo riproporrebbe anche ai focus successivi, facendo restare
+  // la schermata bloccata sull'ultima zona aperta da un link. Si legge da un
+  // ref (invece che dalle dipendenze dell'effect) perche' chiamare setParams
+  // qui dentro cambierebbe params.storageLocationId mentre la schermata e'
+  // ancora a fuoco: se fosse nelle dipendenze, l'effect si ririeseguirebbe
+  // subito e annullerebbe il filtro appena impostato.
   const paramsRef = useRef(params);
   paramsRef.current = params;
-
-  const hasFocusedBeforeRef = useRef(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -79,13 +77,26 @@ export default function StockScreen() {
         setFilterLocationId(zoneId);
         router.setParams({ storageLocationId: undefined });
         setCollapsedCategories(new Set(categories.map((c) => c.key)));
-      } else if (!hasFocusedBeforeRef.current) {
-        setFilterLocationId('TUTTI');
-        setCollapsedCategories(new Set(categories.map((c) => c.key)));
       }
-      hasFocusedBeforeRef.current = true;
     }, [categories])
   );
+
+  // Ogni volta che si preme (fisicamente) il tab "Scorte" nella barra in
+  // basso, la schermata torna alla vista di default: categorie collassate,
+  // ordinate per categoria, nessun filtro attivo. A differenza di
+  // useFocusEffect, l'evento tabPress scatta solo sul tap del pulsante del
+  // tab (non quando si torna da una schermata modale come modifica prodotto),
+  // cosi' non si perde il contesto solo per aver chiuso un dettaglio.
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('tabPress', () => {
+      setFilterLocationId('TUTTI');
+      setOnlyOpened(false);
+      setSearch('');
+      setSortBy('name');
+      setCollapsedCategories(new Set(categories.map((c) => c.key)));
+    });
+    return unsubscribe;
+  }, [navigation, categories]);
 
   const itemsQuery = useQuery({
     queryKey: ['items', 'list', filterLocationId, search],
@@ -186,6 +197,7 @@ export default function StockScreen() {
     return filtered;
   }, [itemsQuery.data, onlyOpened, sortBy, purchaseDateDirection, expirationDateDirection]);
   const openedCount = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.opened).length, [allItemsQuery.data]);
+  const isFilterActive = onlyOpened || filterLocationId !== 'TUTTI';
 
   // Ordinando per categoria (default), il backend restituisce gia' gli item
   // ordinati per nome: qui li raggruppiamo solo per categoria (nell'ordine
@@ -239,7 +251,20 @@ export default function StockScreen() {
           ) : null}
         </View>
 
-        <Text style={styles.sortLabel}>{t('stock.sortLabel')}</Text>
+        <View style={styles.sortHeaderRow}>
+          <Text style={styles.sortLabel}>{t('stock.sortLabel')}</Text>
+          <Pressable
+            onPress={() => setFilterModalVisible(true)}
+            hitSlop={8}
+            accessibilityLabel={t('stock.filterLabel')}
+          >
+            <Ionicons
+              name={isFilterActive ? 'filter' : 'filter-outline'}
+              size={20}
+              color={isFilterActive ? colors.brand : colors.inkSoft}
+            />
+          </Pressable>
+        </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -296,42 +321,6 @@ export default function StockScreen() {
               />
             ) : null}
           </Pressable>
-        </ScrollView>
-
-        <Text style={styles.filterLabel}>{t('stock.filterLabel')}</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filtersScroll}
-          contentContainerStyle={styles.filters}
-        >
-          {openedCount > 0 && (
-            <>
-              <Pressable
-                onPress={() => setOnlyOpened((v) => !v)}
-                style={[styles.filterChip, onlyOpened && styles.filterChipActive]}
-              >
-                <Ionicons name="lock-open-outline" size={12} color={onlyOpened ? colors.white : colors.gold} />
-                <Text style={[styles.filterChipText, onlyOpened && styles.filterChipTextActive]}>
-                  {t('stock.openedFilter', { n: openedCount })}
-                </Text>
-              </Pressable>
-              <View style={styles.filterDivider} />
-            </>
-          )}
-          {filters.map((f) => {
-            const active = filterLocationId === f.key;
-            return (
-              <Pressable
-                key={f.key}
-                onPress={() => setFilterLocationId(f.key)}
-                style={[styles.filterChip, active && styles.filterChipActive]}
-              >
-                <Text style={styles.filterChipEmoji}>{f.emoji}</Text>
-                <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>{f.label}</Text>
-              </Pressable>
-            );
-          })}
         </ScrollView>
 
         <FlatList
@@ -394,6 +383,43 @@ export default function StockScreen() {
           }
         }}
       />
+
+      <Modal visible={filterModalVisible} transparent animationType="fade" onRequestClose={() => setFilterModalVisible(false)}>
+        <Pressable style={styles.filterBackdrop} onPress={() => setFilterModalVisible(false)}>
+          <Pressable style={styles.filterCard} onPress={() => {}}>
+            <Text style={styles.filterCardTitle}>{t('stock.filterLabel')}</Text>
+
+            {openedCount > 0 ? (
+              <>
+                <Pressable
+                  style={styles.filterOptionRow}
+                  onPress={() => setOnlyOpened((v) => !v)}
+                >
+                  <Ionicons name={onlyOpened ? 'checkbox' : 'square-outline'} size={20} color={onlyOpened ? colors.brand : colors.inkSoft} />
+                  <Text style={styles.filterOptionEmoji}>🔓</Text>
+                  <Text style={styles.filterOptionText}>{t('stock.openedFilter', { n: openedCount })}</Text>
+                </Pressable>
+                <View style={styles.filterModalDivider} />
+              </>
+            ) : null}
+
+            {filters.map((f) => {
+              const active = filterLocationId === f.key;
+              return (
+                <Pressable key={f.key} style={styles.filterOptionRow} onPress={() => setFilterLocationId(f.key)}>
+                  <Ionicons name={active ? 'checkbox' : 'square-outline'} size={20} color={active ? colors.brand : colors.inkSoft} />
+                  <Text style={styles.filterOptionEmoji}>{f.emoji}</Text>
+                  <Text style={styles.filterOptionText}>{f.label}</Text>
+                </Pressable>
+              );
+            })}
+
+            <Pressable onPress={() => setFilterModalVisible(false)} hitSlop={8}>
+              <Text style={styles.filterCardClose}>{t('common.close')}</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -414,6 +440,7 @@ function createStyles(COLORS: ColorPalette) {
       paddingVertical: 8,
     },
     searchInput: { flex: 1, fontSize: 13, color: COLORS.ink },
+    sortHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     sortRowScroll: { flexGrow: 0, flexShrink: 0, marginBottom: 8 },
     sortRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingRight: 20 },
     sortLabel: { fontSize: 11, fontWeight: '700', color: COLORS.inkSoft, textTransform: 'uppercase', letterSpacing: 0.4 },
@@ -429,32 +456,14 @@ function createStyles(COLORS: ColorPalette) {
     sortChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
     sortChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
     sortChipTextActive: { color: COLORS.white },
-    filterLabel: {
-      fontSize: 11,
-      fontWeight: '700',
-      color: COLORS.inkSoft,
-      textTransform: 'uppercase',
-      letterSpacing: 0.4,
-    },
-    filtersScroll: { flexGrow: 0, flexShrink: 0 },
-    filters: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingBottom: 4, paddingRight: 20 },
-    filterDivider: { width: 1, alignSelf: 'stretch', marginVertical: 4, backgroundColor: COLORS.line },
-    filterChip: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 5,
-      flexShrink: 0,
-      borderWidth: 1,
-      borderColor: COLORS.line,
-      backgroundColor: COLORS.card,
-      borderRadius: 999,
-      paddingHorizontal: 10,
-      paddingVertical: 6,
-    },
-    filterChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
-    filterChipEmoji: { fontSize: 12, lineHeight: 15 },
-    filterChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
-    filterChipTextActive: { color: COLORS.white },
+    filterBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center', padding: 24 },
+    filterCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 4, width: '100%', maxWidth: 360 },
+    filterCardTitle: { fontSize: 15, fontWeight: '700', color: COLORS.ink, marginBottom: 8 },
+    filterOptionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
+    filterOptionEmoji: { fontSize: 15 },
+    filterOptionText: { fontSize: 14, color: COLORS.ink },
+    filterModalDivider: { height: 1, backgroundColor: COLORS.line, marginVertical: 6 },
+    filterCardClose: { textAlign: 'center', fontSize: 13, fontWeight: '600', color: COLORS.inkSoft, marginTop: 12 },
     list: { paddingBottom: 120, paddingTop: 4 },
     categoryHeader: {
       flexDirection: 'row',

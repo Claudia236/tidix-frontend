@@ -51,8 +51,23 @@ export function computeAllTimeNetBalances(expenses: Expense[], settlements: Sett
     }
   }
 
-  for (const [userId, value] of balances) {
-    balances.set(userId, Math.round(value * 100) / 100);
+  // Ogni s.amount/paidAmount arriva dal backend gia' arrotondato ai centesimi
+  // in modo indipendente per ciascun utente: su tante spese questi minuscoli
+  // arrotondamenti possono accumularsi in un residuo di un centesimo tra i
+  // due lati (es. "Deve dare 5.87" contro "Deve ricevere 5.86"), invisibile
+  // finche' i saldi restavano vicini allo zero ma evidente altrimenti. Per
+  // garantire che il totale di tutti i saldi sia sempre esattamente zero, si
+  // arrotonda un utente alla volta e l'ultimo si ottiene per differenza.
+  const ids = [...balances.keys()];
+  let roundedSum = 0;
+  for (let i = 0; i < ids.length - 1; i++) {
+    const rounded = Math.round(balances.get(ids[i])! * 100) / 100;
+    balances.set(ids[i], rounded);
+    roundedSum += rounded;
+  }
+  if (ids.length > 0) {
+    const lastId = ids[ids.length - 1];
+    balances.set(lastId, Math.round(-roundedSum * 100) / 100);
   }
   return balances;
 }

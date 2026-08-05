@@ -650,9 +650,9 @@ const ENTRIES: Record<string, EntryTriple> = {
   'settlements.title': { it: 'Pagamenti registrati', en: 'Recorded payments', es: 'Pagos registrados' },
   'settlements.emptyTitle': { it: 'Nessun pagamento registrato', en: 'No payments recorded', es: 'Ningún pago registrado' },
   'settlements.emptySubtitle': {
-    it: 'I pagamenti forfettari da "Segna pagamento" appariranno qui.',
-    en: 'Lump-sum payments from "Mark payment" will show up here.',
-    es: 'Los pagos globales desde "Marcar pago" aparecerán aquí.',
+    it: 'I pagamenti da "Segna pagamento" appariranno qui.',
+    en: 'Payments from "Mark payment" will show up here.',
+    es: 'Los pagos desde "Marcar pago" aparecerán aquí.',
   },
   'settlements.paidBy': { it: (v) => `Pagamento di ${v.name}`, en: (v) => `Payment from ${v.name}`, es: (v) => `Pago de ${v.name}` },
   'settlements.allocatedTo': { it: 'Applicato a:', en: 'Applied to:', es: 'Aplicado a:' },

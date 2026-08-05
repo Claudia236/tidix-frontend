@@ -213,7 +213,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const hidesExpiration = category === 'CASA_PULIZIA';
   const hidesOpenedToggle = hidesExpiration || replacesExpirationWithConsumeWithin;
   const isFreezerLocation = (locations.find((l) => l.id === effectiveLocationId)?.name ?? '').trim().toLowerCase() === 'freezer';
-  const showsAdditionalConsumeWithin = !replacesExpirationWithConsumeWithin && !hidesExpiration && (category === 'ORTOFRUTTA' || isFreezerLocation);
+  const showsAdditionalConsumeWithin = !replacesExpirationWithConsumeWithin && !hidesExpiration;
   const showsConsumeWithinGuide = CONSUME_WITHIN_DAYS_CATEGORIES.has(category);
   const consumeWithinDefaultUnit: ConsumeWithinUnit = isFreezerLocation ? 'mesi' : 'giorni';
   const effectiveConsumeWithinUnit = consumeWithinUnitTouched ? consumeWithinUnit : consumeWithinDefaultUnit;

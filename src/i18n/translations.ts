@@ -228,9 +228,9 @@ const ENTRIES: Record<string, EntryTriple> = {
     es: 'Producto sin fecha de caducidad impresa: indica en cuánto tiempo debe consumirse, se usará como recordatorio.',
   },
   'itemForm.consumeWithin.hintAdd': {
-    it: 'Per i surgelati senza scadenza stampata: indica tra quanto consumarlo, la data di scadenza sopra verrà calcolata automaticamente.',
-    en: "For frozen food without a printed expiry date: enter how long until it should be consumed, the expiry date above will be calculated automatically.",
-    es: 'Para congelados sin fecha de caducidad impresa: indica en cuánto tiempo debe consumirse, la fecha de caducidad de arriba se calculará automáticamente.',
+    it: 'Per i prodotti senza scadenza stampata: indica tra quanto consumarlo, la data di scadenza sopra verrà calcolata automaticamente.',
+    en: "For products without a printed expiry date: enter how long until it should be consumed, the expiry date above will be calculated automatically.",
+    es: 'Para productos sin fecha de caducidad impresa: indica en cuánto tiempo debe consumirse, la fecha de caducidad de arriba se calculará automáticamente.',
   },
   'itemForm.consumeWithinDays.guideTitle': {
     it: 'Quanto si conserva?',

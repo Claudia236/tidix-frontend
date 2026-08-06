@@ -22,7 +22,7 @@ import { webCentered } from '../../../src/theme/responsive';
 import type { Category, Item, ItemInput } from '../../../src/types';
 
 type StockRow = { key: string; type: 'header'; category: Category; count: number } | { key: string; type: 'item'; data: Item };
-type SortBy = 'name' | 'purchaseDate' | 'expirationDate';
+type SortBy = 'name' | 'purchaseDate' | 'expirationDate' | 'categoryPurchaseDate' | 'categoryExpirationDate';
 type DateSortDirection = 'oldestFirst' | 'newestFirst';
 
 export default function StockScreen() {
@@ -172,7 +172,7 @@ export default function StockScreen() {
   const items = useMemo(() => {
     const list = itemsQuery.data ?? [];
     const filtered = onlyOpened ? list.filter((i) => i.opened) : list;
-    if (sortBy === 'purchaseDate') {
+    if (sortBy === 'purchaseDate' || sortBy === 'categoryPurchaseDate') {
       // Chi non ha una data di acquisto (prodotti storici) va sempre in fondo,
       // indipendentemente dalla direzione scelta.
       const sign = purchaseDateDirection === 'oldestFirst' ? 1 : -1;
@@ -183,7 +183,7 @@ export default function StockScreen() {
         return sign * a.purchaseDate.localeCompare(b.purchaseDate);
       });
     }
-    if (sortBy === 'expirationDate') {
+    if (sortBy === 'expirationDate' || sortBy === 'categoryExpirationDate') {
       // Chi non ha una scadenza va sempre in fondo, indipendentemente dalla
       // direzione scelta.
       const sign = expirationDateDirection === 'oldestFirst' ? 1 : -1;
@@ -199,12 +199,13 @@ export default function StockScreen() {
   const openedCount = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.opened).length, [allItemsQuery.data]);
   const isFilterActive = onlyOpened || filterLocationId !== 'TUTTI';
 
-  // Ordinando per categoria (default), il backend restituisce gia' gli item
-  // ordinati per nome: qui li raggruppiamo solo per categoria (nell'ordine
-  // delle categorie), con header collassabili, senza toccare l'ordine gia'
-  // scelto all'interno di ciascun gruppo.
-  // Ordinando per data di acquisto invece si vuole un unico elenco su tutte
-  // le scorte, senza raggruppamento ne' header.
+  // Ordinando per categoria (default) o per categoria+data, raggruppiamo gli
+  // item per categoria (nell'ordine delle categorie), con header collassabili,
+  // senza toccare l'ordine gia' scelto all'interno di ciascun gruppo (per nome
+  // di default, oppure per data se e' stata scelta una delle varianti
+  // "categoria + data").
+  // Ordinando per la sola data di acquisto/scadenza (senza categoria) invece
+  // si vuole un unico elenco su tutte le scorte, senza raggruppamento ne' header.
   const isSearching = search.trim().length > 0;
 
   const stockRows: StockRow[] = useMemo(() => {
@@ -314,6 +315,48 @@ export default function StockScreen() {
               {t('stock.sortByExpirationDate')}
             </Text>
             {sortBy === 'expirationDate' ? (
+              <Ionicons
+                name={expirationDateDirection === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
+                size={12}
+                color={colors.white}
+              />
+            ) : null}
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              if (sortBy === 'categoryPurchaseDate') {
+                setPurchaseDateDirection((d) => (d === 'oldestFirst' ? 'newestFirst' : 'oldestFirst'));
+              } else {
+                setSortBy('categoryPurchaseDate');
+              }
+            }}
+            style={[styles.sortChip, styles.sortChipRow, sortBy === 'categoryPurchaseDate' && styles.sortChipActive]}
+          >
+            <Text style={[styles.sortChipText, sortBy === 'categoryPurchaseDate' && styles.sortChipTextActive]}>
+              {t('stock.sortByCategoryPurchaseDate')}
+            </Text>
+            {sortBy === 'categoryPurchaseDate' ? (
+              <Ionicons
+                name={purchaseDateDirection === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
+                size={12}
+                color={colors.white}
+              />
+            ) : null}
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              if (sortBy === 'categoryExpirationDate') {
+                setExpirationDateDirection((d) => (d === 'oldestFirst' ? 'newestFirst' : 'oldestFirst'));
+              } else {
+                setSortBy('categoryExpirationDate');
+              }
+            }}
+            style={[styles.sortChip, styles.sortChipRow, sortBy === 'categoryExpirationDate' && styles.sortChipActive]}
+          >
+            <Text style={[styles.sortChipText, sortBy === 'categoryExpirationDate' && styles.sortChipTextActive]}>
+              {t('stock.sortByCategoryExpirationDate')}
+            </Text>
+            {sortBy === 'categoryExpirationDate' ? (
               <Ionicons
                 name={expirationDateDirection === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
                 size={12}

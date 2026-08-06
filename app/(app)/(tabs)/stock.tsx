@@ -42,7 +42,13 @@ export default function StockScreen() {
   const [purchaseDateDirection, setPurchaseDateDirection] = useState<DateSortDirection>('oldestFirst');
   const [expirationDateDirection, setExpirationDateDirection] = useState<DateSortDirection>('oldestFirst');
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
-  const [collapsedCategories, setCollapsedCategories] = useState<Set<Category>>(new Set());
+  // Tutte le categorie collassate fin dal primissimo render: il listener
+  // tabPress (sotto) copre i tap successivi sul tab, ma non scatta mai per la
+  // primissima navigazione verso questa schermata, dato che il componente
+  // (e quindi il listener) non esiste ancora finche' non viene montato.
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<Category>>(
+    () => new Set(categories.map((c) => c.key))
+  );
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   function toggleCategoryCollapsed(category: Category) {

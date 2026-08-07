@@ -356,41 +356,41 @@ export default function StockScreen() {
       <Modal visible={filterModalVisible} transparent animationType="fade" onRequestClose={() => setFilterModalVisible(false)}>
         <Pressable style={styles.filterBackdrop} onPress={() => setFilterModalVisible(false)}>
           <Pressable style={styles.filterCard} onPress={() => {}}>
-            <Text style={styles.filterCardTitle}>{t('stock.filterModalTitle')}</Text>
             <ScrollView>
-              <Text style={styles.filterSectionLabel}>{t('stock.sortLabel')}</Text>
+              <View style={styles.filterSection}>
+                <Text style={styles.filterSectionLabel}>{t('stock.sortLabel')}</Text>
 
-              <Pressable style={styles.filterOptionRow} onPress={() => setGroupByCategory((v) => !v)}>
-                <Ionicons name={groupByCategory ? 'checkbox' : 'square-outline'} size={20} color={groupByCategory ? colors.brand : colors.inkSoft} />
-                <Text style={styles.filterOptionText}>{t('stock.sortByName')}</Text>
-              </Pressable>
+                <Pressable style={styles.filterOptionRow} onPress={() => setGroupByCategory((v) => !v)}>
+                  <Ionicons name={groupByCategory ? 'checkbox' : 'square-outline'} size={20} color={groupByCategory ? colors.brand : colors.inkSoft} />
+                  <Text style={styles.filterOptionText}>{t('stock.sortByName')}</Text>
+                </Pressable>
 
-              {dateSortOptions.map((opt) => {
-                const active = dateSortBy === opt.key;
-                return (
-                  <View key={opt.key} style={styles.filterDateOptionRow}>
-                    <Pressable style={styles.filterDateOptionPressable} onPress={() => handleDateSortPress(opt.key)}>
-                      <Ionicons name={active ? 'checkbox' : 'square-outline'} size={20} color={active ? colors.brand : colors.inkSoft} />
-                      <Text style={styles.filterOptionTextGrow}>{opt.label}</Text>
-                    </Pressable>
-                    {active ? (
-                      <Pressable onPress={opt.toggleDirection} hitSlop={8}>
-                        <Ionicons
-                          name={opt.direction === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
-                          size={14}
-                          color={colors.brand}
-                        />
+                {dateSortOptions.map((opt) => {
+                  const active = dateSortBy === opt.key;
+                  return (
+                    <View key={opt.key} style={styles.filterDateOptionRow}>
+                      <Pressable style={styles.filterDateOptionPressable} onPress={() => handleDateSortPress(opt.key)}>
+                        <Ionicons name={active ? 'checkbox' : 'square-outline'} size={20} color={active ? colors.brand : colors.inkSoft} />
+                        <Text style={styles.filterOptionTextGrow}>{opt.label}</Text>
                       </Pressable>
-                    ) : null}
-                  </View>
-                );
-              })}
+                      {active ? (
+                        <Pressable onPress={opt.toggleDirection} hitSlop={8}>
+                          <Ionicons
+                            name={opt.direction === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
+                            size={14}
+                            color={colors.brand}
+                          />
+                        </Pressable>
+                      ) : null}
+                    </View>
+                  );
+                })}
+              </View>
 
-              <View style={styles.filterModalDivider} />
-              <Text style={styles.filterSectionLabel}>{t('stock.filterLabel')}</Text>
+              <View style={[styles.filterSection, styles.filterSectionAlt]}>
+                <Text style={styles.filterSectionLabel}>{t('stock.filterLabel')}</Text>
 
-              {openedCount > 0 ? (
-                <>
+                {openedCount > 0 ? (
                   <Pressable
                     style={styles.filterOptionRow}
                     onPress={() => setOnlyOpened((v) => !v)}
@@ -399,20 +399,19 @@ export default function StockScreen() {
                     <Text style={styles.filterOptionEmoji}>🔓</Text>
                     <Text style={styles.filterOptionText}>{t('stock.openedFilter', { n: openedCount })}</Text>
                   </Pressable>
-                  <View style={styles.filterModalDivider} />
-                </>
-              ) : null}
+                ) : null}
 
-              {filters.map((f) => {
-                const active = filterLocationId === f.key;
-                return (
-                  <Pressable key={f.key} style={styles.filterOptionRow} onPress={() => setFilterLocationId(f.key)}>
-                    <Ionicons name={active ? 'checkbox' : 'square-outline'} size={20} color={active ? colors.brand : colors.inkSoft} />
-                    <Text style={styles.filterOptionEmoji}>{f.emoji}</Text>
-                    <Text style={styles.filterOptionText}>{f.label}</Text>
-                  </Pressable>
-                );
-              })}
+                {filters.map((f) => {
+                  const active = filterLocationId === f.key;
+                  return (
+                    <Pressable key={f.key} style={styles.filterOptionRow} onPress={() => setFilterLocationId(f.key)}>
+                      <Ionicons name={active ? 'checkbox' : 'square-outline'} size={20} color={active ? colors.brand : colors.inkSoft} />
+                      <Text style={styles.filterOptionEmoji}>{f.emoji}</Text>
+                      <Text style={styles.filterOptionText}>{f.label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
             </ScrollView>
 
             <Pressable onPress={() => setFilterModalVisible(false)} hitSlop={8}>
@@ -443,12 +442,19 @@ function createStyles(COLORS: ColorPalette) {
     searchInput: { flex: 1, fontSize: 13, color: COLORS.ink },
     titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     filterBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center', padding: 24 },
-    filterCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 4, width: '100%', maxWidth: 360, maxHeight: '80%' },
-    filterCardTitle: { fontSize: 15, fontWeight: '700', color: COLORS.ink, marginBottom: 8 },
+    filterCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, paddingTop: 16, gap: 12, width: '100%', maxWidth: 360, maxHeight: '80%' },
+    filterSection: {
+      backgroundColor: COLORS.bg,
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      paddingTop: 10,
+      paddingBottom: 4,
+    },
+    filterSectionAlt: { marginTop: 12 },
     filterSectionLabel: {
       fontSize: 11,
       fontWeight: '700',
-      color: COLORS.inkSoft,
+      color: COLORS.brand,
       textTransform: 'uppercase',
       letterSpacing: 0.4,
       marginBottom: 2,
@@ -459,8 +465,7 @@ function createStyles(COLORS: ColorPalette) {
     filterOptionEmoji: { fontSize: 15 },
     filterOptionText: { fontSize: 14, color: COLORS.ink },
     filterOptionTextGrow: { flex: 1, fontSize: 14, color: COLORS.ink },
-    filterModalDivider: { height: 1, backgroundColor: COLORS.line, marginVertical: 6 },
-    filterCardClose: { textAlign: 'center', fontSize: 13, fontWeight: '600', color: COLORS.inkSoft, marginTop: 12 },
+    filterCardClose: { textAlign: 'center', fontSize: 13, fontWeight: '600', color: COLORS.inkSoft, marginTop: 4 },
     list: { paddingBottom: 120, paddingTop: 4 },
     categoryHeader: {
       flexDirection: 'row',

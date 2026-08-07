@@ -255,8 +255,8 @@ export default function ShoppingScreen() {
                 >
                   <Text style={styles.rowNameStacked} numberOfLines={1}>{note.text}</Text>
                   {note.detail ? <Text style={styles.rowDetail} numberOfLines={1}>{note.detail}</Text> : null}
+                  {supermarket ? <Text style={styles.rowDetail} numberOfLines={1}>{supermarket.name}</Text> : null}
                 </Pressable>
-                {supermarket ? <Text style={styles.supermarketBadge}>{supermarket.emoji}</Text> : null}
                 <Pressable
                   onPress={() => router.push({ pathname: '/(app)/shopping-note/[id]', params: { id: note.id } })}
                   style={styles.categoryTag}
@@ -284,14 +284,18 @@ export default function ShoppingScreen() {
                 onPress={() => router.push({ pathname: '/(app)/item/[id]', params: { id: item.id } })}
               >
                 <Text>{category.emoji}</Text>
-                <Text style={styles.rowName} numberOfLines={1}>{item.name}</Text>
-                {location ? (
-                  <View style={[styles.zoneBadge, { backgroundColor: locationBg }]}>
-                    <Text style={[styles.zoneBadgeText, { color: locationFg }]}>{locationCode(location.name)}</Text>
+                <View style={styles.rowTextInfo}>
+                  <View style={styles.itemNameRow}>
+                    <Text style={styles.rowName} numberOfLines={1}>{item.name}</Text>
+                    {location ? (
+                      <View style={[styles.zoneBadge, { backgroundColor: locationBg }]}>
+                        <Text style={[styles.zoneBadgeText, { color: locationFg }]}>{locationCode(location.name)}</Text>
+                      </View>
+                    ) : null}
                   </View>
-                ) : null}
+                  {supermarket ? <Text style={styles.rowDetail} numberOfLines={1}>{supermarket.name}</Text> : null}
+                </View>
               </Pressable>
-              {supermarket ? <Text style={styles.supermarketBadge}>{supermarket.emoji}</Text> : null}
             </View>
           );
         }}
@@ -372,7 +376,6 @@ function createStyles(COLORS: ColorPalette) {
       marginBottom: 2,
       paddingLeft: 4,
     },
-    supermarketBadge: { fontSize: 14 },
     list: { gap: 0 },
     row: {
       flexDirection: 'row',
@@ -387,6 +390,7 @@ function createStyles(COLORS: ColorPalette) {
     checkbox: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: COLORS.brand },
     rowInfo: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0 },
     rowTextInfo: { flex: 1, minWidth: 0 },
+    itemNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     rowName: { flex: 1, fontSize: 14, fontWeight: '600', color: COLORS.ink },
     rowNameStacked: { fontSize: 14, fontWeight: '600', color: COLORS.ink },
     rowDetail: { fontSize: 12, color: COLORS.inkSoft, marginTop: 1 },

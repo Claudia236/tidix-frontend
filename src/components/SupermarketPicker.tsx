@@ -8,6 +8,8 @@ import { useSupermarkets } from '../hooks/useSupermarkets';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
+import type { Supermarket } from '../types';
+import { showAlert } from './AppAlert';
 
 interface Props {
   value: string | null;
@@ -37,6 +39,14 @@ export function SupermarketPicker({ value, onChange, label }: Props) {
     },
   });
 
+  const removeMutation = useMutation({
+    mutationFn: (id: string) => supermarketsApi.remove(id),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ['supermarkets'] });
+      if (value === id) onChange(null);
+    },
+  });
+
   function handleCreate() {
     if (!newName.trim()) return;
     createMutation.mutate();
@@ -44,6 +54,13 @@ export function SupermarketPicker({ value, onChange, label }: Props) {
 
   function handleSelect(id: string) {
     onChange(value === id ? null : id);
+  }
+
+  function handleDelete(supermarket: Supermarket) {
+    showAlert(t('supermarket.confirmDeleteTitle'), t('supermarket.confirmDeleteMessage', { name: supermarket.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: () => removeMutation.mutate(supermarket.id) },
+    ]);
   }
 
   return (
@@ -54,14 +71,18 @@ export function SupermarketPicker({ value, onChange, label }: Props) {
           const active = value === supermarket.id;
           const { color } = locationColor(supermarket.id, scheme, supermarket.colorIndex);
           return (
-            <Pressable
+            <View
               key={supermarket.id}
-              onPress={() => handleSelect(supermarket.id)}
               style={[styles.chip, { borderColor: active ? color : colors.line, backgroundColor: active ? color : colors.card }]}
             >
-              <Text style={{ fontSize: 14 }}>{supermarket.emoji}</Text>
-              <Text style={[styles.chipText, { color: active ? colors.white : colors.ink }]}>{supermarket.name}</Text>
-            </Pressable>
+              <Pressable onPress={() => handleSelect(supermarket.id)} style={styles.chipPressable}>
+                <Text style={{ fontSize: 14 }}>{supermarket.emoji}</Text>
+                <Text style={[styles.chipText, { color: active ? colors.white : colors.ink }]}>{supermarket.name}</Text>
+              </Pressable>
+              <Pressable onPress={() => handleDelete(supermarket)} hitSlop={8}>
+                <Ionicons name="close" size={14} color={active ? colors.white : colors.inkSoft} />
+              </Pressable>
+            </View>
           );
         })}
         <Pressable onPress={() => setAdding(true)} style={[styles.chip, styles.addChip]}>
@@ -127,6 +148,7 @@ function createStyles(COLORS: ColorPalette) {
       paddingVertical: 10,
       paddingHorizontal: 12,
     },
+    chipPressable: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     addChip: { borderColor: COLORS.brand, borderStyle: 'dashed', backgroundColor: COLORS.card },
     chipText: { fontWeight: '600', fontSize: 13 },
     newRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 4 },

@@ -75,6 +75,7 @@ export default function EditItemScreen() {
         initial={{
           name: item.name,
           storageLocationId: item.storageLocationId,
+          supermarketId: item.supermarketId,
           category: item.category,
           quantity: item.quantity,
           unit: item.unit,

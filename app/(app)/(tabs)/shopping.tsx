@@ -13,16 +13,22 @@ import { EmptyState } from '../../../src/components/EmptyState';
 import { RestockDialog } from '../../../src/components/RestockDialog';
 import { SectionTitle } from '../../../src/components/SectionTitle';
 import { useStorageLocations } from '../../../src/hooks/useStorageLocations';
+import { useSupermarkets } from '../../../src/hooks/useSupermarkets';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import { webCentered } from '../../../src/theme/responsive';
 import type { Category, Item, ItemInput, ShoppingNote } from '../../../src/types';
 
+type Leaf = { key: string; type: 'item'; data: Item } | { key: string; type: 'note'; data: ShoppingNote };
+
 type ToBuyRow =
-  | { key: string; type: 'header'; category: Category; count: number }
-  | { key: string; type: 'item'; data: Item }
-  | { key: string; type: 'note'; data: ShoppingNote };
+  | { key: string; type: 'header'; group: 'category'; category: Category; count: number }
+  | { key: string; type: 'header'; group: 'supermarket'; supermarketId: string | null; count: number }
+  | { key: string; type: 'subheader'; category: Category }
+  | Leaf;
+
+type GroupBy = 'category' | 'supermarket';
 
 export default function ShoppingScreen() {
   const router = useRouter();
@@ -31,16 +37,28 @@ export default function ShoppingScreen() {
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { byId } = useStorageLocations();
+  const { byId: supermarketById, supermarkets } = useSupermarkets();
   const categories = useCategories();
   const getLocationColor = useLocationColor();
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
+  const [groupBy, setGroupBy] = useState<GroupBy>('category');
   const [collapsedCategories, setCollapsedCategories] = useState<Set<Category>>(new Set());
+  const [collapsedSupermarkets, setCollapsedSupermarkets] = useState<Set<string>>(new Set());
 
   function toggleCategoryCollapsed(category: Category) {
     setCollapsedCategories((prev) => {
       const next = new Set(prev);
       if (next.has(category)) next.delete(category);
       else next.add(category);
+      return next;
+    });
+  }
+
+  function toggleSupermarketCollapsed(key: string) {
+    setCollapsedSupermarkets((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   }
@@ -82,32 +100,64 @@ export default function ShoppingScreen() {
   const toBuyRows: ToBuyRow[] = useMemo(() => {
     const items = shoppingQuery.data ?? [];
     const notes = (notesQuery.data ?? []).filter((n) => !n.checked);
+    const leaves: Leaf[] = [
+      ...items.map((item) => ({ key: `item-${item.id}`, type: 'item' as const, data: item })),
+      ...notes.map((note) => ({ key: `note-${note.id}`, type: 'note' as const, data: note })),
+    ];
 
-    const byCategory = new Map<Category, ToBuyRow[]>();
-    for (const item of items) {
-      const cat = item.category;
-      if (!byCategory.has(cat)) byCategory.set(cat, []);
-      byCategory.get(cat)!.push({ key: `item-${item.id}`, type: 'item', data: item });
-    }
-    for (const note of notes) {
-      const cat = note.category ?? 'ALTRO';
-      if (!byCategory.has(cat)) byCategory.set(cat, []);
-      byCategory.get(cat)!.push({ key: `note-${note.id}`, type: 'note', data: note });
-    }
+    const rowName = (leaf: Leaf) => (leaf.type === 'item' ? leaf.data.name : leaf.data.text);
+    const rowCategory = (leaf: Leaf): Category => (leaf.type === 'item' ? leaf.data.category : leaf.data.category ?? 'ALTRO');
+    const rowSupermarketId = (leaf: Leaf): string | null => leaf.data.supermarketId ?? null;
 
-    const rowName = (row: ToBuyRow) => (row.type === 'item' ? row.data.name : row.type === 'note' ? row.data.text : '');
+    const byCategory = (source: Leaf[]) => {
+      const map = new Map<Category, Leaf[]>();
+      for (const leaf of source) {
+        const cat = rowCategory(leaf);
+        if (!map.has(cat)) map.set(cat, []);
+        map.get(cat)!.push(leaf);
+      }
+      return map;
+    };
 
     const rows: ToBuyRow[] = [];
-    for (const cat of categories) {
-      const group = byCategory.get(cat.key);
-      if (group && group.length > 0) {
-        group.sort((a, b) => rowName(a).localeCompare(rowName(b), undefined, { sensitivity: 'base' }));
-        rows.push({ key: `header-${cat.key}`, type: 'header', category: cat.key, count: group.length });
-        if (!collapsedCategories.has(cat.key)) rows.push(...group);
+
+    if (groupBy === 'category') {
+      const grouped = byCategory(leaves);
+      for (const cat of categories) {
+        const group = grouped.get(cat.key);
+        if (group && group.length > 0) {
+          group.sort((a, b) => rowName(a).localeCompare(rowName(b), undefined, { sensitivity: 'base' }));
+          rows.push({ key: `header-cat-${cat.key}`, type: 'header', group: 'category', category: cat.key, count: group.length });
+          if (!collapsedCategories.has(cat.key)) rows.push(...group);
+        }
+      }
+    } else {
+      const bySupermarket = new Map<string, Leaf[]>();
+      for (const leaf of leaves) {
+        const supId = rowSupermarketId(leaf) ?? '';
+        if (!bySupermarket.has(supId)) bySupermarket.set(supId, []);
+        bySupermarket.get(supId)!.push(leaf);
+      }
+      const orderedIds = [...supermarkets.map((s) => s.id), ''];
+      for (const supId of orderedIds) {
+        const group = bySupermarket.get(supId);
+        if (!group || group.length === 0) continue;
+        const collapseKey = supId || 'none';
+        rows.push({ key: `header-sup-${collapseKey}`, type: 'header', group: 'supermarket', supermarketId: supId || null, count: group.length });
+        if (collapsedSupermarkets.has(collapseKey)) continue;
+
+        const grouped = byCategory(group);
+        for (const cat of categories) {
+          const catGroup = grouped.get(cat.key);
+          if (!catGroup || catGroup.length === 0) continue;
+          catGroup.sort((a, b) => rowName(a).localeCompare(rowName(b), undefined, { sensitivity: 'base' }));
+          rows.push({ key: `subheader-${collapseKey}-${cat.key}`, type: 'subheader', category: cat.key });
+          rows.push(...catGroup);
+        }
       }
     }
     return rows;
-  }, [shoppingQuery.data, notesQuery.data, categories, collapsedCategories]);
+  }, [shoppingQuery.data, notesQuery.data, categories, collapsedCategories, collapsedSupermarkets, groupBy, supermarkets]);
 
   const purchasedCount = useMemo(() => (notesQuery.data ?? []).filter((n) => n.checked).length, [notesQuery.data]);
 
@@ -130,6 +180,25 @@ export default function ShoppingScreen() {
                 <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
               </Pressable>
             ) : null}
+
+            <View style={styles.groupByRow}>
+              <Pressable
+                onPress={() => setGroupBy('category')}
+                style={[styles.groupByChip, groupBy === 'category' && styles.groupByChipActive]}
+              >
+                <Text style={[styles.groupByChipText, groupBy === 'category' && { color: colors.white }]}>
+                  {t('shopping.groupBy.category')}
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setGroupBy('supermarket')}
+                style={[styles.groupByChip, groupBy === 'supermarket' && styles.groupByChipActive]}
+              >
+                <Text style={[styles.groupByChipText, groupBy === 'supermarket' && { color: colors.white }]}>
+                  {t('shopping.groupBy.supermarket')}
+                </Text>
+              </Pressable>
+            </View>
           </>
         }
         ListEmptyComponent={
@@ -140,7 +209,7 @@ export default function ShoppingScreen() {
           />
         }
         renderItem={({ item: row }) => {
-          if (row.type === 'header') {
+          if (row.type === 'header' && row.group === 'category') {
             const info = findCategoryInfo(categories, row.category);
             const collapsed = collapsedCategories.has(row.category);
             return (
@@ -153,8 +222,30 @@ export default function ShoppingScreen() {
             );
           }
 
+          if (row.type === 'header' && row.group === 'supermarket') {
+            const supermarket = row.supermarketId ? supermarketById.get(row.supermarketId) : null;
+            const collapseKey = row.supermarketId ?? 'none';
+            const collapsed = collapsedSupermarkets.has(collapseKey);
+            return (
+              <Pressable style={styles.categoryHeader} onPress={() => toggleSupermarketCollapsed(collapseKey)}>
+                <Text style={styles.categoryHeaderText}>
+                  {supermarket?.emoji ?? '🛒'} {supermarket?.name ?? t('shopping.noSupermarket')} ({row.count})
+                </Text>
+                <Ionicons name={collapsed ? 'chevron-down' : 'chevron-up'} size={16} color={colors.inkSoft} />
+              </Pressable>
+            );
+          }
+
+          if (row.type === 'subheader') {
+            const info = findCategoryInfo(categories, row.category);
+            return (
+              <Text style={styles.subHeaderText}>{info.emoji} {info.label}</Text>
+            );
+          }
+
           if (row.type === 'note') {
             const note = row.data;
+            const supermarket = groupBy === 'category' && note.supermarketId ? supermarketById.get(note.supermarketId) : null;
             return (
               <View style={styles.row}>
                 <Pressable onPress={() => checkNoteMutation.mutate(note.id)} style={styles.checkbox} hitSlop={8} />
@@ -165,6 +256,7 @@ export default function ShoppingScreen() {
                   <Text style={styles.rowNameStacked} numberOfLines={1}>{note.text}</Text>
                   {note.detail ? <Text style={styles.rowDetail} numberOfLines={1}>{note.detail}</Text> : null}
                 </Pressable>
+                {supermarket ? <Text style={styles.supermarketBadge}>{supermarket.emoji}</Text> : null}
                 <Pressable
                   onPress={() => router.push({ pathname: '/(app)/shopping-note/[id]', params: { id: note.id } })}
                   style={styles.categoryTag}
@@ -183,6 +275,7 @@ export default function ShoppingScreen() {
           const category = findCategoryInfo(categories, item.category);
           const location = byId.get(item.storageLocationId);
           const { color: locationFg, bg: locationBg } = getLocationColor(item.storageLocationId);
+          const supermarket = groupBy === 'category' && item.supermarketId ? supermarketById.get(item.supermarketId) : null;
           return (
             <View style={styles.row}>
               <Pressable onPress={() => setRestockTarget(item)} style={styles.checkbox} hitSlop={8} />
@@ -198,6 +291,7 @@ export default function ShoppingScreen() {
                   </View>
                 ) : null}
               </Pressable>
+              {supermarket ? <Text style={styles.supermarketBadge}>{supermarket.emoji}</Text> : null}
             </View>
           );
         }}
@@ -217,6 +311,7 @@ export default function ShoppingScreen() {
             newBatchMutation.mutate({
               name: restockTarget.name,
               storageLocationId: restockTarget.storageLocationId,
+              supermarketId: restockTarget.supermarketId,
               category: restockTarget.category,
               unit: restockTarget.unit,
               quantity: 1,
@@ -257,6 +352,27 @@ function createStyles(COLORS: ColorPalette) {
       letterSpacing: 0.4,
       color: COLORS.inkSoft,
     },
+    groupByRow: { flexDirection: 'row', gap: 8, marginTop: 14 },
+    groupByChip: {
+      flex: 1,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      backgroundColor: COLORS.card,
+      borderRadius: 10,
+      paddingVertical: 8,
+    },
+    groupByChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
+    groupByChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
+    subHeaderText: {
+      fontSize: 11,
+      fontWeight: '600',
+      color: COLORS.inkSoft,
+      marginTop: 8,
+      marginBottom: 2,
+      paddingLeft: 4,
+    },
+    supermarketBadge: { fontSize: 14 },
     list: { gap: 0 },
     row: {
       flexDirection: 'row',

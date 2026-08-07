@@ -10,6 +10,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { webCentered } from '../theme/responsive';
 import type { Category } from '../types';
 import { PrimaryButton } from './PrimaryButton';
+import { SupermarketPicker } from './SupermarketPicker';
 import { TextField } from './TextField';
 
 type VoiceTarget = 'name' | 'detail';
@@ -18,10 +19,11 @@ export interface ShoppingNoteFormInput {
   text: string;
   detail: string;
   category: Category | null;
+  supermarketId: string | null;
 }
 
 interface Props {
-  initial?: { text?: string; detail?: string | null; category?: Category | null };
+  initial?: { text?: string; detail?: string | null; category?: Category | null; supermarketId?: string | null };
   submitLabel: string;
   submitting?: boolean;
   onSubmit: (input: ShoppingNoteFormInput) => void;
@@ -39,6 +41,7 @@ export function ShoppingNoteForm({ initial, submitLabel, submitting, onSubmit, o
   const [name, setName] = useState(initial?.text ?? '');
   const [detail, setDetail] = useState(initial?.detail ?? '');
   const [category, setCategory] = useState<Category | null>(initial?.category ?? null);
+  const [supermarketId, setSupermarketId] = useState<string | null>(initial?.supermarketId ?? null);
 
   const voice = useVoiceDictation<VoiceTarget>((target, transcript) => {
     const capitalized = transcript.charAt(0).toUpperCase() + transcript.slice(1);
@@ -108,13 +111,15 @@ export function ShoppingNoteForm({ initial, submitLabel, submitting, onSubmit, o
         </View>
       </View>
 
+      <SupermarketPicker value={supermarketId} onChange={setSupermarketId} label={t('itemForm.supermarket.label')} />
+
       <View style={styles.actions}>
         {onDelete ? (
           <PrimaryButton label={t('common.delete')} variant="danger" onPress={onDelete} loading={deleting} style={{ flex: 0 }} />
         ) : null}
         <PrimaryButton
           label={submitLabel}
-          onPress={() => onSubmit({ text: name.trim(), detail: detail.trim(), category })}
+          onPress={() => onSubmit({ text: name.trim(), detail: detail.trim(), category, supermarketId })}
           disabled={!name.trim()}
           loading={submitting}
           style={{ flex: 1 }}

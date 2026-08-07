@@ -21,6 +21,7 @@ import { parseSpokenDateIT } from '../utils/voiceDate';
 import { showAlert } from './AppAlert';
 import { DatePickerField } from './DatePickerField';
 import { PrimaryButton } from './PrimaryButton';
+import { SupermarketPicker } from './SupermarketPicker';
 import { TextField } from './TextField';
 
 type VoiceTarget = 'name' | 'expiration';
@@ -146,6 +147,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
 
   const [name, setName] = useState(initial?.name ?? '');
   const [storageLocationId, setStorageLocationId] = useState<string>(initial?.storageLocationId ?? '');
+  const [supermarketId, setSupermarketId] = useState<string | null>(initial?.supermarketId ?? null);
   const [category, setCategory] = useState<Category>(initial?.category ?? 'ALTRO');
   const [quantity, setQuantity] = useState(String(initial?.quantity ?? 1));
   const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'PZ');
@@ -267,6 +269,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
     onSubmit({
       name: name.trim(),
       storageLocationId: effectiveLocationId,
+      supermarketId,
       category,
       quantity: Math.max(0, Number(quantity.replace(',', '.')) || 0),
       unit,
@@ -429,6 +432,8 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
           </View>
         ) : null}
       </View>
+
+      <SupermarketPicker value={supermarketId} onChange={setSupermarketId} label={t('itemForm.supermarket.label')} />
 
       <View style={styles.field}>
         <Text style={styles.label}>{t('itemForm.category.label')}</Text>

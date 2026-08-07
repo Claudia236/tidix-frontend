@@ -6,21 +6,23 @@ export const shoppingNotesApi = {
 
   get: (id: string) => apiClient.get<ShoppingNote>(`/api/shopping-list-notes/${id}`).then((r) => r.data),
 
-  create: (input: { text: string; detail?: string | null; category?: Category | null }) =>
+  create: (input: { text: string; detail?: string | null; category?: Category | null; supermarketId?: string | null }) =>
     apiClient
       .post<ShoppingNote>('/api/shopping-list-notes', {
         text: input.text,
         detail: input.detail || undefined,
         category: input.category ?? undefined,
+        supermarketId: input.supermarketId ?? undefined,
       })
       .then((r) => r.data),
 
-  update: (id: string, input: { text: string; detail?: string | null; category?: Category | null }) =>
+  update: (id: string, input: { text: string; detail?: string | null; category?: Category | null; supermarketId?: string | null }) =>
     apiClient
       .put<ShoppingNote>(`/api/shopping-list-notes/${id}`, {
         text: input.text,
         detail: input.detail || undefined,
         category: input.category ?? undefined,
+        supermarketId: input.supermarketId ?? undefined,
       })
       .then((r) => r.data),
 

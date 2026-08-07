@@ -76,6 +76,7 @@ export default function ShoppingPurchasedScreen() {
       params: {
         name: note.text,
         category: note.category ?? undefined,
+        supermarketId: note.supermarketId ?? undefined,
         sourceNoteId: note.id,
         purchaseDate: note.checkedAt ? note.checkedAt.slice(0, 10) : undefined,
       },

@@ -24,6 +24,7 @@ export default function NewItemScreen() {
     storageLocationId?: string;
     name?: string;
     category?: string;
+    supermarketId?: string;
     sourceNoteId?: string;
     purchaseDate?: string;
   }>();
@@ -58,6 +59,7 @@ export default function NewItemScreen() {
           storageLocationId: params.storageLocationId,
           name: params.name,
           category: params.category as Category | undefined,
+          supermarketId: params.supermarketId,
           purchaseDate: params.purchaseDate,
         }}
         submitLabel={t('common.save')}

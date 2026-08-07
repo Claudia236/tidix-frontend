@@ -6,4 +6,6 @@ export const supermarketsApi = {
 
   create: (input: SupermarketInput) =>
     apiClient.post<Supermarket>('/api/supermarkets', input).then((r) => r.data),
+
+  remove: (id: string) => apiClient.delete(`/api/supermarkets/${id}`).then(() => undefined),
 };

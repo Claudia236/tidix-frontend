@@ -216,6 +216,12 @@ const ENTRIES: Record<string, EntryTriple> = {
   'supermarket.new': { it: 'Nuovo', en: 'New', es: 'Nuevo' },
   'supermarket.new.namePlaceholder': { it: 'Es. Esselunga', en: 'e.g. Walmart', es: 'ej. Mercadona' },
   'supermarket.clear': { it: 'Rimuovi supermercato', en: 'Remove supermarket', es: 'Quitar supermercado' },
+  'supermarket.confirmDeleteTitle': { it: 'Elimina supermercato', en: 'Delete supermarket', es: 'Eliminar supermercado' },
+  'supermarket.confirmDeleteMessage': {
+    it: (v) => `Eliminare "${v.name}" dall'elenco? Verra' rimosso anche dai prodotti che lo usano.`,
+    en: (v) => `Delete "${v.name}" from the list? It will also be removed from products using it.`,
+    es: (v) => `¿Eliminar "${v.name}" de la lista? También se quitará de los productos que lo usan.`,
+  },
   'itemForm.category.label': { it: 'Categoria', en: 'Category', es: 'Categoría' },
   'itemForm.quantity.label': { it: 'Quantità', en: 'Quantity', es: 'Cantidad' },
   'itemForm.unit.label': { it: 'Unità', en: 'Unit', es: 'Unidad' },

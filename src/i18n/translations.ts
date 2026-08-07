@@ -543,6 +543,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   'stock.openedFilter': { it: (v) => `Aperti (${v.n})`, en: (v) => `Opened (${v.n})`, es: (v) => `Abiertos (${v.n})` },
   'stock.sortLabel': { it: 'Ordina per', en: 'Sort by', es: 'Ordenar por' },
   'stock.filterLabel': { it: 'Filtra per', en: 'Filter by', es: 'Filtrar por' },
+  'stock.filterModalTitle': { it: 'Filtra e ordina', en: 'Filter and sort', es: 'Filtrar y ordenar' },
   'stock.sortByName': { it: 'Categoria', en: 'Category', es: 'Categoría' },
   'stock.sortByPurchaseDate': { it: 'Data di acquisto', en: 'Purchase date', es: 'Fecha de compra' },
   'stock.sortByExpirationDate': { it: 'Data di scadenza', en: 'Expiry date', es: 'Fecha de caducidad' },

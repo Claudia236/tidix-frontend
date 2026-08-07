@@ -203,7 +203,27 @@ export default function StockScreen() {
     return filtered;
   }, [itemsQuery.data, onlyOpened, sortBy, purchaseDateDirection, expirationDateDirection]);
   const openedCount = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.opened).length, [allItemsQuery.data]);
-  const isFilterActive = onlyOpened || filterLocationId !== 'TUTTI';
+  const isFilterActive = onlyOpened || filterLocationId !== 'TUTTI' || sortBy !== 'name';
+
+  function handleSortPress(key: SortBy) {
+    if (sortBy !== key) {
+      setSortBy(key);
+      return;
+    }
+    if (key === 'purchaseDate' || key === 'categoryPurchaseDate') {
+      setPurchaseDateDirection((d) => (d === 'oldestFirst' ? 'newestFirst' : 'oldestFirst'));
+    } else if (key === 'expirationDate' || key === 'categoryExpirationDate') {
+      setExpirationDateDirection((d) => (d === 'oldestFirst' ? 'newestFirst' : 'oldestFirst'));
+    }
+  }
+
+  const sortOptions: { key: SortBy; label: string; direction?: DateSortDirection }[] = [
+    { key: 'name', label: t('stock.sortByName') },
+    { key: 'purchaseDate', label: t('stock.sortByPurchaseDate'), direction: purchaseDateDirection },
+    { key: 'expirationDate', label: t('stock.sortByExpirationDate'), direction: expirationDateDirection },
+    { key: 'categoryPurchaseDate', label: t('stock.sortByCategoryPurchaseDate'), direction: purchaseDateDirection },
+    { key: 'categoryExpirationDate', label: t('stock.sortByCategoryExpirationDate'), direction: expirationDateDirection },
+  ];
 
   // Ordinando per categoria (default) o per categoria+data, raggruppiamo gli
   // item per categoria (nell'ordine delle categorie), con header collassabili,
@@ -240,7 +260,20 @@ export default function StockScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
-        <SectionTitle logo>{t('stock.title')}</SectionTitle>
+        <View style={styles.titleRow}>
+          <SectionTitle logo>{t('stock.title')}</SectionTitle>
+          <Pressable
+            onPress={() => setFilterModalVisible(true)}
+            hitSlop={8}
+            accessibilityLabel={t('stock.filterModalTitle')}
+          >
+            <Ionicons
+              name={isFilterActive ? 'filter' : 'filter-outline'}
+              size={20}
+              color={isFilterActive ? colors.brand : colors.inkSoft}
+            />
+          </Pressable>
+        </View>
 
         <View style={styles.searchBox}>
           <Ionicons name="search" size={16} color={colors.inkSoft} />
@@ -257,120 +290,6 @@ export default function StockScreen() {
             </Pressable>
           ) : null}
         </View>
-
-        <View style={styles.sortHeaderRow}>
-          <Text style={styles.sortLabel}>{t('stock.sortLabel')}</Text>
-          <Pressable
-            onPress={() => setFilterModalVisible(true)}
-            hitSlop={8}
-            accessibilityLabel={t('stock.filterLabel')}
-          >
-            <Ionicons
-              name={isFilterActive ? 'filter' : 'filter-outline'}
-              size={20}
-              color={isFilterActive ? colors.brand : colors.inkSoft}
-            />
-          </Pressable>
-        </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.sortRowScroll}
-          contentContainerStyle={styles.sortRow}
-        >
-          <Pressable
-            onPress={() => setSortBy('name')}
-            style={[styles.sortChip, sortBy === 'name' && styles.sortChipActive]}
-          >
-            <Text style={[styles.sortChipText, sortBy === 'name' && styles.sortChipTextActive]}>
-              {t('stock.sortByName')}
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              if (sortBy === 'purchaseDate') {
-                setPurchaseDateDirection((d) => (d === 'oldestFirst' ? 'newestFirst' : 'oldestFirst'));
-              } else {
-                setSortBy('purchaseDate');
-              }
-            }}
-            style={[styles.sortChip, styles.sortChipRow, sortBy === 'purchaseDate' && styles.sortChipActive]}
-          >
-            <Text style={[styles.sortChipText, sortBy === 'purchaseDate' && styles.sortChipTextActive]}>
-              {t('stock.sortByPurchaseDate')}
-            </Text>
-            {sortBy === 'purchaseDate' ? (
-              <Ionicons
-                name={purchaseDateDirection === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
-                size={12}
-                color={colors.white}
-              />
-            ) : null}
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              if (sortBy === 'expirationDate') {
-                setExpirationDateDirection((d) => (d === 'oldestFirst' ? 'newestFirst' : 'oldestFirst'));
-              } else {
-                setSortBy('expirationDate');
-              }
-            }}
-            style={[styles.sortChip, styles.sortChipRow, sortBy === 'expirationDate' && styles.sortChipActive]}
-          >
-            <Text style={[styles.sortChipText, sortBy === 'expirationDate' && styles.sortChipTextActive]}>
-              {t('stock.sortByExpirationDate')}
-            </Text>
-            {sortBy === 'expirationDate' ? (
-              <Ionicons
-                name={expirationDateDirection === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
-                size={12}
-                color={colors.white}
-              />
-            ) : null}
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              if (sortBy === 'categoryPurchaseDate') {
-                setPurchaseDateDirection((d) => (d === 'oldestFirst' ? 'newestFirst' : 'oldestFirst'));
-              } else {
-                setSortBy('categoryPurchaseDate');
-              }
-            }}
-            style={[styles.sortChip, styles.sortChipRow, sortBy === 'categoryPurchaseDate' && styles.sortChipActive]}
-          >
-            <Text style={[styles.sortChipText, sortBy === 'categoryPurchaseDate' && styles.sortChipTextActive]}>
-              {t('stock.sortByCategoryPurchaseDate')}
-            </Text>
-            {sortBy === 'categoryPurchaseDate' ? (
-              <Ionicons
-                name={purchaseDateDirection === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
-                size={12}
-                color={colors.white}
-              />
-            ) : null}
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              if (sortBy === 'categoryExpirationDate') {
-                setExpirationDateDirection((d) => (d === 'oldestFirst' ? 'newestFirst' : 'oldestFirst'));
-              } else {
-                setSortBy('categoryExpirationDate');
-              }
-            }}
-            style={[styles.sortChip, styles.sortChipRow, sortBy === 'categoryExpirationDate' && styles.sortChipActive]}
-          >
-            <Text style={[styles.sortChipText, sortBy === 'categoryExpirationDate' && styles.sortChipTextActive]}>
-              {t('stock.sortByCategoryExpirationDate')}
-            </Text>
-            {sortBy === 'categoryExpirationDate' ? (
-              <Ionicons
-                name={expirationDateDirection === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
-                size={12}
-                color={colors.white}
-              />
-            ) : null}
-          </Pressable>
-        </ScrollView>
 
         <FlatList
           data={stockRows}
@@ -437,32 +356,54 @@ export default function StockScreen() {
       <Modal visible={filterModalVisible} transparent animationType="fade" onRequestClose={() => setFilterModalVisible(false)}>
         <Pressable style={styles.filterBackdrop} onPress={() => setFilterModalVisible(false)}>
           <Pressable style={styles.filterCard} onPress={() => {}}>
-            <Text style={styles.filterCardTitle}>{t('stock.filterLabel')}</Text>
+            <Text style={styles.filterCardTitle}>{t('stock.filterModalTitle')}</Text>
+            <ScrollView>
+              <Text style={styles.filterSectionLabel}>{t('stock.sortLabel')}</Text>
+              {sortOptions.map((opt) => {
+                const active = sortBy === opt.key;
+                return (
+                  <Pressable key={opt.key} style={styles.filterOptionRow} onPress={() => handleSortPress(opt.key)}>
+                    <Ionicons name={active ? 'checkbox' : 'square-outline'} size={20} color={active ? colors.brand : colors.inkSoft} />
+                    <Text style={styles.filterOptionTextGrow}>{opt.label}</Text>
+                    {active && opt.direction ? (
+                      <Ionicons
+                        name={opt.direction === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
+                        size={14}
+                        color={colors.brand}
+                      />
+                    ) : null}
+                  </Pressable>
+                );
+              })}
 
-            {openedCount > 0 ? (
-              <>
-                <Pressable
-                  style={styles.filterOptionRow}
-                  onPress={() => setOnlyOpened((v) => !v)}
-                >
-                  <Ionicons name={onlyOpened ? 'checkbox' : 'square-outline'} size={20} color={onlyOpened ? colors.brand : colors.inkSoft} />
-                  <Text style={styles.filterOptionEmoji}>🔓</Text>
-                  <Text style={styles.filterOptionText}>{t('stock.openedFilter', { n: openedCount })}</Text>
-                </Pressable>
-                <View style={styles.filterModalDivider} />
-              </>
-            ) : null}
+              <View style={styles.filterModalDivider} />
+              <Text style={styles.filterSectionLabel}>{t('stock.filterLabel')}</Text>
 
-            {filters.map((f) => {
-              const active = filterLocationId === f.key;
-              return (
-                <Pressable key={f.key} style={styles.filterOptionRow} onPress={() => setFilterLocationId(f.key)}>
-                  <Ionicons name={active ? 'checkbox' : 'square-outline'} size={20} color={active ? colors.brand : colors.inkSoft} />
-                  <Text style={styles.filterOptionEmoji}>{f.emoji}</Text>
-                  <Text style={styles.filterOptionText}>{f.label}</Text>
-                </Pressable>
-              );
-            })}
+              {openedCount > 0 ? (
+                <>
+                  <Pressable
+                    style={styles.filterOptionRow}
+                    onPress={() => setOnlyOpened((v) => !v)}
+                  >
+                    <Ionicons name={onlyOpened ? 'checkbox' : 'square-outline'} size={20} color={onlyOpened ? colors.brand : colors.inkSoft} />
+                    <Text style={styles.filterOptionEmoji}>🔓</Text>
+                    <Text style={styles.filterOptionText}>{t('stock.openedFilter', { n: openedCount })}</Text>
+                  </Pressable>
+                  <View style={styles.filterModalDivider} />
+                </>
+              ) : null}
+
+              {filters.map((f) => {
+                const active = filterLocationId === f.key;
+                return (
+                  <Pressable key={f.key} style={styles.filterOptionRow} onPress={() => setFilterLocationId(f.key)}>
+                    <Ionicons name={active ? 'checkbox' : 'square-outline'} size={20} color={active ? colors.brand : colors.inkSoft} />
+                    <Text style={styles.filterOptionEmoji}>{f.emoji}</Text>
+                    <Text style={styles.filterOptionText}>{f.label}</Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
 
             <Pressable onPress={() => setFilterModalVisible(false)} hitSlop={8}>
               <Text style={styles.filterCardClose}>{t('common.close')}</Text>
@@ -490,28 +431,22 @@ function createStyles(COLORS: ColorPalette) {
       paddingVertical: 8,
     },
     searchInput: { flex: 1, fontSize: 13, color: COLORS.ink },
-    sortHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    sortRowScroll: { flexGrow: 0, flexShrink: 0, marginBottom: 8 },
-    sortRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingRight: 20 },
-    sortLabel: { fontSize: 11, fontWeight: '700', color: COLORS.inkSoft, textTransform: 'uppercase', letterSpacing: 0.4 },
-    sortChip: {
-      borderWidth: 1,
-      borderColor: COLORS.line,
-      backgroundColor: COLORS.card,
-      borderRadius: 999,
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-    },
-    sortChipRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-    sortChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
-    sortChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
-    sortChipTextActive: { color: COLORS.white },
+    titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     filterBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center', padding: 24 },
-    filterCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 4, width: '100%', maxWidth: 360 },
+    filterCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 4, width: '100%', maxWidth: 360, maxHeight: '80%' },
     filterCardTitle: { fontSize: 15, fontWeight: '700', color: COLORS.ink, marginBottom: 8 },
+    filterSectionLabel: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: COLORS.inkSoft,
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
+      marginBottom: 2,
+    },
     filterOptionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
     filterOptionEmoji: { fontSize: 15 },
     filterOptionText: { fontSize: 14, color: COLORS.ink },
+    filterOptionTextGrow: { flex: 1, fontSize: 14, color: COLORS.ink },
     filterModalDivider: { height: 1, backgroundColor: COLORS.line, marginVertical: 6 },
     filterCardClose: { textAlign: 'center', fontSize: 13, fontWeight: '600', color: COLORS.inkSoft, marginTop: 12 },
     list: { paddingBottom: 120, paddingTop: 4 },

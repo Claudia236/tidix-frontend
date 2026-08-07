@@ -370,7 +370,7 @@ export default function StockScreen() {
                   return (
                     <View key={opt.key} style={styles.filterDateOptionRow}>
                       <Pressable style={styles.filterDateOptionPressable} onPress={() => handleDateSortPress(opt.key)}>
-                        <Ionicons name={active ? 'checkbox' : 'square-outline'} size={20} color={active ? colors.brand : colors.inkSoft} />
+                        <Ionicons name={active ? 'radio-button-on' : 'radio-button-off'} size={20} color={active ? colors.brand : colors.inkSoft} />
                         <Text style={styles.filterOptionTextGrow}>{opt.label}</Text>
                       </Pressable>
                       {active ? (
@@ -401,11 +401,13 @@ export default function StockScreen() {
                   </Pressable>
                 ) : null}
 
+                {openedCount > 0 ? <View style={styles.filterInlineDivider} /> : null}
+
                 {filters.map((f) => {
                   const active = filterLocationId === f.key;
                   return (
                     <Pressable key={f.key} style={styles.filterOptionRow} onPress={() => setFilterLocationId(f.key)}>
-                      <Ionicons name={active ? 'checkbox' : 'square-outline'} size={20} color={active ? colors.brand : colors.inkSoft} />
+                      <Ionicons name={active ? 'radio-button-on' : 'radio-button-off'} size={20} color={active ? colors.brand : colors.inkSoft} />
                       <Text style={styles.filterOptionEmoji}>{f.emoji}</Text>
                       <Text style={styles.filterOptionText}>{f.label}</Text>
                     </Pressable>
@@ -465,6 +467,7 @@ function createStyles(COLORS: ColorPalette) {
     filterOptionEmoji: { fontSize: 15 },
     filterOptionText: { fontSize: 14, color: COLORS.ink },
     filterOptionTextGrow: { flex: 1, fontSize: 14, color: COLORS.ink },
+    filterInlineDivider: { height: 1, backgroundColor: COLORS.line, marginVertical: 4 },
     filterCardClose: { textAlign: 'center', fontSize: 13, fontWeight: '600', color: COLORS.inkSoft, marginTop: 4 },
     list: { paddingBottom: 120, paddingTop: 4 },
     categoryHeader: {

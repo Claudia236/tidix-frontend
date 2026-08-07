@@ -154,8 +154,24 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'PZ');
   const [expirationDate, setExpirationDate] = useState<string | null>(initial?.expirationDate ?? null);
   const [consumeWithinAmount, setConsumeWithinAmount] = useState<string>(() => {
-    if (!initial?.expirationDate || initial?.category !== 'AVANZI') return '';
-    return String(Math.max(0, daysUntil(initial.expirationDate)));
+    if (!initial?.expirationDate) return '';
+    if (initial?.category === 'AVANZI') {
+      return String(Math.max(0, daysUntil(initial.expirationDate)));
+    }
+    // Per gli altri prodotti la scadenza e' ancorata alla data d'acquisto (non a oggi):
+    // ricaviamo il valore "consumare entro" corrispondente cosi' che, passando al
+    // modo "Consumare entro" in modifica, il campo non appaia vuoto se una scadenza
+    // era gia' presente.
+    const purchase = initial?.purchaseDate ?? todayLocalISODate();
+    const base = new Date(`${purchase}T00:00:00`);
+    const target = new Date(`${initial.expirationDate}T00:00:00`);
+    const location = locations.find((l) => l.id === initial?.storageLocationId);
+    const isFreezer = (location?.name ?? '').trim().toLowerCase() === 'freezer';
+    if (isFreezer) {
+      const months = (target.getFullYear() - base.getFullYear()) * 12 + (target.getMonth() - base.getMonth());
+      return String(Math.max(0, months));
+    }
+    return String(Math.max(0, Math.round((target.getTime() - base.getTime()) / 86_400_000)));
   });
   const [consumeWithinUnit, setConsumeWithinUnit] = useState<ConsumeWithinUnit>('giorni');
   const [consumeWithinUnitTouched, setConsumeWithinUnitTouched] = useState(false);

@@ -215,7 +215,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'supermarket.new': { it: 'Nuovo', en: 'New', es: 'Nuevo' },
   'supermarket.new.namePlaceholder': { it: 'Es. Esselunga', en: 'e.g. Walmart', es: 'ej. Mercadona' },
-  'supermarket.clear': { it: 'Rimuovi supermercato', en: 'Remove supermarket', es: 'Quitar supermercado' },
+  'supermarket.none': { it: 'Nessuno', en: 'None', es: 'Ninguno' },
   'supermarket.confirmDeleteTitle': { it: 'Elimina supermercato', en: 'Delete supermarket', es: 'Eliminar supermercado' },
   'supermarket.confirmDeleteMessage': {
     it: (v) => `Eliminare "${v.name}" dall'elenco? Verra' rimosso anche dai prodotti che lo usano.`,
@@ -228,6 +228,8 @@ const ENTRIES: Record<string, EntryTriple> = {
   'itemForm.purchaseDate.label': { it: 'Data di acquisto', en: 'Purchase date', es: 'Fecha de compra' },
   'itemForm.cookedDate.label': { it: 'Data in cui è stato cucinato', en: 'Date it was cooked', es: 'Fecha en que se cocinó' },
   'itemForm.expirationDate.label': { it: 'Scadenza (opzionale)', en: 'Expiry date (optional)', es: 'Caducidad (opcional)' },
+  'itemForm.expiryMode.date': { it: 'Scadenza', en: 'Expiry date', es: 'Caducidad' },
+  'itemForm.expiryMode.consumeWithin': { it: 'Consumare entro', en: 'Consume within', es: 'Consumir en' },
   'itemForm.consumeWithin.label': {
     it: 'Consumare entro (opzionale)',
     en: 'Consume within (optional)',

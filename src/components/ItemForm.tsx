@@ -26,6 +26,7 @@ import { TextField } from './TextField';
 
 type VoiceTarget = 'name' | 'expiration';
 type ConsumeWithinUnit = 'giorni' | 'mesi';
+type ExpiryMode = 'date' | 'consumeWithin';
 
 const MAX_SCAN_PHOTOS = 2;
 
@@ -172,6 +173,8 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const [addingLocation, setAddingLocation] = useState(false);
   const [newLocationName, setNewLocationName] = useState('');
   const [newLocationEmoji, setNewLocationEmoji] = useState('');
+  const [expiryMode, setExpiryMode] = useState<ExpiryMode>('date');
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [scanModalVisible, setScanModalVisible] = useState(false);
 
   useImperativeHandle(ref, () => ({ openScan: () => setScanModalVisible(true) }), []);
@@ -188,10 +191,10 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       const parsed = parseSpokenDateIT(transcript);
       if (!parsed) {
         showAlert(t('common.error'), t('itemForm.voice.dateNotUnderstood', { text: transcript }));
-      } else if (replacesExpirationWithConsumeWithin) {
-        setConsumeWithinAmount(String(Math.max(0, daysUntil(parsed))));
+      } else if (replacesExpirationWithConsumeWithin || expiryMode === 'consumeWithin') {
         setConsumeWithinUnit('giorni');
         setConsumeWithinUnitTouched(true);
+        handleConsumeWithinAmountChange(String(Math.max(0, daysUntil(parsed))), 'giorni');
       } else {
         setExpirationDate(parsed);
       }
@@ -211,11 +214,12 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
     },
   });
 
+  const selectedCategoryInfo = categories.find((c) => c.key === category) ?? categories[categories.length - 1];
   const canSubmit = name.trim().length > 0 && !!effectiveLocationId;
   const hidesExpiration = category === 'CASA_PULIZIA';
   const hidesOpenedToggle = hidesExpiration || replacesExpirationWithConsumeWithin;
   const isFreezerLocation = (locations.find((l) => l.id === effectiveLocationId)?.name ?? '').trim().toLowerCase() === 'freezer';
-  const showsAdditionalConsumeWithin = !replacesExpirationWithConsumeWithin && !hidesExpiration;
+  const showsExpiryModeToggle = !replacesExpirationWithConsumeWithin && !hidesExpiration;
   const showsConsumeWithinGuide = CONSUME_WITHIN_DAYS_CATEGORIES.has(category);
   const consumeWithinDefaultUnit: ConsumeWithinUnit = isFreezerLocation ? 'mesi' : 'giorni';
   const effectiveConsumeWithinUnit = consumeWithinUnitTouched ? consumeWithinUnit : consumeWithinDefaultUnit;
@@ -340,10 +344,10 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
 
       if (recognizedName) setName(recognizedName);
       if (recognizedDate) {
-        if (replacesExpirationWithConsumeWithin) {
-          setConsumeWithinAmount(String(Math.max(0, daysUntil(recognizedDate))));
+        if (replacesExpirationWithConsumeWithin || expiryMode === 'consumeWithin') {
           setConsumeWithinUnit('giorni');
           setConsumeWithinUnitTouched(true);
+          handleConsumeWithinAmountChange(String(Math.max(0, daysUntil(recognizedDate))), 'giorni');
         } else {
           setExpirationDate(recognizedDate);
         }
@@ -437,21 +441,11 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
 
       <View style={styles.field}>
         <Text style={styles.label}>{t('itemForm.category.label')}</Text>
-        <View style={styles.categoryGrid}>
-          {categories.map((cat) => {
-            const active = category === cat.key;
-            return (
-              <Pressable
-                key={cat.key}
-                onPress={() => setCategory(cat.key)}
-                style={[styles.categoryChip, active && styles.categoryChipActive]}
-              >
-                <Text style={{ fontSize: 18 }}>{cat.emoji}</Text>
-                <Text style={styles.categoryChipText}>{cat.short}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <Pressable style={styles.trigger} onPress={() => setCategoryModalVisible(true)}>
+          <Text style={{ fontSize: 16 }}>{selectedCategoryInfo.emoji}</Text>
+          <Text style={styles.triggerText}>{selectedCategoryInfo.label}</Text>
+          <Ionicons name="chevron-down" size={16} color={colors.inkSoft} />
+        </Pressable>
       </View>
 
       <View style={styles.row}>
@@ -509,20 +503,43 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
             />
           ) : (
             <>
-              <View style={styles.voiceLabelRow}>
-                <Text style={styles.label}>{t('itemForm.expirationDate.label')}</Text>
-                {voice.available ? (
-                  <Pressable onPress={() => voice.start('expiration')} hitSlop={8}>
-                    <Ionicons
-                      name={voice.target === 'expiration' ? 'mic' : 'mic-outline'}
-                      size={16}
-                      color={voice.target === 'expiration' ? colors.danger : colors.brand}
-                    />
+              {showsExpiryModeToggle ? (
+                <View style={styles.expiryModeRow}>
+                  <Pressable
+                    onPress={() => setExpiryMode('date')}
+                    style={[styles.expiryModeChip, expiryMode === 'date' && styles.expiryModeChipActive]}
+                  >
+                    <Text style={[styles.expiryModeChipText, expiryMode === 'date' && { color: colors.white }]}>
+                      {t('itemForm.expiryMode.date')}
+                    </Text>
                   </Pressable>
-                ) : null}
-              </View>
-              <DatePickerField value={expirationDate} onChange={setExpirationDate} />
-              {showsAdditionalConsumeWithin ? (
+                  <Pressable
+                    onPress={() => setExpiryMode('consumeWithin')}
+                    style={[styles.expiryModeChip, expiryMode === 'consumeWithin' && styles.expiryModeChipActive]}
+                  >
+                    <Text style={[styles.expiryModeChipText, expiryMode === 'consumeWithin' && { color: colors.white }]}>
+                      {t('itemForm.expiryMode.consumeWithin')}
+                    </Text>
+                  </Pressable>
+                </View>
+              ) : null}
+
+              {expiryMode === 'date' ? (
+                <>
+                  {voice.available ? (
+                    <View style={[styles.voiceLabelRow, styles.voiceLabelRowEnd]}>
+                      <Pressable onPress={() => voice.start('expiration')} hitSlop={8}>
+                        <Ionicons
+                          name={voice.target === 'expiration' ? 'mic' : 'mic-outline'}
+                          size={16}
+                          color={voice.target === 'expiration' ? colors.danger : colors.brand}
+                        />
+                      </Pressable>
+                    </View>
+                  ) : null}
+                  <DatePickerField value={expirationDate} onChange={setExpirationDate} />
+                </>
+              ) : (
                 <ConsumeWithinFields
                   colors={colors}
                   t={t}
@@ -538,8 +555,9 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
                       ? () => showAlert(t('itemForm.consumeWithinDays.guideTitle'), t(`itemForm.consumeWithinDays.guide.${category}`))
                       : undefined
                   }
+                  voice={voice.available ? { active: voice.target === 'expiration', onPress: () => voice.start('expiration') } : undefined}
                 />
-              ) : null}
+              )}
             </>
           )}
         </View>
@@ -578,6 +596,37 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
         <PrimaryButton label={submitLabel} onPress={handleSubmit} disabled={!canSubmit} loading={submitting} style={{ flex: 1 }} />
       </View>
       </ScrollView>
+
+      <Modal visible={categoryModalVisible} transparent animationType="fade" onRequestClose={() => setCategoryModalVisible(false)}>
+        <Pressable style={styles.pickerBackdrop} onPress={() => setCategoryModalVisible(false)}>
+          <Pressable style={styles.pickerCard} onPress={() => {}}>
+            <Text style={styles.pickerCardTitle}>{t('itemForm.category.label')}</Text>
+            <ScrollView>
+              <View style={styles.categoryGrid}>
+                {categories.map((cat) => {
+                  const active = category === cat.key;
+                  return (
+                    <Pressable
+                      key={cat.key}
+                      onPress={() => {
+                        setCategory(cat.key);
+                        setCategoryModalVisible(false);
+                      }}
+                      style={[styles.categoryChip, active && styles.categoryChipActive]}
+                    >
+                      <Text style={{ fontSize: 18 }}>{cat.emoji}</Text>
+                      <Text style={styles.categoryChipText}>{cat.short}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </ScrollView>
+            <Pressable onPress={() => setCategoryModalVisible(false)} hitSlop={8}>
+              <Text style={styles.pickerCardClose}>{t('common.close')}</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       {enableScan ? (
         <Modal visible={scanModalVisible} transparent animationType="fade" onRequestClose={closeScanModal}>
@@ -638,6 +687,22 @@ function createStyles(COLORS: ColorPalette) {
       color: COLORS.inkSoft,
     },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    trigger: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      backgroundColor: COLORS.card,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+    triggerText: { flex: 1, fontSize: 13, fontWeight: '600', color: COLORS.ink },
+    pickerBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center', padding: 24 },
+    pickerCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 4, width: '100%', maxWidth: 360, maxHeight: '80%' },
+    pickerCardTitle: { fontSize: 15, fontWeight: '700', color: COLORS.ink, marginBottom: 8 },
+    pickerCardClose: { textAlign: 'center', fontSize: 13, fontWeight: '600', color: COLORS.inkSoft, marginTop: 12 },
     zoneChip: {
       flexBasis: '48%',
       flexGrow: 1,
@@ -729,6 +794,19 @@ function createStyles(COLORS: ColorPalette) {
     consumeWithinUnitChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
     consumeWithinUnitChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
     voiceLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    voiceLabelRowEnd: { justifyContent: 'flex-end' },
+    expiryModeRow: { flexDirection: 'row', gap: 8 },
+    expiryModeChip: {
+      flex: 1,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      backgroundColor: COLORS.card,
+      borderRadius: 10,
+      paddingVertical: 8,
+    },
+    expiryModeChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
+    expiryModeChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
     openedToggle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     openedToggleText: { fontSize: 13, color: COLORS.ink },
     actions: { flexDirection: 'row', gap: 12, marginTop: 8 },

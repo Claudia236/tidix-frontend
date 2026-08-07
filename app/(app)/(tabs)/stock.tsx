@@ -22,7 +22,7 @@ import { webCentered } from '../../../src/theme/responsive';
 import type { Category, Item, ItemInput } from '../../../src/types';
 
 type StockRow = { key: string; type: 'header'; category: Category; count: number } | { key: string; type: 'item'; data: Item };
-type SortBy = 'name' | 'purchaseDate' | 'expirationDate' | 'categoryPurchaseDate' | 'categoryExpirationDate';
+type DateSortBy = 'none' | 'purchaseDate' | 'expirationDate';
 type DateSortDirection = 'oldestFirst' | 'newestFirst';
 
 export default function StockScreen() {
@@ -38,7 +38,8 @@ export default function StockScreen() {
   const [filterLocationId, setFilterLocationId] = useState<string>('TUTTI');
   const [search, setSearch] = useState('');
   const [onlyOpened, setOnlyOpened] = useState(false);
-  const [sortBy, setSortBy] = useState<SortBy>('name');
+  const [groupByCategory, setGroupByCategory] = useState(true);
+  const [dateSortBy, setDateSortBy] = useState<DateSortBy>('none');
   const [purchaseDateDirection, setPurchaseDateDirection] = useState<DateSortDirection>('oldestFirst');
   const [expirationDateDirection, setExpirationDateDirection] = useState<DateSortDirection>('oldestFirst');
   const [restockTarget, setRestockTarget] = useState<Item | null>(null);
@@ -98,7 +99,8 @@ export default function StockScreen() {
       setFilterLocationId('TUTTI');
       setOnlyOpened(false);
       setSearch('');
-      setSortBy('name');
+      setGroupByCategory(true);
+      setDateSortBy('none');
       setCollapsedCategories(new Set(categories.map((c) => c.key)));
     });
     return unsubscribe;
@@ -178,7 +180,7 @@ export default function StockScreen() {
   const items = useMemo(() => {
     const list = itemsQuery.data ?? [];
     const filtered = onlyOpened ? list.filter((i) => i.opened) : list;
-    if (sortBy === 'purchaseDate' || sortBy === 'categoryPurchaseDate') {
+    if (dateSortBy === 'purchaseDate') {
       // Chi non ha una data di acquisto (prodotti storici) va sempre in fondo,
       // indipendentemente dalla direzione scelta.
       const sign = purchaseDateDirection === 'oldestFirst' ? 1 : -1;
@@ -189,7 +191,7 @@ export default function StockScreen() {
         return sign * a.purchaseDate.localeCompare(b.purchaseDate);
       });
     }
-    if (sortBy === 'expirationDate' || sortBy === 'categoryExpirationDate') {
+    if (dateSortBy === 'expirationDate') {
       // Chi non ha una scadenza va sempre in fondo, indipendentemente dalla
       // direzione scelta.
       const sign = expirationDateDirection === 'oldestFirst' ? 1 : -1;
@@ -201,41 +203,39 @@ export default function StockScreen() {
       });
     }
     return filtered;
-  }, [itemsQuery.data, onlyOpened, sortBy, purchaseDateDirection, expirationDateDirection]);
+  }, [itemsQuery.data, onlyOpened, dateSortBy, purchaseDateDirection, expirationDateDirection]);
   const openedCount = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.opened).length, [allItemsQuery.data]);
-  const isFilterActive = onlyOpened || filterLocationId !== 'TUTTI' || sortBy !== 'name';
+  const isFilterActive = onlyOpened || filterLocationId !== 'TUTTI' || !groupByCategory || dateSortBy !== 'none';
 
-  function handleSortPress(key: SortBy) {
-    if (sortBy !== key) {
-      setSortBy(key);
-      return;
-    }
-    if (key === 'purchaseDate' || key === 'categoryPurchaseDate') {
-      setPurchaseDateDirection((d) => (d === 'oldestFirst' ? 'newestFirst' : 'oldestFirst'));
-    } else if (key === 'expirationDate' || key === 'categoryExpirationDate') {
-      setExpirationDateDirection((d) => (d === 'oldestFirst' ? 'newestFirst' : 'oldestFirst'));
-    }
+  function handleDateSortPress(key: Exclude<DateSortBy, 'none'>) {
+    setDateSortBy((prev) => (prev === key ? 'none' : key));
   }
 
-  const sortOptions: { key: SortBy; label: string; direction?: DateSortDirection }[] = [
-    { key: 'name', label: t('stock.sortByName') },
-    { key: 'purchaseDate', label: t('stock.sortByPurchaseDate'), direction: purchaseDateDirection },
-    { key: 'expirationDate', label: t('stock.sortByExpirationDate'), direction: expirationDateDirection },
-    { key: 'categoryPurchaseDate', label: t('stock.sortByCategoryPurchaseDate'), direction: purchaseDateDirection },
-    { key: 'categoryExpirationDate', label: t('stock.sortByCategoryExpirationDate'), direction: expirationDateDirection },
+  const dateSortOptions: { key: Exclude<DateSortBy, 'none'>; label: string; direction: DateSortDirection; toggleDirection: () => void }[] = [
+    {
+      key: 'purchaseDate',
+      label: t('stock.sortByPurchaseDate'),
+      direction: purchaseDateDirection,
+      toggleDirection: () => setPurchaseDateDirection((d) => (d === 'oldestFirst' ? 'newestFirst' : 'oldestFirst')),
+    },
+    {
+      key: 'expirationDate',
+      label: t('stock.sortByExpirationDate'),
+      direction: expirationDateDirection,
+      toggleDirection: () => setExpirationDateDirection((d) => (d === 'oldestFirst' ? 'newestFirst' : 'oldestFirst')),
+    },
   ];
 
-  // Ordinando per categoria (default) o per categoria+data, raggruppiamo gli
+  // Con "Categoria" selezionata (anche insieme a una data), raggruppiamo gli
   // item per categoria (nell'ordine delle categorie), con header collassabili,
   // senza toccare l'ordine gia' scelto all'interno di ciascun gruppo (per nome
-  // di default, oppure per data se e' stata scelta una delle varianti
-  // "categoria + data").
-  // Ordinando per la sola data di acquisto/scadenza (senza categoria) invece
-  // si vuole un unico elenco su tutte le scorte, senza raggruppamento ne' header.
+  // di default, oppure per data se e' stata selezionata anche una delle due
+  // date). Senza "Categoria" invece si vuole un unico elenco su tutte le
+  // scorte, senza raggruppamento ne' header.
   const isSearching = search.trim().length > 0;
 
   const stockRows: StockRow[] = useMemo(() => {
-    if (sortBy === 'purchaseDate' || sortBy === 'expirationDate') {
+    if (!groupByCategory) {
       return items.map((item) => ({ key: `item-${item.id}`, type: 'item' as const, data: item }));
     }
 
@@ -255,7 +255,7 @@ export default function StockScreen() {
       }
     }
     return rows;
-  }, [items, categories, collapsedCategories, sortBy, isSearching]);
+  }, [items, categories, collapsedCategories, groupByCategory, isSearching]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -359,20 +359,30 @@ export default function StockScreen() {
             <Text style={styles.filterCardTitle}>{t('stock.filterModalTitle')}</Text>
             <ScrollView>
               <Text style={styles.filterSectionLabel}>{t('stock.sortLabel')}</Text>
-              {sortOptions.map((opt) => {
-                const active = sortBy === opt.key;
+
+              <Pressable style={styles.filterOptionRow} onPress={() => setGroupByCategory((v) => !v)}>
+                <Ionicons name={groupByCategory ? 'checkbox' : 'square-outline'} size={20} color={groupByCategory ? colors.brand : colors.inkSoft} />
+                <Text style={styles.filterOptionText}>{t('stock.sortByName')}</Text>
+              </Pressable>
+
+              {dateSortOptions.map((opt) => {
+                const active = dateSortBy === opt.key;
                 return (
-                  <Pressable key={opt.key} style={styles.filterOptionRow} onPress={() => handleSortPress(opt.key)}>
-                    <Ionicons name={active ? 'checkbox' : 'square-outline'} size={20} color={active ? colors.brand : colors.inkSoft} />
-                    <Text style={styles.filterOptionTextGrow}>{opt.label}</Text>
-                    {active && opt.direction ? (
-                      <Ionicons
-                        name={opt.direction === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
-                        size={14}
-                        color={colors.brand}
-                      />
+                  <View key={opt.key} style={styles.filterDateOptionRow}>
+                    <Pressable style={styles.filterDateOptionPressable} onPress={() => handleDateSortPress(opt.key)}>
+                      <Ionicons name={active ? 'checkbox' : 'square-outline'} size={20} color={active ? colors.brand : colors.inkSoft} />
+                      <Text style={styles.filterOptionTextGrow}>{opt.label}</Text>
+                    </Pressable>
+                    {active ? (
+                      <Pressable onPress={opt.toggleDirection} hitSlop={8}>
+                        <Ionicons
+                          name={opt.direction === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
+                          size={14}
+                          color={colors.brand}
+                        />
+                      </Pressable>
                     ) : null}
-                  </Pressable>
+                  </View>
                 );
               })}
 
@@ -444,6 +454,8 @@ function createStyles(COLORS: ColorPalette) {
       marginBottom: 2,
     },
     filterOptionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
+    filterDateOptionRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
+    filterDateOptionPressable: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
     filterOptionEmoji: { fontSize: 15 },
     filterOptionText: { fontSize: 14, color: COLORS.ink },
     filterOptionTextGrow: { flex: 1, fontSize: 14, color: COLORS.ink },

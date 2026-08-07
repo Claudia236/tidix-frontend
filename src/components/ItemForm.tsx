@@ -175,6 +175,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const [newLocationEmoji, setNewLocationEmoji] = useState('');
   const [expiryMode, setExpiryMode] = useState<ExpiryMode>('date');
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [locationModalVisible, setLocationModalVisible] = useState(false);
   const [scanModalVisible, setScanModalVisible] = useState(false);
 
   useImperativeHandle(ref, () => ({ openScan: () => setScanModalVisible(true) }), []);
@@ -211,10 +212,12 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       setNewLocationName('');
       setNewLocationEmoji('');
       setAddingLocation(false);
+      setLocationModalVisible(false);
     },
   });
 
   const selectedCategoryInfo = categories.find((c) => c.key === category) ?? categories[categories.length - 1];
+  const selectedLocation = locations.find((l) => l.id === effectiveLocationId) ?? null;
   const canSubmit = name.trim().length > 0 && !!effectiveLocationId;
   const hidesExpiration = category === 'CASA_PULIZIA';
   const hidesOpenedToggle = hidesExpiration || replacesExpirationWithConsumeWithin;
@@ -388,53 +391,11 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
 
       <View style={styles.field}>
         <Text style={styles.label}>{t('itemForm.location.label')}</Text>
-        <View style={styles.grid}>
-          {locations.map((location) => {
-            const active = effectiveLocationId === location.id;
-            const { color } = getLocationColor(location.id);
-            return (
-              <Pressable
-                key={location.id}
-                onPress={() => setStorageLocationId(location.id)}
-                style={[styles.zoneChip, { borderColor: active ? color : colors.line, backgroundColor: active ? color : colors.card }]}
-              >
-                <Text style={{ fontSize: 14 }}>{location.emoji}</Text>
-                <Text style={[styles.chipText, { color: active ? colors.white : colors.ink }]}>{location.name}</Text>
-              </Pressable>
-            );
-          })}
-          <Pressable onPress={() => setAddingLocation(true)} style={[styles.zoneChip, styles.addLocationChip]}>
-            <Ionicons name="add" size={16} color={colors.brand} />
-            <Text style={[styles.chipText, { color: colors.brand }]}>{t('itemForm.newLocation')}</Text>
-          </Pressable>
-        </View>
-
-        {addingLocation ? (
-          <View style={styles.newLocationRow}>
-            <TextInput
-              value={newLocationEmoji}
-              onChangeText={(v) => setNewLocationEmoji(Array.from(v).slice(0, 1).join(''))}
-              placeholder="📦"
-              placeholderTextColor={colors.inkSoft}
-              style={styles.newLocationEmojiInput}
-            />
-            <TextInput
-              value={newLocationName}
-              onChangeText={setNewLocationName}
-              placeholder={t('itemForm.newLocation.namePlaceholder')}
-              placeholderTextColor={colors.inkSoft}
-              style={styles.newLocationInput}
-              autoFocus
-              onSubmitEditing={handleCreateLocation}
-            />
-            <Pressable onPress={handleCreateLocation} style={styles.newLocationButton} hitSlop={8}>
-              <Ionicons name="checkmark" size={16} color={colors.white} />
-            </Pressable>
-            <Pressable onPress={() => setAddingLocation(false)} style={styles.newLocationCancel} hitSlop={8}>
-              <Ionicons name="close" size={16} color={colors.inkSoft} />
-            </Pressable>
-          </View>
-        ) : null}
+        <Pressable style={styles.trigger} onPress={() => setLocationModalVisible(true)}>
+          <Text style={{ fontSize: 16 }}>{selectedLocation?.emoji ?? '📦'}</Text>
+          <Text style={styles.triggerText}>{selectedLocation?.name ?? t('itemForm.location.label')}</Text>
+          <Ionicons name="chevron-down" size={16} color={colors.inkSoft} />
+        </Pressable>
       </View>
 
       <SupermarketPicker value={supermarketId} onChange={setSupermarketId} label={t('itemForm.supermarket.label')} />
@@ -526,8 +487,9 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
 
               {expiryMode === 'date' ? (
                 <>
-                  {voice.available ? (
-                    <View style={[styles.voiceLabelRow, styles.voiceLabelRowEnd]}>
+                  <View style={styles.voiceLabelRow}>
+                    <Text style={styles.label}>{t('itemForm.expirationDate.label')}</Text>
+                    {voice.available ? (
                       <Pressable onPress={() => voice.start('expiration')} hitSlop={8}>
                         <Ionicons
                           name={voice.target === 'expiration' ? 'mic' : 'mic-outline'}
@@ -535,8 +497,8 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
                           color={voice.target === 'expiration' ? colors.danger : colors.brand}
                         />
                       </Pressable>
-                    </View>
-                  ) : null}
+                    ) : null}
+                  </View>
                   <DatePickerField value={expirationDate} onChange={setExpirationDate} />
                 </>
               ) : (
@@ -622,6 +584,89 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
               </View>
             </ScrollView>
             <Pressable onPress={() => setCategoryModalVisible(false)} hitSlop={8}>
+              <Text style={styles.pickerCardClose}>{t('common.close')}</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        visible={locationModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setAddingLocation(false);
+          setLocationModalVisible(false);
+        }}
+      >
+        <Pressable
+          style={styles.pickerBackdrop}
+          onPress={() => {
+            setAddingLocation(false);
+            setLocationModalVisible(false);
+          }}
+        >
+          <Pressable style={styles.pickerCard} onPress={() => {}}>
+            <Text style={styles.pickerCardTitle}>{t('itemForm.location.label')}</Text>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              <View style={styles.grid}>
+                {locations.map((location) => {
+                  const active = effectiveLocationId === location.id;
+                  const { color } = getLocationColor(location.id);
+                  return (
+                    <Pressable
+                      key={location.id}
+                      onPress={() => {
+                        setStorageLocationId(location.id);
+                        setLocationModalVisible(false);
+                      }}
+                      style={[styles.zoneChip, { borderColor: active ? color : colors.line, backgroundColor: active ? color : colors.card }]}
+                    >
+                      <Text style={{ fontSize: 14 }}>{location.emoji}</Text>
+                      <Text style={[styles.chipText, { color: active ? colors.white : colors.ink }]}>{location.name}</Text>
+                    </Pressable>
+                  );
+                })}
+                <Pressable onPress={() => setAddingLocation(true)} style={[styles.zoneChip, styles.addLocationChip]}>
+                  <Ionicons name="add" size={16} color={colors.brand} />
+                  <Text style={[styles.chipText, { color: colors.brand }]}>{t('itemForm.newLocation')}</Text>
+                </Pressable>
+              </View>
+
+              {addingLocation ? (
+                <View style={styles.newLocationRow}>
+                  <TextInput
+                    value={newLocationEmoji}
+                    onChangeText={(v) => setNewLocationEmoji(Array.from(v).slice(0, 1).join(''))}
+                    placeholder="📦"
+                    placeholderTextColor={colors.inkSoft}
+                    style={styles.newLocationEmojiInput}
+                  />
+                  <TextInput
+                    value={newLocationName}
+                    onChangeText={setNewLocationName}
+                    placeholder={t('itemForm.newLocation.namePlaceholder')}
+                    placeholderTextColor={colors.inkSoft}
+                    style={styles.newLocationInput}
+                    autoFocus
+                    onSubmitEditing={handleCreateLocation}
+                  />
+                  <Pressable onPress={handleCreateLocation} style={styles.newLocationButton} hitSlop={8}>
+                    <Ionicons name="checkmark" size={16} color={colors.white} />
+                  </Pressable>
+                  <Pressable onPress={() => setAddingLocation(false)} style={styles.newLocationCancel} hitSlop={8}>
+                    <Ionicons name="close" size={16} color={colors.inkSoft} />
+                  </Pressable>
+                </View>
+              ) : null}
+            </ScrollView>
+            <Pressable
+              onPress={() => {
+                setAddingLocation(false);
+                setLocationModalVisible(false);
+              }}
+              hitSlop={8}
+            >
               <Text style={styles.pickerCardClose}>{t('common.close')}</Text>
             </Pressable>
           </Pressable>
@@ -794,7 +839,6 @@ function createStyles(COLORS: ColorPalette) {
     consumeWithinUnitChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
     consumeWithinUnitChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
     voiceLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    voiceLabelRowEnd: { justifyContent: 'flex-end' },
     expiryModeRow: { flexDirection: 'row', gap: 8 },
     expiryModeChip: {
       flex: 1,

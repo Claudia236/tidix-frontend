@@ -14,7 +14,7 @@ export default function NewShoppingNoteScreen() {
 
   const createMutation = useMutation({
     mutationFn: (input: ShoppingNoteFormInput) =>
-      shoppingNotesApi.create({ text: input.text, detail: input.detail, category: input.category }),
+      shoppingNotesApi.create({ text: input.text, detail: input.detail, category: input.category, supermarketId: input.supermarketId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
       router.back();

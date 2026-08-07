@@ -22,7 +22,7 @@ export default function EditShoppingNoteScreen() {
 
   const updateMutation = useMutation({
     mutationFn: (input: ShoppingNoteFormInput) =>
-      shoppingNotesApi.update(id, { text: input.text, detail: input.detail, category: input.category }),
+      shoppingNotesApi.update(id, { text: input.text, detail: input.detail, category: input.category, supermarketId: input.supermarketId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
       router.back();
@@ -58,7 +58,7 @@ export default function EditShoppingNoteScreen() {
 
   return (
     <ShoppingNoteForm
-      initial={{ text: note.text, detail: note.detail, category: note.category }}
+      initial={{ text: note.text, detail: note.detail, category: note.category, supermarketId: note.supermarketId }}
       submitLabel={t('common.saveChanges')}
       submitting={updateMutation.isPending}
       onSubmit={(input) => updateMutation.mutate(input)}

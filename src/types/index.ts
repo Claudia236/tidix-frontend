@@ -66,10 +66,24 @@ export interface StorageLocationInput {
   colorIndex?: number | null;
 }
 
+export interface Supermarket {
+  id: string;
+  name: string;
+  emoji: string;
+  colorIndex: number | null;
+}
+
+export interface SupermarketInput {
+  name: string;
+  emoji?: string;
+  colorIndex?: number | null;
+}
+
 export interface Item {
   id: string;
   name: string;
   storageLocationId: string;
+  supermarketId: string | null;
   category: Category;
   quantity: number;
   unit: Unit;
@@ -88,6 +102,7 @@ export interface Item {
 export interface ItemInput {
   name: string;
   storageLocationId: string;
+  supermarketId?: string | null;
   category: Category;
   quantity: number;
   unit: Unit;
@@ -112,6 +127,7 @@ export interface ShoppingNote {
   text: string;
   detail: string | null;
   category: Category | null;
+  supermarketId: string | null;
   checked: boolean;
   checkedAt: string | null;
   addedByUserId: string;

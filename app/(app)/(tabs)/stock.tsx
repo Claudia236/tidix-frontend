@@ -424,6 +424,7 @@ export default function StockScreen() {
             newBatchMutation.mutate({
               name: restockTarget.name,
               storageLocationId: restockTarget.storageLocationId,
+              supermarketId: restockTarget.supermarketId,
               category: restockTarget.category,
               unit: restockTarget.unit,
               quantity: 1,

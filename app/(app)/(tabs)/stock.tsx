@@ -365,6 +365,8 @@ export default function StockScreen() {
                   <Text style={styles.filterOptionText}>{t('stock.sortByName')}</Text>
                 </Pressable>
 
+                <View style={styles.filterInlineDivider} />
+
                 {dateSortOptions.map((opt) => {
                   const active = dateSortBy === opt.key;
                   return (

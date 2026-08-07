@@ -6,14 +6,19 @@ import type { Supermarket } from '../types';
 export function useSupermarkets() {
   const query = useQuery({ queryKey: ['supermarkets'], queryFn: supermarketsApi.list });
 
+  const supermarkets = useMemo(
+    () => [...(query.data ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
+    [query.data],
+  );
+
   const byId = useMemo(() => {
     const map = new Map<string, Supermarket>();
-    (query.data ?? []).forEach((supermarket) => map.set(supermarket.id, supermarket));
+    supermarkets.forEach((supermarket) => map.set(supermarket.id, supermarket));
     return map;
-  }, [query.data]);
+  }, [supermarkets]);
 
   return {
-    supermarkets: query.data ?? [],
+    supermarkets,
     byId,
     isLoading: query.isLoading,
   };

@@ -25,6 +25,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   'common.ok': { it: 'OK', en: 'OK', es: 'OK' },
   'common.yes': { it: 'Sì', en: 'Yes', es: 'Sí' },
   'common.no': { it: 'No', en: 'No', es: 'No' },
+  'common.none': { it: 'Nessuno', en: 'None', es: 'Ninguno' },
   'common.confirm': { it: 'Conferma', en: 'Confirm', es: 'Confirmar' },
   'common.error': { it: 'Errore', en: 'Error', es: 'Error' },
   'common.retry': { it: 'Riprova', en: 'Retry', es: 'Reintentar' },
@@ -215,7 +216,6 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'supermarket.new': { it: 'Nuovo', en: 'New', es: 'Nuevo' },
   'supermarket.new.namePlaceholder': { it: 'Es. Esselunga', en: 'e.g. Walmart', es: 'ej. Mercadona' },
-  'supermarket.none': { it: 'Nessuno', en: 'None', es: 'Ninguno' },
   'supermarket.confirmDeleteTitle': { it: 'Elimina supermercato', en: 'Delete supermarket', es: 'Eliminar supermercado' },
   'supermarket.confirmDeleteMessage': {
     it: (v) => `Eliminare "${v.name}" dall'elenco? Verra' rimosso anche dai prodotti che lo usano.`,

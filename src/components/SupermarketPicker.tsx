@@ -78,7 +78,7 @@ export function SupermarketPicker({ value, onChange, label }: Props) {
       <Text style={styles.label}>{label}</Text>
       <Pressable style={styles.trigger} onPress={() => setModalVisible(true)}>
         <Text style={{ fontSize: 16 }}>{selected?.emoji ?? '🛒'}</Text>
-        <Text style={styles.triggerText}>{selected?.name ?? t('supermarket.none')}</Text>
+        <Text style={styles.triggerText}>{selected?.name ?? t('common.none')}</Text>
         <Ionicons name="chevron-down" size={16} color={colors.inkSoft} />
       </Pressable>
 
@@ -95,7 +95,7 @@ export function SupermarketPicker({ value, onChange, label }: Props) {
                   }}
                   style={[styles.chip, !value && styles.chipActive]}
                 >
-                  <Text style={[styles.chipText, { color: !value ? colors.white : colors.ink }]}>{t('supermarket.none')}</Text>
+                  <Text style={[styles.chipText, { color: !value ? colors.white : colors.ink }]}>{t('common.none')}</Text>
                 </Pressable>
                 {supermarkets.map((supermarket) => {
                   const active = value === supermarket.id;

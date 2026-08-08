@@ -192,6 +192,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const [expiryMode, setExpiryMode] = useState<ExpiryMode>('date');
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [locationModalVisible, setLocationModalVisible] = useState(false);
+  const [unitModalVisible, setUnitModalVisible] = useState(false);
   const [scanModalVisible, setScanModalVisible] = useState(false);
 
   useImperativeHandle(ref, () => ({ openScan: () => setScanModalVisible(true) }), []);
@@ -436,20 +437,40 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.label}>{t('itemForm.unit.label')}</Text>
-          <View style={styles.unitRow}>
-            {UNITS.map((u) => {
-              const active = unit === u;
-              return (
-                <Pressable
-                  key={u}
-                  onPress={() => setUnit(u)}
-                  style={[styles.unitChip, active && styles.unitChipActive]}
-                >
-                  <Text style={[styles.unitChipText, active && { color: colors.white }]}>{unitLabel(u)}</Text>
+          <Pressable style={styles.trigger} onPress={() => setUnitModalVisible(true)}>
+            <Text style={styles.triggerText}>{unitLabel(unit)}</Text>
+            <Ionicons name="chevron-down" size={16} color={colors.inkSoft} />
+          </Pressable>
+
+          <Modal visible={unitModalVisible} transparent animationType="fade" onRequestClose={() => setUnitModalVisible(false)}>
+            <Pressable style={styles.pickerBackdrop} onPress={() => setUnitModalVisible(false)}>
+              <Pressable style={styles.pickerCard} onPress={() => {}}>
+                <Text style={styles.pickerCardTitle}>{t('itemForm.unit.label')}</Text>
+                <ScrollView>
+                  <View style={styles.unitRow}>
+                    {UNITS.map((u) => {
+                      const active = unit === u;
+                      return (
+                        <Pressable
+                          key={u}
+                          onPress={() => {
+                            setUnit(u);
+                            setUnitModalVisible(false);
+                          }}
+                          style={[styles.unitChip, active && styles.unitChipActive]}
+                        >
+                          <Text style={[styles.unitChipText, active && { color: colors.white }]}>{unitLabel(u)}</Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </ScrollView>
+                <Pressable onPress={() => setUnitModalVisible(false)} hitSlop={8}>
+                  <Text style={styles.pickerCardClose}>{t('common.close')}</Text>
                 </Pressable>
-              );
-            })}
-          </View>
+              </Pressable>
+            </Pressable>
+          </Modal>
         </View>
       </View>
 

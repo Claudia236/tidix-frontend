@@ -151,7 +151,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const [supermarketId, setSupermarketId] = useState<string | null>(initial?.supermarketId ?? null);
   const [category, setCategory] = useState<Category>(initial?.category ?? 'ALTRO');
   const [quantity, setQuantity] = useState(String(initial?.quantity ?? 1));
-  const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'PZ');
+  const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'CONF');
   const [expirationDate, setExpirationDate] = useState<string | null>(initial?.expirationDate ?? null);
   const [consumeWithinAmount, setConsumeWithinAmount] = useState<string>(() => {
     if (!initial?.expirationDate) return '';

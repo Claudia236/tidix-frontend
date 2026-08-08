@@ -92,7 +92,7 @@ export function useSelectableCategories(): CategoryInfo[] {
   }, [categories, disabled]);
 }
 
-export const UNITS: Unit[] = ['PZ', 'KG', 'G', 'L', 'ML', 'CONF'];
+export const UNITS: Unit[] = ['CONF', 'PZ', 'KG', 'G', 'L', 'ML'];
 
 export function useUnitLabel(): (unit: Unit) => string {
   const { t } = useI18n();

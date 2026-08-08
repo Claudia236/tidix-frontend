@@ -451,9 +451,9 @@ const ENTRIES: Record<string, EntryTriple> = {
   'itemForm.openedToggle': { it: 'Prodotto aperto', en: 'Product opened', es: 'Producto abierto' },
   'itemForm.openedDate.label': { it: 'Aperta il', en: 'Opened on', es: 'Abierto el' },
   'itemForm.openedReminder.label': {
-    it: 'Promemoria consumo (opzionale)',
-    en: 'Consumption reminder (optional)',
-    es: 'Recordatorio de consumo (opcional)',
+    it: 'Promemoria consumo',
+    en: 'Consumption reminder',
+    es: 'Recordatorio de consumo',
   },
   'itemForm.openedReminder.hint': {
     it: 'Se compilato, riceverai una notifica se il prodotto risulta ancora aperto dopo questo periodo.',

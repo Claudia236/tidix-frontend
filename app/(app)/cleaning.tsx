@@ -10,7 +10,7 @@ import { showAlert } from '../../src/components/AppAlert';
 import { AddFab } from '../../src/components/AddFab';
 import { EmptyState } from '../../src/components/EmptyState';
 import { useI18n } from '../../src/i18n/I18nContext';
-import { syncCleaningReminders } from '../../src/notifications/cleaningReminders';
+import { cancelCleaningReminder, syncCleaningReminders } from '../../src/notifications/cleaningReminders';
 import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
@@ -57,7 +57,10 @@ export default function CleaningScreen() {
 
   const markCleanedMutation = useMutation({
     mutationFn: (id: string) => cleaningApi.markCleaned(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] }),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] });
+      cancelCleaningReminder(id);
+    },
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 

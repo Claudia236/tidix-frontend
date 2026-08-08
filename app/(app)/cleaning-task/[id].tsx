@@ -7,6 +7,7 @@ import { cleaningApi } from '../../../src/api/cleaning';
 import { showAlert } from '../../../src/components/AppAlert';
 import { CleaningTaskForm } from '../../../src/components/CleaningTaskForm';
 import { useI18n } from '../../../src/i18n/I18nContext';
+import { cancelCleaningReminder } from '../../../src/notifications/cleaningReminders';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import type { CleaningTaskInput } from '../../../src/types';
@@ -26,6 +27,7 @@ export default function EditCleaningTaskScreen() {
     mutationFn: (input: CleaningTaskInput) => cleaningApi.update(id, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] });
+      cancelCleaningReminder(id);
       router.back();
     },
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),

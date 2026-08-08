@@ -14,6 +14,20 @@ const PREFIX = 'cleaning-reminder-';
  * viene segnato come pulito, quindi ogni promemoria e' una notifica singola
  * (non ricorrente) per la sera prima della prossima scadenza calcolata.
  */
+/**
+ * Cancella subito il promemoria (programmato o gia' recapitato in tendina)
+ * di un singolo task, senza aspettare il refetch/resync completo: copre il
+ * caso in cui l'utente lo segna come pulito proprio a ridosso dell'orario
+ * del promemoria, quando altrimenti la notifica per la vecchia scadenza
+ * potrebbe comunque arrivare prima che syncCleaningReminders venga richiamato.
+ */
+export async function cancelCleaningReminder(taskId: string): Promise<void> {
+  if (Platform.OS === 'web') return;
+  const identifier = `${PREFIX}${taskId}`;
+  await Notifications.cancelScheduledNotificationAsync(identifier).catch(() => {});
+  await Notifications.dismissNotificationAsync(identifier).catch(() => {});
+}
+
 export async function syncCleaningReminders(tasks: CleaningTask[], t: TranslateFn): Promise<void> {
   if (Platform.OS === 'web') return;
 

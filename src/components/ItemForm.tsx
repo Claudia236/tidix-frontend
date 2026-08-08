@@ -436,7 +436,6 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
           />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.label}>{t('itemForm.unit.label')}</Text>
           <Pressable style={styles.trigger} onPress={() => setUnitModalVisible(true)}>
             <Text style={styles.triggerText}>{unitLabel(unit)}</Text>
             <Ionicons name="chevron-down" size={16} color={colors.inkSoft} />
@@ -850,7 +849,7 @@ function createStyles(COLORS: ColorPalette) {
     },
     categoryChipActive: { borderColor: COLORS.brand, backgroundColor: COLORS.okBg },
     categoryChipText: { fontSize: 11, color: COLORS.ink },
-    row: { flexDirection: 'row', gap: 12 },
+    row: { flexDirection: 'row', gap: 12, alignItems: 'flex-end' },
     unitRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
     unitChip: {
       borderWidth: 1,

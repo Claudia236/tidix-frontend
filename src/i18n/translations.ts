@@ -248,105 +248,205 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: "For products without a printed expiry date: enter how long until it should be consumed, the expiry date above will be calculated automatically.",
     es: 'Para productos sin fecha de caducidad impresa: indica en cuánto tiempo debe consumirse, la fecha de caducidad de arriba se calculará automáticamente.',
   },
-  'itemForm.consumeWithinDays.guideTitle': {
-    it: 'Quanto si conserva?',
-    en: 'How long does it keep?',
-    es: '¿Cuánto se conserva?',
+  'itemForm.consumeWithinDays.guideTitleSealed': {
+    it: 'Quanto si conserva (confezione integra)?',
+    en: 'How long does it keep (sealed)?',
+    es: '¿Cuánto se conserva (sin abrir)?',
   },
-  'itemForm.consumeWithinDays.guide.ORTOFRUTTA': {
+  'itemForm.consumeWithinDays.guideTitleOpened': {
+    it: 'Quanto si conserva una volta aperto?',
+    en: 'How long does it keep once opened?',
+    es: '¿Cuánto se conserva una vez abierto?',
+  },
+  'itemForm.consumeWithinDays.guideSealed.ORTOFRUTTA': {
     it: '🥬 Verdura a foglia (insalata, spinaci): 3-5 giorni in frigo\n🍎 Frutta matura (mele, banane, agrumi): 5-7 giorni\n🥕 Ortaggi robusti (carote, zucchine, peperoni): 1-2 settimane in frigo\n🌿 Erbe fresche: 3-5 giorni in frigo\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
     en: '🥬 Leafy greens (lettuce, spinach): 3-5 days in the fridge\n🍎 Ripe fruit (apples, bananas, citrus): 5-7 days\n🥕 Sturdy vegetables (carrots, zucchini, peppers): 1-2 weeks in the fridge\n🌿 Fresh herbs: 3-5 days in the fridge\n\nThese are indicative values: adjust them based on the product\'s condition.',
     es: '🥬 Verduras de hoja (lechuga, espinacas): 3-5 días en la nevera\n🍎 Fruta madura (manzanas, plátanos, cítricos): 5-7 días\n🥕 Verduras robustas (zanahorias, calabacines, pimientos): 1-2 semanas en la nevera\n🌿 Hierbas frescas: 3-5 días en la nevera\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
   },
-  'itemForm.consumeWithinDays.guide.AVANZI': {
+  'itemForm.consumeWithinDays.guideOpened.ORTOFRUTTA': {
+    it: '🥬 Insalata in busta già aperta: 1-2 giorni in frigo\n🍎 Frutta già tagliata: 1-2 giorni in frigo, ben coperta\n🥕 Verdure tagliate o pelate: 2-3 giorni in frigo\n\nUna volta aperta o tagliata, la frutta e verdura si deteriora molto più in fretta: consumala il prima possibile.',
+    en: '🥬 Opened bagged salad: 1-2 days in the fridge\n🍎 Cut fruit: 1-2 days in the fridge, well covered\n🥕 Cut or peeled vegetables: 2-3 days in the fridge\n\nOnce opened or cut, fruit and vegetables spoil much faster: eat them as soon as possible.',
+    es: '🥬 Ensalada en bolsa ya abierta: 1-2 días en la nevera\n🍎 Fruta ya cortada: 1-2 días en la nevera, bien cubierta\n🥕 Verduras cortadas o peladas: 2-3 días en la nevera\n\nUna vez abierta o cortada, la fruta y verdura se estropea mucho más rápido: consúmela lo antes posible.',
+  },
+  'itemForm.consumeWithinDays.guideSealed.AVANZI': {
     it: '🍝 Piatti cotti (pasta, riso, carne, pesce): 3-4 giorni in frigo\n🍲 Zuppe e minestre: 3-5 giorni in frigo\n❄️ Se congelati: fino a 2-3 mesi\n\nConserva sempre gli avanzi in un contenitore chiuso e raffreddali entro 2 ore dalla cottura.',
     en: '🍝 Cooked dishes (pasta, rice, meat, fish): 3-4 days in the fridge\n🍲 Soups and stews: 3-5 days in the fridge\n❄️ If frozen: up to 2-3 months\n\nAlways store leftovers in a closed container and let them cool down within 2 hours of cooking.',
     es: '🍝 Platos cocinados (pasta, arroz, carne, pescado): 3-4 días en la nevera\n🍲 Sopas y guisos: 3-5 días en la nevera\n❄️ Si están congelados: hasta 2-3 meses\n\nGuarda siempre las sobras en un recipiente cerrado y déjalas enfriar en un plazo de 2 horas tras cocinar.',
   },
-  'itemForm.consumeWithinDays.guide.PIATTI_PRONTI': {
-    it: '🍱 Piatti pronti freschi in frigo: 2-4 giorni dopo l\'apertura\n📦 Confezioni integre: segui la scadenza stampata\n❄️ Se surgelati: fino a 3 mesi\n\nUna volta aperti, consumali entro pochi giorni anche se la scadenza stampata è più lontana.',
-    en: '🍱 Fresh ready meals in the fridge: 2-4 days after opening\n📦 Sealed packages: follow the printed expiry date\n❄️ If frozen: up to 3 months\n\nOnce opened, eat them within a few days even if the printed expiry date is further away.',
-    es: '🍱 Platos preparados frescos en la nevera: 2-4 días tras abrirlos\n📦 Envases sin abrir: sigue la fecha de caducidad impresa\n❄️ Si están congelados: hasta 3 meses\n\nUna vez abiertos, consúmelos en pocos días aunque la fecha impresa sea más lejana.',
+  'itemForm.consumeWithinDays.guideOpened.AVANZI': {
+    it: '🍝 Avanzi già scaldati o serviti: consumali entro poche ore, non lasciarli a temperatura ambiente\n🍲 Zuppe già riscaldate: 1 giorno in frigo\n\nEvita di riscaldare più volte lo stesso avanzo: dividilo in porzioni prima di conservarlo.',
+    en: '🍝 Already reheated or served leftovers: eat within a few hours, don\'t leave them at room temperature\n🍲 Reheated soups: 1 day in the fridge\n\nAvoid reheating the same leftovers more than once: split them into portions before storing.',
+    es: '🍝 Sobras ya recalentadas o servidas: consúmelas en pocas horas, no las dejes a temperatura ambiente\n🍲 Sopas ya recalentadas: 1 día en la nevera\n\nEvita recalentar las mismas sobras más de una vez: divídelas en porciones antes de guardarlas.',
   },
-  'itemForm.consumeWithinDays.guide.PASTA_CEREALI': {
-    it: '🍝 Pasta secca, riso, cereali: 12-24 mesi in dispensa\n🌾 Farina: 6-12 mesi\n📦 Una volta aperti, in contenitore ermetico: 4-6 mesi\n\nControlla che non ci siano insetti o umidità prima di consumare prodotti aperti da tempo.',
-    en: '🍝 Dry pasta, rice, cereals: 12-24 months in the pantry\n🌾 Flour: 6-12 months\n📦 Once opened, in an airtight container: 4-6 months\n\nCheck for insects or moisture before eating products that have been open for a while.',
-    es: '🍝 Pasta seca, arroz, cereales: 12-24 meses en la despensa\n🌾 Harina: 6-12 meses\n📦 Una vez abiertos, en un recipiente hermético: 4-6 meses\n\nComprueba que no haya insectos ni humedad antes de consumir productos abiertos hace tiempo.',
+  'itemForm.consumeWithinDays.guideSealed.PIATTI_PRONTI': {
+    it: '📦 Confezioni integre: segui la scadenza stampata\n❄️ Se surgelati: fino a 3 mesi\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '📦 Sealed packages: follow the printed expiry date\n❄️ If frozen: up to 3 months\n\nThese are indicative values: always check the expiry date printed on the packaging.',
+    es: '📦 Envases sin abrir: sigue la fecha de caducidad impresa\n❄️ Si están congelados: hasta 3 meses\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
   },
-  'itemForm.consumeWithinDays.guide.LEGUMI': {
-    it: '🫘 Legumi secchi: 12-24 mesi in dispensa\n🥫 Legumi in scatola/barattolo integri: segui la scadenza stampata\n🍲 Legumi già cotti in frigo: 3-4 giorni\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
-    en: '🫘 Dried legumes: 12-24 months in the pantry\n🥫 Sealed canned/jarred legumes: follow the printed expiry date\n🍲 Cooked legumes in the fridge: 3-4 days\n\nThese are indicative values: adjust them based on the product\'s condition.',
-    es: '🫘 Legumbres secas: 12-24 meses en la despensa\n🥫 Legumbres en lata/bote sin abrir: sigue la fecha de caducidad impresa\n🍲 Legumbres ya cocinadas en la nevera: 3-4 días\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
+  'itemForm.consumeWithinDays.guideOpened.PIATTI_PRONTI': {
+    it: '🍱 Piatti pronti aperti in frigo: 2-4 giorni\n\nUna volta aperti, consumali entro pochi giorni anche se la scadenza stampata è più lontana.',
+    en: '🍱 Opened ready meals in the fridge: 2-4 days\n\nOnce opened, eat them within a few days even if the printed expiry date is further away.',
+    es: '🍱 Platos preparados abiertos en la nevera: 2-4 días\n\nUna vez abiertos, consúmelos en pocos días aunque la fecha impresa sea más lejana.',
   },
-  'itemForm.consumeWithinDays.guide.CARNE_PESCE': {
-    it: '🥩 Carne fresca in frigo: 1-3 giorni\n🐟 Pesce fresco in frigo: 1-2 giorni\n🍗 Carne/pesce già cotti: 2-3 giorni in frigo\n❄️ Congelati: 3-6 mesi (pesce), 6-12 mesi (carne)\n\nIn caso di dubbio sull\'odore o l\'aspetto, non consumare.',
-    en: '🥩 Fresh meat in the fridge: 1-3 days\n🐟 Fresh fish in the fridge: 1-2 days\n🍗 Cooked meat/fish: 2-3 days in the fridge\n❄️ Frozen: 3-6 months (fish), 6-12 months (meat)\n\nIf in doubt about the smell or appearance, don\'t eat it.',
-    es: '🥩 Carne fresca en la nevera: 1-3 días\n🐟 Pescado fresco en la nevera: 1-2 días\n🍗 Carne/pescado ya cocinados: 2-3 días en la nevera\n❄️ Congelados: 3-6 meses (pescado), 6-12 meses (carne)\n\nSi tienes dudas sobre el olor o el aspecto, no lo consumas.',
+  'itemForm.consumeWithinDays.guideSealed.PASTA_CEREALI': {
+    it: '🍝 Pasta secca, riso, cereali integri: 12-24 mesi in dispensa\n🌾 Farina integra: 6-12 mesi\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '🍝 Sealed dry pasta, rice, cereals: 12-24 months in the pantry\n🌾 Sealed flour: 6-12 months\n\nThese are indicative values: always check the expiry date printed on the packaging.',
+    es: '🍝 Pasta seca, arroz, cereales sin abrir: 12-24 meses en la despensa\n🌾 Harina sin abrir: 6-12 meses\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
   },
-  'itemForm.consumeWithinDays.guide.LATTICINI_UOVA': {
-    it: '🥛 Latte fresco aperto: 3-5 giorni in frigo\n🧀 Formaggi freschi (mozzarella, ricotta): 3-5 giorni\n🧈 Formaggi stagionati: 2-4 settimane\n🥚 Uova: 3-4 settimane dall\'acquisto\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
-    en: '🥛 Opened fresh milk: 3-5 days in the fridge\n🧀 Fresh cheese (mozzarella, ricotta): 3-5 days\n🧈 Aged cheese: 2-4 weeks\n🥚 Eggs: 3-4 weeks from purchase\n\nThese are indicative values: adjust them based on the product\'s condition.',
-    es: '🥛 Leche fresca abierta: 3-5 días en la nevera\n🧀 Quesos frescos (mozzarella, ricotta): 3-5 días\n🧈 Quesos curados: 2-4 semanas\n🥚 Huevos: 3-4 semanas desde la compra\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
+  'itemForm.consumeWithinDays.guideOpened.PASTA_CEREALI': {
+    it: '📦 Una volta aperti, in contenitore ermetico: 4-6 mesi\n\nControlla che non ci siano insetti o umidità prima di consumare prodotti aperti da tempo.',
+    en: '📦 Once opened, in an airtight container: 4-6 months\n\nCheck for insects or moisture before eating products that have been open for a while.',
+    es: '📦 Una vez abiertos, en un recipiente hermético: 4-6 meses\n\nComprueba que no haya insectos ni humedad antes de consumir productos abiertos hace tiempo.',
   },
-  'itemForm.consumeWithinDays.guide.SOSTITUTI_VEGETALI': {
-    it: '🥛 Bevande vegetali aperte (soia, avena, mandorla): 4-6 giorni in frigo\n🧈 Tofu/seitan/tempeh aperti: 3-5 giorni in frigo\n📦 Prodotti confezionati integri: segui la scadenza stampata\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
-    en: '🥛 Opened plant-based drinks (soy, oat, almond): 4-6 days in the fridge\n🧈 Opened tofu/seitan/tempeh: 3-5 days in the fridge\n📦 Sealed packages: follow the printed expiry date\n\nThese are indicative values: adjust them based on the product\'s condition.',
-    es: '🥛 Bebidas vegetales abiertas (soja, avena, almendra): 4-6 días en la nevera\n🧈 Tofu/seitán/tempeh abiertos: 3-5 días en la nevera\n📦 Envases sin abrir: sigue la fecha de caducidad impresa\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
+  'itemForm.consumeWithinDays.guideSealed.LEGUMI': {
+    it: '🫘 Legumi secchi integri: 12-24 mesi in dispensa\n🥫 Legumi in scatola/barattolo integri: segui la scadenza stampata\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '🫘 Sealed dried legumes: 12-24 months in the pantry\n🥫 Sealed canned/jarred legumes: follow the printed expiry date\n\nThese are indicative values: always check the expiry date printed on the packaging.',
+    es: '🫘 Legumbres secas sin abrir: 12-24 meses en la despensa\n🥫 Legumbres en lata/bote sin abrir: sigue la fecha de caducidad impresa\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
   },
-  'itemForm.consumeWithinDays.guide.CONSERVE': {
-    it: '🥫 Scatolame integro (pomodori, tonno, verdure): 2-4 anni\n🍯 Marmellate/sott\'oli aperti: 2-4 settimane in frigo\n🥒 Sott\'aceto aperti: 1-2 mesi in frigo\n\nUna volta aperte, trasferisci il contenuto in un contenitore di vetro se resta a lungo nella latta.',
-    en: '🥫 Sealed canned goods (tomatoes, tuna, vegetables): 2-4 years\n🍯 Opened jams/oil-preserved foods: 2-4 weeks in the fridge\n🥒 Opened pickles: 1-2 months in the fridge\n\nOnce opened, move the contents to a glass container if it\'ll stay in the can for a while.',
-    es: '🥫 Conservas sin abrir (tomate, atún, verduras): 2-4 años\n🍯 Mermeladas/conservas en aceite abiertas: 2-4 semanas en la nevera\n🥒 Encurtidos abiertos: 1-2 meses en la nevera\n\nUna vez abiertas, pasa el contenido a un recipiente de vidrio si va a quedarse mucho tiempo en la lata.',
+  'itemForm.consumeWithinDays.guideOpened.LEGUMI': {
+    it: '🍲 Legumi già cotti o aperti in frigo: 3-4 giorni\n🥫 Legumi in scatola aperti: trasferiscili in un contenitore e conservali 2-3 giorni in frigo\n\nUna volta aperti, consumali entro pochi giorni.',
+    en: '🍲 Cooked or opened legumes in the fridge: 3-4 days\n🥫 Opened canned legumes: transfer them to a container and keep for 2-3 days in the fridge\n\nOnce opened, eat them within a few days.',
+    es: '🍲 Legumbres ya cocinadas o abiertas en la nevera: 3-4 días\n🥫 Legumbres en lata abiertas: pásalas a un recipiente y consérvalas 2-3 días en la nevera\n\nUna vez abiertas, consúmelas en pocos días.',
   },
-  'itemForm.consumeWithinDays.guide.CONDIMENTI': {
-    it: '🧂 Sale, zucchero, spezie secche: praticamente illimitato se ben chiusi\n🫒 Olio: 12-18 mesi dall\'apertura\n🥫 Salse aperte (maionese, ketchup): 1-2 mesi in frigo\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
-    en: '🧂 Salt, sugar, dry spices: practically unlimited if well sealed\n🫒 Oil: 12-18 months after opening\n🥫 Opened sauces (mayonnaise, ketchup): 1-2 months in the fridge\n\nThese are indicative values: adjust them based on the product\'s condition.',
-    es: '🧂 Sal, azúcar, especias secas: prácticamente ilimitado si están bien cerrados\n🫒 Aceite: 12-18 meses desde la apertura\n🥫 Salsas abiertas (mayonesa, ketchup): 1-2 meses en la nevera\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
+  'itemForm.consumeWithinDays.guideSealed.CARNE_PESCE': {
+    it: '🥩 Carne fresca confezionata: 1-3 giorni in frigo\n🐟 Pesce fresco confezionato: 1-2 giorni in frigo\n❄️ Congelati: 3-6 mesi (pesce), 6-12 mesi (carne)\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '🥩 Sealed fresh meat: 1-3 days in the fridge\n🐟 Sealed fresh fish: 1-2 days in the fridge\n❄️ Frozen: 3-6 months (fish), 6-12 months (meat)\n\nThese are indicative values: always check the expiry date printed on the packaging.',
+    es: '🥩 Carne fresca envasada: 1-3 días en la nevera\n🐟 Pescado fresco envasado: 1-2 días en la nevera\n❄️ Congelados: 3-6 meses (pescado), 6-12 meses (carne)\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
   },
-  'itemForm.consumeWithinDays.guide.DOLCI': {
-    it: '🍪 Biscotti/dolci confezionati: segui la scadenza stampata\n🎂 Dolci freschi (torte, pasticceria): 2-4 giorni in frigo\n🍫 Cioccolato: diversi mesi in dispensa\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
-    en: '🍪 Packaged cookies/sweets: follow the printed expiry date\n🎂 Fresh desserts (cakes, pastries): 2-4 days in the fridge\n🍫 Chocolate: several months in the pantry\n\nThese are indicative values: adjust them based on the product\'s condition.',
-    es: '🍪 Galletas/dulces envasados: sigue la fecha de caducidad impresa\n🎂 Dulces frescos (tartas, repostería): 2-4 días en la nevera\n🍫 Chocolate: varios meses en la despensa\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
+  'itemForm.consumeWithinDays.guideOpened.CARNE_PESCE': {
+    it: '🍗 Carne/pesce aperti o già cotti: 2-3 giorni in frigo\n\nUna volta aperti, ricoprili bene e consumali il prima possibile. In caso di dubbio sull\'odore o l\'aspetto, non consumare.',
+    en: '🍗 Opened or cooked meat/fish: 2-3 days in the fridge\n\nOnce opened, cover well and eat as soon as possible. If in doubt about the smell or appearance, don\'t eat it.',
+    es: '🍗 Carne/pescado abiertos o ya cocinados: 2-3 días en la nevera\n\nUna vez abiertos, cúbrelos bien y consúmelos lo antes posible. Si tienes dudas sobre el olor o el aspecto, no los consumas.',
   },
-  'itemForm.consumeWithinDays.guide.SNACK_SALATI': {
-    it: '🥨 Snack salati confezionati: segui la scadenza stampata\n📦 Una volta aperti, ben richiusi: 1-2 settimane\n\nIl sapore peggiora prima della scadenza se lasciati aperti all\'aria.',
-    en: '🥨 Packaged savory snacks: follow the printed expiry date\n📦 Once opened and resealed: 1-2 weeks\n\nThe taste declines before the expiry date if left open to air.',
-    es: '🥨 Snacks salados envasados: sigue la fecha de caducidad impresa\n📦 Una vez abiertos y bien cerrados: 1-2 semanas\n\nEl sabor empeora antes de la caducidad si se dejan abiertos al aire.',
+  'itemForm.consumeWithinDays.guideSealed.LATTICINI_UOVA': {
+    it: '🥛 Latte fresco integro: segui la scadenza stampata\n🧀 Formaggi confezionati integri: segui la scadenza stampata\n🥚 Uova integre: 3-4 settimane dall\'acquisto\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '🥛 Sealed fresh milk: follow the printed expiry date\n🧀 Sealed packaged cheese: follow the printed expiry date\n🥚 Whole eggs: 3-4 weeks from purchase\n\nThese are indicative values: always check the expiry date printed on the packaging.',
+    es: '🥛 Leche fresca sin abrir: sigue la fecha de caducidad impresa\n🧀 Quesos envasados sin abrir: sigue la fecha de caducidad impresa\n🥚 Huevos sin cascar: 3-4 semanas desde la compra\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
   },
-  'itemForm.consumeWithinDays.guide.FORNO_PASTICCERIA': {
-    it: '🍞 Pane fresco: 2-3 giorni a temperatura ambiente\n🥐 Prodotti da forno freschi (cornetti, brioche): 1-2 giorni\n❄️ Se congelati: fino a 2-3 mesi\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
-    en: '🍞 Fresh bread: 2-3 days at room temperature\n🥐 Fresh baked goods (croissants, brioche): 1-2 days\n❄️ If frozen: up to 2-3 months\n\nThese are indicative values: adjust them based on the product\'s condition.',
-    es: '🍞 Pan fresco: 2-3 días a temperatura ambiente\n🥐 Bollería fresca (cruasanes, brioche): 1-2 días\n❄️ Si están congelados: hasta 2-3 meses\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
+  'itemForm.consumeWithinDays.guideOpened.LATTICINI_UOVA': {
+    it: '🥛 Latte fresco aperto: 3-5 giorni in frigo\n🧀 Formaggi freschi aperti (mozzarella, ricotta): 3-5 giorni\n🧈 Formaggi stagionati aperti: 2-4 settimane\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
+    en: '🥛 Opened fresh milk: 3-5 days in the fridge\n🧀 Opened fresh cheese (mozzarella, ricotta): 3-5 days\n🧈 Opened aged cheese: 2-4 weeks\n\nThese are indicative values: adjust them based on the product\'s condition.',
+    es: '🥛 Leche fresca abierta: 3-5 días en la nevera\n🧀 Quesos frescos abiertos (mozzarella, ricotta): 3-5 días\n🧈 Quesos curados abiertos: 2-4 semanas\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
   },
-  'itemForm.consumeWithinDays.guide.BEVANDE': {
-    it: '🥤 Bevande gassate/succhi aperti: 3-7 giorni in frigo\n🍷 Vino aperto: 3-5 giorni in frigo\n💧 Bevande integre: segui la scadenza stampata\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
-    en: '🥤 Opened fizzy drinks/juices: 3-7 days in the fridge\n🍷 Opened wine: 3-5 days in the fridge\n💧 Sealed drinks: follow the printed expiry date\n\nThese are indicative values: adjust them based on the product\'s condition.',
-    es: '🥤 Bebidas gaseosas/zumos abiertos: 3-7 días en la nevera\n🍷 Vino abierto: 3-5 días en la nevera\n💧 Bebidas sin abrir: sigue la fecha de caducidad impresa\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
+  'itemForm.consumeWithinDays.guideSealed.SOSTITUTI_VEGETALI': {
+    it: '📦 Prodotti confezionati integri (bevande vegetali, tofu, seitan, tempeh): segui la scadenza stampata\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '📦 Sealed packaged products (plant-based drinks, tofu, seitan, tempeh): follow the printed expiry date\n\nThese are indicative values: always check the expiry date printed on the packaging.',
+    es: '📦 Productos envasados sin abrir (bebidas vegetales, tofu, seitán, tempeh): sigue la fecha de caducidad impresa\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
   },
-  'itemForm.consumeWithinDays.guide.IGIENE': {
-    it: '🧴 Prodotti aperti (creme, shampoo, cosmetici): 6-12 mesi dopo l\'apertura\n📦 Prodotti integri: seguono la scadenza stampata, spesso 2-3 anni\n\nControlla il simbolo del barattolo aperto (PAO) sulla confezione per la durata dopo l\'apertura.',
-    en: '🧴 Opened products (creams, shampoo, cosmetics): 6-12 months after opening\n📦 Sealed products: follow the printed expiry date, often 2-3 years\n\nCheck the open-jar (PAO) symbol on the packaging for how long it lasts after opening.',
-    es: '🧴 Productos abiertos (cremas, champú, cosméticos): 6-12 meses tras abrirlos\n📦 Productos sin abrir: siguen la fecha de caducidad impresa, a menudo 2-3 años\n\nComprueba el símbolo del bote abierto (PAO) en el envase para saber la duración tras la apertura.',
+  'itemForm.consumeWithinDays.guideOpened.SOSTITUTI_VEGETALI': {
+    it: '🥛 Bevande vegetali aperte (soia, avena, mandorla): 4-6 giorni in frigo\n🧈 Tofu/seitan/tempeh aperti: 3-5 giorni in frigo\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
+    en: '🥛 Opened plant-based drinks (soy, oat, almond): 4-6 days in the fridge\n🧈 Opened tofu/seitan/tempeh: 3-5 days in the fridge\n\nThese are indicative values: adjust them based on the product\'s condition.',
+    es: '🥛 Bebidas vegetales abiertas (soja, avena, almendra): 4-6 días en la nevera\n🧈 Tofu/seitán/tempeh abiertos: 3-5 días en la nevera\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
   },
-  'itemForm.consumeWithinDays.guide.ANIMALI': {
+  'itemForm.consumeWithinDays.guideSealed.CONSERVE': {
+    it: '🥫 Scatolame integro (pomodori, tonno, verdure): 2-4 anni\n🍯 Marmellate/conserve sott\'olio integre: segui la scadenza stampata\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '🥫 Sealed canned goods (tomatoes, tuna, vegetables): 2-4 years\n🍯 Sealed jams/oil-preserved foods: follow the printed expiry date\n\nThese are indicative values: always check the expiry date printed on the packaging.',
+    es: '🥫 Conservas sin abrir (tomate, atún, verduras): 2-4 años\n🍯 Mermeladas/conservas en aceite sin abrir: sigue la fecha de caducidad impresa\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
+  },
+  'itemForm.consumeWithinDays.guideOpened.CONSERVE': {
+    it: '🍯 Marmellate/sott\'oli aperti: 2-4 settimane in frigo\n🥒 Sott\'aceto aperti: 1-2 mesi in frigo\n\nUna volta aperte, trasferisci il contenuto in un contenitore di vetro se resta a lungo nella latta.',
+    en: '🍯 Opened jams/oil-preserved foods: 2-4 weeks in the fridge\n🥒 Opened pickles: 1-2 months in the fridge\n\nOnce opened, move the contents to a glass container if it\'ll stay in the can for a while.',
+    es: '🍯 Mermeladas/conservas en aceite abiertas: 2-4 semanas en la nevera\n🥒 Encurtidos abiertos: 1-2 meses en la nevera\n\nUna vez abiertas, pasa el contenido a un recipiente de vidrio si va a quedarse mucho tiempo en la lata.',
+  },
+  'itemForm.consumeWithinDays.guideSealed.CONDIMENTI': {
+    it: '🧂 Sale, zucchero, spezie secche integri: praticamente illimitato\n🫒 Olio integro: segui la scadenza stampata\n🥫 Salse integre: segui la scadenza stampata\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '🧂 Sealed salt, sugar, dry spices: practically unlimited\n🫒 Sealed oil: follow the printed expiry date\n🥫 Sealed sauces: follow the printed expiry date\n\nThese are indicative values: always check the expiry date printed on the packaging.',
+    es: '🧂 Sal, azúcar, especias secas sin abrir: prácticamente ilimitado\n🫒 Aceite sin abrir: sigue la fecha de caducidad impresa\n🥫 Salsas sin abrir: sigue la fecha de caducidad impresa\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
+  },
+  'itemForm.consumeWithinDays.guideOpened.CONDIMENTI': {
+    it: '🫒 Olio aperto: 12-18 mesi dall\'apertura\n🥫 Salse aperte (maionese, ketchup): 1-2 mesi in frigo\n🧂 Spezie aperte: perdono aroma nel tempo ma restano sicure a lungo\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
+    en: '🫒 Opened oil: 12-18 months after opening\n🥫 Opened sauces (mayonnaise, ketchup): 1-2 months in the fridge\n🧂 Opened spices: lose aroma over time but stay safe for a long time\n\nThese are indicative values: adjust them based on the product\'s condition.',
+    es: '🫒 Aceite abierto: 12-18 meses desde la apertura\n🥫 Salsas abiertas (mayonesa, ketchup): 1-2 meses en la nevera\n🧂 Especias abiertas: pierden aroma con el tiempo pero siguen siendo seguras mucho tiempo\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
+  },
+  'itemForm.consumeWithinDays.guideSealed.DOLCI': {
+    it: '🍪 Biscotti/dolci confezionati integri: segui la scadenza stampata\n🍫 Cioccolato integro: diversi mesi in dispensa\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '🍪 Sealed packaged cookies/sweets: follow the printed expiry date\n🍫 Sealed chocolate: several months in the pantry\n\nThese are indicative values: always check the expiry date printed on the packaging.',
+    es: '🍪 Galletas/dulces envasados sin abrir: sigue la fecha de caducidad impresa\n🍫 Chocolate sin abrir: varios meses en la despensa\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
+  },
+  'itemForm.consumeWithinDays.guideOpened.DOLCI': {
+    it: '🍪 Biscotti/dolci confezionati aperti: qualche settimana se ben richiusi\n🎂 Dolci freschi aperti (torte, pasticceria): 2-4 giorni in frigo\n🍫 Cioccolato aperto: alcune settimane, meglio se ben richiuso\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
+    en: '🍪 Opened packaged cookies/sweets: a few weeks if well resealed\n🎂 Opened fresh desserts (cakes, pastries): 2-4 days in the fridge\n🍫 Opened chocolate: a few weeks, best if well resealed\n\nThese are indicative values: adjust them based on the product\'s condition.',
+    es: '🍪 Galletas/dulces envasados abiertos: unas semanas si están bien cerrados\n🎂 Dulces frescos abiertos (tartas, repostería): 2-4 días en la nevera\n🍫 Chocolate abierto: algunas semanas, mejor si está bien cerrado\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
+  },
+  'itemForm.consumeWithinDays.guideSealed.SNACK_SALATI': {
+    it: '🥨 Snack salati confezionati integri: segui la scadenza stampata\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '🥨 Sealed packaged savory snacks: follow the printed expiry date\n\nThese are indicative values: always check the expiry date printed on the packaging.',
+    es: '🥨 Snacks salados envasados sin abrir: sigue la fecha de caducidad impresa\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
+  },
+  'itemForm.consumeWithinDays.guideOpened.SNACK_SALATI': {
+    it: '📦 Una volta aperti, ben richiusi: 1-2 settimane\n\nIl sapore peggiora prima della scadenza se lasciati aperti all\'aria.',
+    en: '📦 Once opened and resealed: 1-2 weeks\n\nThe taste declines before the expiry date if left open to air.',
+    es: '📦 Una vez abiertos y bien cerrados: 1-2 semanas\n\nEl sabor empeora antes de la caducidad si se dejan abiertos al aire.',
+  },
+  'itemForm.consumeWithinDays.guideSealed.FORNO_PASTICCERIA': {
+    it: '🍞 Pane confezionato integro: segui la scadenza stampata\n❄️ Se congelati: fino a 2-3 mesi\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione, se presente.',
+    en: '🍞 Sealed packaged bread: follow the printed expiry date\n❄️ If frozen: up to 2-3 months\n\nThese are indicative values: always check the expiry date printed on the packaging, if present.',
+    es: '🍞 Pan envasado sin abrir: sigue la fecha de caducidad impresa\n❄️ Si están congelados: hasta 2-3 meses\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase, si la tiene.',
+  },
+  'itemForm.consumeWithinDays.guideOpened.FORNO_PASTICCERIA': {
+    it: '🍞 Pane fresco o aperto: 2-3 giorni a temperatura ambiente\n🥐 Prodotti da forno freschi aperti (cornetti, brioche): 1-2 giorni\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
+    en: '🍞 Fresh or opened bread: 2-3 days at room temperature\n🥐 Opened fresh baked goods (croissants, brioche): 1-2 days\n\nThese are indicative values: adjust them based on the product\'s condition.',
+    es: '🍞 Pan fresco o abierto: 2-3 días a temperatura ambiente\n🥐 Bollería fresca abierta (cruasanes, brioche): 1-2 días\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
+  },
+  'itemForm.consumeWithinDays.guideSealed.BEVANDE': {
+    it: '💧 Bevande integre: segui la scadenza stampata\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '💧 Sealed drinks: follow the printed expiry date\n\nThese are indicative values: always check the expiry date printed on the packaging.',
+    es: '💧 Bebidas sin abrir: sigue la fecha de caducidad impresa\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
+  },
+  'itemForm.consumeWithinDays.guideOpened.BEVANDE': {
+    it: '🥤 Bevande gassate/succhi aperti: 3-7 giorni in frigo\n🍷 Vino aperto: 3-5 giorni in frigo\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
+    en: '🥤 Opened fizzy drinks/juices: 3-7 days in the fridge\n🍷 Opened wine: 3-5 days in the fridge\n\nThese are indicative values: adjust them based on the product\'s condition.',
+    es: '🥤 Bebidas gaseosas/zumos abiertos: 3-7 días en la nevera\n🍷 Vino abierto: 3-5 días en la nevera\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
+  },
+  'itemForm.consumeWithinDays.guideSealed.IGIENE': {
+    it: '📦 Prodotti integri (creme, shampoo, cosmetici): seguono la scadenza stampata, spesso 2-3 anni\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '📦 Sealed products (creams, shampoo, cosmetics): follow the printed expiry date, often 2-3 years\n\nThese are indicative values: always check the expiry date printed on the packaging.',
+    es: '📦 Productos sin abrir (cremas, champú, cosméticos): siguen la fecha de caducidad impresa, a menudo 2-3 años\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
+  },
+  'itemForm.consumeWithinDays.guideOpened.IGIENE': {
+    it: '🧴 Prodotti aperti (creme, shampoo, cosmetici): 6-12 mesi dopo l\'apertura\n\nControlla il simbolo del barattolo aperto (PAO) sulla confezione per la durata dopo l\'apertura.',
+    en: '🧴 Opened products (creams, shampoo, cosmetics): 6-12 months after opening\n\nCheck the open-jar (PAO) symbol on the packaging for how long it lasts after opening.',
+    es: '🧴 Productos abiertos (cremas, champú, cosméticos): 6-12 meses tras abrirlos\n\nComprueba el símbolo del bote abierto (PAO) en el envase para saber la duración tras la apertura.',
+  },
+  'itemForm.consumeWithinDays.guideSealed.ANIMALI': {
+    it: '🐾 Cibo secco/umido integro: segui la scadenza stampata sulla confezione\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '🐾 Sealed dry/wet pet food: follow the printed expiry date on the packaging\n\nThese are indicative values: always check the expiry date printed on the packaging.',
+    es: '🐾 Pienso seco/húmedo sin abrir: sigue la fecha de caducidad impresa en el envase\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
+  },
+  'itemForm.consumeWithinDays.guideOpened.ANIMALI': {
     it: '🐾 Cibo secco per animali aperto: 4-6 settimane\n🥫 Cibo umido aperto: 1-2 giorni in frigo\n\nSegui sempre le indicazioni sulla confezione: variano molto tra i prodotti.',
     en: '🐾 Opened dry pet food: 4-6 weeks\n🥫 Opened wet pet food: 1-2 days in the fridge\n\nAlways follow the instructions on the packaging: they vary a lot between products.',
     es: '🐾 Pienso seco abierto: 4-6 semanas\n🥫 Comida húmeda abierta: 1-2 días en la nevera\n\nSigue siempre las indicaciones del envase: varían mucho entre productos.',
   },
-  'itemForm.consumeWithinDays.guide.BEBE': {
+  'itemForm.consumeWithinDays.guideSealed.BEBE': {
+    it: '🍼 Latte in polvere/omogeneizzati integri: segui la scadenza stampata\n\nPer i prodotti per l\'infanzia segui sempre scrupolosamente le indicazioni del produttore.',
+    en: '🍼 Sealed powdered formula/baby food: follow the printed expiry date\n\nFor baby products always follow the manufacturer\'s instructions closely.',
+    es: '🍼 Leche en polvo/potitos sin abrir: sigue la fecha de caducidad impresa\n\nPara los productos infantiles sigue siempre estrictamente las indicaciones del fabricante.',
+  },
+  'itemForm.consumeWithinDays.guideOpened.BEBE': {
     it: '🍼 Latte in polvere aperto: 3-4 settimane\n🥣 Omogeneizzati/pappe aperti: 1-2 giorni in frigo\n\nPer i prodotti per l\'infanzia segui sempre scrupolosamente le indicazioni del produttore.',
     en: '🍼 Opened powdered formula: 3-4 weeks\n🥣 Opened baby food jars: 1-2 days in the fridge\n\nFor baby products always follow the manufacturer\'s instructions closely.',
     es: '🍼 Leche en polvo abierta: 3-4 semanas\n🥣 Potitos/papillas abiertos: 1-2 días en la nevera\n\nPara los productos infantiles sigue siempre estrictamente las indicaciones del fabricante.',
   },
-  'itemForm.consumeWithinDays.guide.FARMACIA': {
-    it: '💊 Farmaci: segui sempre la scadenza stampata sulla confezione\n🩹 Prodotti aperti (sciroppi, colliri): spesso validi solo poche settimane dopo l\'apertura, controlla il foglietto illustrativo\n\nIn caso di dubbio non usare un farmaco scaduto o aperto da troppo tempo: chiedi al farmacista.',
-    en: '💊 Medicines: always follow the expiry date printed on the packaging\n🩹 Opened products (syrups, eye drops): often only valid for a few weeks after opening, check the leaflet\n\nIf in doubt, don\'t use an expired medicine or one opened too long ago: ask your pharmacist.',
-    es: '💊 Medicamentos: sigue siempre la fecha de caducidad impresa en el envase\n🩹 Productos abiertos (jarabes, colirios): a menudo solo válidos unas semanas tras abrirlos, consulta el prospecto\n\nEn caso de duda, no uses un medicamento caducado o abierto hace demasiado tiempo: pregunta al farmacéutico.',
+  'itemForm.consumeWithinDays.guideSealed.FARMACIA': {
+    it: '💊 Farmaci integri: segui sempre la scadenza stampata sulla confezione\n\nIn caso di dubbio non usare un farmaco scaduto: chiedi al farmacista.',
+    en: '💊 Sealed medicines: always follow the expiry date printed on the packaging\n\nIf in doubt, don\'t use an expired medicine: ask your pharmacist.',
+    es: '💊 Medicamentos sin abrir: sigue siempre la fecha de caducidad impresa en el envase\n\nEn caso de duda, no uses un medicamento caducado: pregunta al farmacéutico.',
   },
-  'itemForm.consumeWithinDays.guide.ALTRO': {
+  'itemForm.consumeWithinDays.guideOpened.FARMACIA': {
+    it: '🩹 Prodotti aperti (sciroppi, colliri): spesso validi solo poche settimane dopo l\'apertura, controlla il foglietto illustrativo\n\nIn caso di dubbio non usare un farmaco aperto da troppo tempo: chiedi al farmacista.',
+    en: '🩹 Opened products (syrups, eye drops): often only valid for a few weeks after opening, check the leaflet\n\nIf in doubt, don\'t use a medicine opened too long ago: ask your pharmacist.',
+    es: '🩹 Productos abiertos (jarabes, colirios): a menudo solo válidos unas semanas tras abrirlos, consulta el prospecto\n\nEn caso de duda, no uses un medicamento abierto hace demasiado tiempo: pregunta al farmacéutico.',
+  },
+  'itemForm.consumeWithinDays.guideSealed.ALTRO': {
     it: '📦 Non essendoci un tipo di prodotto specifico, controlla sempre la data di scadenza stampata sulla confezione, se presente.\n\nIn assenza di indicazioni, usa il buon senso in base all\'aspetto e all\'odore del prodotto.',
     en: '📦 Since there\'s no specific product type, always check the expiry date printed on the packaging, if present.\n\nWhen there\'s no indication, use common sense based on the product\'s appearance and smell.',
     es: '📦 Al no haber un tipo de producto específico, comprueba siempre la fecha de caducidad impresa en el envase, si la tiene.\n\nSi no hay indicaciones, usa el sentido común según el aspecto y el olor del producto.',
+  },
+  'itemForm.consumeWithinDays.guideOpened.ALTRO': {
+    it: '📦 Non essendoci un tipo di prodotto specifico, una volta aperto consumalo il prima possibile.\n\nIn assenza di indicazioni, usa il buon senso in base all\'aspetto e all\'odore del prodotto.',
+    en: '📦 Since there\'s no specific product type, once opened eat it as soon as possible.\n\nWhen there\'s no indication, use common sense based on the product\'s appearance and smell.',
+    es: '📦 Al no haber un tipo de producto específico, una vez abierto consúmelo lo antes posible.\n\nSi no hay indicaciones, usa el sentido común según el aspecto y el olor del producto.',
   },
   'itemForm.openedToggle': { it: 'Prodotto aperto', en: 'Product opened', es: 'Producto abierto' },
   'itemForm.openedDate.label': { it: 'Aperta il', en: 'Opened on', es: 'Abierto el' },

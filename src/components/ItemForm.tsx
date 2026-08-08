@@ -493,7 +493,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
               hint={t('itemForm.consumeWithin.hintReplace')}
               guideOnPress={
                 showsConsumeWithinGuide
-                  ? () => showAlert(t('itemForm.consumeWithinDays.guideTitle'), t(`itemForm.consumeWithinDays.guide.${category}`))
+                  ? () => showAlert(t('itemForm.consumeWithinDays.guideTitleSealed'), t(`itemForm.consumeWithinDays.guideSealed.${category}`))
                   : undefined
               }
               voice={voice.available ? { active: voice.target === 'expiration', onPress: () => voice.start('expiration') } : undefined}
@@ -550,7 +550,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
                   hint={t('itemForm.consumeWithin.hintAdd')}
                   guideOnPress={
                     showsConsumeWithinGuide
-                      ? () => showAlert(t('itemForm.consumeWithinDays.guideTitle'), t(`itemForm.consumeWithinDays.guide.${category}`))
+                      ? () => showAlert(t('itemForm.consumeWithinDays.guideTitleSealed'), t(`itemForm.consumeWithinDays.guideSealed.${category}`))
                       : undefined
                   }
                   voice={voice.available ? { active: voice.target === 'expiration', onPress: () => voice.start('expiration') } : undefined}
@@ -581,6 +581,11 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
                 unit={openedConsumeWithinUnit}
                 onSelectUnit={setOpenedConsumeWithinUnit}
                 hint={t('itemForm.openedReminder.hint')}
+                guideOnPress={
+                  showsConsumeWithinGuide
+                    ? () => showAlert(t('itemForm.consumeWithinDays.guideTitleOpened'), t(`itemForm.consumeWithinDays.guideOpened.${category}`))
+                    : undefined
+                }
               />
             </>
           ) : null}

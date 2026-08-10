@@ -600,7 +600,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   'cleaning.nameLabel': { it: 'Nome', en: 'Name', es: 'Nombre' },
   'cleaning.namePlaceholder': { it: 'Es. Bagno, Forno, Frigorifero...', en: 'e.g. Bathroom, Oven, Fridge...', es: 'ej. Baño, Horno, Frigorífico...' },
   'cleaning.suggestionsLabel': { it: 'Suggerimenti', en: 'Suggestions', es: 'Sugerencias' },
-  'cleaning.frequencyLabel': { it: 'Ogni quanti giorni pulirlo', en: 'How often to clean it (days)', es: 'Cada cuántos días limpiarlo' },
+  'cleaning.frequencyLabel': { it: 'Ogni quanto pulirlo', en: 'How often to clean it', es: 'Cada cuánto limpiarlo' },
   'cleaning.frequencyPlaceholder': { it: 'Es. 7', en: 'e.g. 7', es: 'ej. 7' },
   'cleaning.lastCleanedLabel': { it: 'Ultima volta pulito', en: 'Last cleaned', es: 'Última vez limpiado' },
   'cleaning.lastCleanedPlaceholder': { it: 'Non pulito di recente', en: 'Not recently cleaned', es: 'No limpiado recientemente' },
@@ -611,7 +611,20 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: 'Add a room or appliance to keep track of when it was last cleaned.',
     es: 'Añade un espacio o electrodoméstico para llevar el control de cuándo se limpió.',
   },
-  'cleaning.everyDaysShort': { it: (v) => `ogni ${v.n}gg`, en: (v) => `every ${v.n}d`, es: (v) => `cada ${v.n}d` },
+  'cleaning.everyDaysShort': {
+    it: (v) => {
+      const n = Number(v.n);
+      return n % 30 === 0 ? `ogni ${n / 30 === 1 ? 'un mese' : `${n / 30} mesi`}` : `ogni ${n}gg`;
+    },
+    en: (v) => {
+      const n = Number(v.n);
+      return n % 30 === 0 ? `every ${n / 30 === 1 ? 'month' : `${n / 30} months`}` : `every ${n}d`;
+    },
+    es: (v) => {
+      const n = Number(v.n);
+      return n % 30 === 0 ? `cada ${n / 30 === 1 ? 'mes' : `${n / 30} meses`}` : `cada ${n}d`;
+    },
+  },
   'cleaning.neverCleaned': { it: 'Mai pulito', en: 'Never cleaned', es: 'Nunca limpiado' },
   'cleaning.cleanedToday': { it: 'Pulito oggi', en: 'Cleaned today', es: 'Limpiado hoy' },
   'cleaning.cleanedDaysAgo': {

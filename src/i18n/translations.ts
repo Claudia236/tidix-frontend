@@ -614,7 +614,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   'cleaning.everyDaysShort': {
     it: (v) => {
       const n = Number(v.n);
-      return n % 30 === 0 ? `ogni ${n / 30 === 1 ? 'un mese' : `${n / 30} mesi`}` : `ogni ${n}gg`;
+      return n % 30 === 0 ? `ogni ${n / 30 === 1 ? 'mese' : `${n / 30} mesi`}` : `ogni ${n}gg`;
     },
     en: (v) => {
       const n = Number(v.n);

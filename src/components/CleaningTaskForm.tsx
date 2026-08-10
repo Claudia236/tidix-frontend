@@ -11,6 +11,9 @@ import { DatePickerField } from './DatePickerField';
 import { PrimaryButton } from './PrimaryButton';
 import { TextField } from './TextField';
 
+type FrequencyUnit = 'giorni' | 'mesi';
+const DAYS_PER_MONTH = 30;
+
 interface Props {
   initial?: Partial<CleaningTaskInput>;
   submitLabel: string;
@@ -18,6 +21,16 @@ interface Props {
   onSubmit: (input: CleaningTaskInput) => void;
   onDelete?: () => void;
   deleting?: boolean;
+}
+
+// Un valore di giorni si mostra in mesi solo se e' un multiplo esatto di 30
+// (cosi' come impostato dai suggerimenti o da un editing precedente in mesi):
+// altrimenti mostrarlo diviso per 30 arrotonderebbe in modo fuorviante.
+function frequencyDaysToDisplay(days: number): { amount: string; unit: FrequencyUnit } {
+  if (days > 0 && days % DAYS_PER_MONTH === 0) {
+    return { amount: String(days / DAYS_PER_MONTH), unit: 'mesi' };
+  }
+  return { amount: String(days), unit: 'giorni' };
 }
 
 export function CleaningTaskForm({ initial, submitLabel, submitting, onSubmit, onDelete, deleting }: Props) {
@@ -28,19 +41,24 @@ export function CleaningTaskForm({ initial, submitLabel, submitting, onSubmit, o
   const cleaningSuggestions = useCleaningSuggestions();
 
   const [name, setName] = useState(initial?.name ?? '');
-  const [frequencyDays, setFrequencyDays] = useState(initial?.frequencyDays ? String(initial.frequencyDays) : '');
+  const initialFrequency = initial?.frequencyDays ? frequencyDaysToDisplay(initial.frequencyDays) : null;
+  const [frequencyAmount, setFrequencyAmount] = useState(initialFrequency?.amount ?? '');
+  const [frequencyUnit, setFrequencyUnit] = useState<FrequencyUnit>(initialFrequency?.unit ?? 'giorni');
   const [lastCleanedDate, setLastCleanedDate] = useState<string | null>(initial?.lastCleanedDate ?? null);
 
   function applySuggestion(suggestion: CleaningSuggestion) {
     setName(suggestion.name);
-    setFrequencyDays(String(suggestion.frequencyDays));
+    const display = frequencyDaysToDisplay(suggestion.frequencyDays);
+    setFrequencyAmount(display.amount);
+    setFrequencyUnit(display.unit);
   }
 
   function handleSubmit() {
     if (!name.trim()) return;
+    const amount = frequencyAmount.trim() ? Math.max(1, Number(frequencyAmount)) : null;
     onSubmit({
       name: name.trim(),
-      frequencyDays: frequencyDays.trim() ? Math.max(1, Number(frequencyDays)) : null,
+      frequencyDays: amount ? amount * (frequencyUnit === 'mesi' ? DAYS_PER_MONTH : 1) : null,
       lastCleanedDate,
     });
   }
@@ -72,13 +90,35 @@ export function CleaningTaskForm({ initial, submitLabel, submitting, onSubmit, o
           </View>
         </View>
 
-        <TextField
-          label={t('cleaning.frequencyLabel')}
-          placeholder={t('cleaning.frequencyPlaceholder')}
-          keyboardType="numeric"
-          value={frequencyDays}
-          onChangeText={setFrequencyDays}
-        />
+        <View style={styles.frequencyRow}>
+          <View style={{ flex: 1 }}>
+            <TextField
+              label={t('cleaning.frequencyLabel')}
+              placeholder={t('cleaning.frequencyPlaceholder')}
+              keyboardType="numeric"
+              value={frequencyAmount}
+              onChangeText={setFrequencyAmount}
+            />
+          </View>
+          <View style={styles.frequencyUnitGroup}>
+            <Pressable
+              onPress={() => setFrequencyUnit('giorni')}
+              style={[styles.frequencyUnitChip, frequencyUnit === 'giorni' && styles.frequencyUnitChipActive]}
+            >
+              <Text style={[styles.frequencyUnitChipText, frequencyUnit === 'giorni' && { color: colors.white }]}>
+                {t('itemForm.consumeWithin.unitDays')}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setFrequencyUnit('mesi')}
+              style={[styles.frequencyUnitChip, frequencyUnit === 'mesi' && styles.frequencyUnitChipActive]}
+            >
+              <Text style={[styles.frequencyUnitChipText, frequencyUnit === 'mesi' && { color: colors.white }]}>
+                {t('itemForm.consumeWithin.unitMonths')}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
 
         <View style={styles.field}>
           <Text style={styles.label}>{t('cleaning.lastCleanedLabel')}</Text>
@@ -112,6 +152,18 @@ function createStyles(COLORS: ColorPalette) {
       letterSpacing: 0.4,
       color: COLORS.inkSoft,
     },
+    frequencyRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-end' },
+    frequencyUnitGroup: { flexDirection: 'row', gap: 6 },
+    frequencyUnitChip: {
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      borderRadius: 10,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      backgroundColor: COLORS.card,
+    },
+    frequencyUnitChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
+    frequencyUnitChipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
     suggestionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     suggestionChip: {
       flexDirection: 'row',

@@ -10,7 +10,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://logistica-domestica-backend.onrender.com"
+        "EXPO_PUBLIC_API_URL": "https://TODO-REPLACE-WITH-CLOUD-RUN-URL.a.run.app"
       }
     },
     "preview": {
@@ -19,7 +19,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://logistica-domestica-backend.onrender.com"
+        "EXPO_PUBLIC_API_URL": "https://TODO-REPLACE-WITH-CLOUD-RUN-URL.a.run.app"
       }
     },
     "production": {

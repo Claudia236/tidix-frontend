@@ -14,6 +14,7 @@ import { EmptyState } from '../../../src/components/EmptyState';
 import { ItemCard } from '../../../src/components/ItemCard';
 import { RestockDialog } from '../../../src/components/RestockDialog';
 import { SectionTitle } from '../../../src/components/SectionTitle';
+import { useModalBackHandler } from '../../../src/hooks/useModalBackHandler';
 import { useStorageLocations } from '../../../src/hooks/useStorageLocations';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../../src/theme/colors';
@@ -51,6 +52,8 @@ export default function StockScreen() {
     () => new Set(categories.map((c) => c.key))
   );
   const [filterModalVisible, setFilterModalVisible] = useState(false);
+
+  useModalBackHandler(filterModalVisible, () => setFilterModalVisible(false));
 
   function toggleCategoryCollapsed(category: Category) {
     setCollapsedCategories((prev) => {

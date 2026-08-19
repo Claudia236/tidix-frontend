@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { supermarketsApi } from '../api/supermarkets';
 import { locationColor } from '../constants/domain';
+import { useModalBackHandler } from '../hooks/useModalBackHandler';
 import { useSupermarkets } from '../hooks/useSupermarkets';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
@@ -72,6 +73,8 @@ export function SupermarketPicker({ value, onChange, label }: Props) {
     setModalVisible(false);
     setAdding(false);
   }
+
+  useModalBackHandler(modalVisible, closeModal);
 
   return (
     <View style={styles.field}>

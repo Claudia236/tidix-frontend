@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useI18n } from '../i18n/I18nContext';
+import { useModalBackHandler } from '../hooks/useModalBackHandler';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
 
@@ -55,6 +56,8 @@ export function AppAlertHost() {
     setState(EMPTY_STATE);
     button.onPress?.();
   }
+
+  useModalBackHandler(state.visible, () => setState(EMPTY_STATE));
 
   return (
     <Modal visible={state.visible} transparent animationType="fade" onRequestClose={() => setState(EMPTY_STATE)}>

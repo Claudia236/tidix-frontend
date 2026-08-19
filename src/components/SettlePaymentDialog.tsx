@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useModalBackHandler } from '../hooks/useModalBackHandler';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
@@ -27,6 +28,8 @@ export function SettlePaymentDialog({ visible, personName, totalOwed, submitting
 
   const parsed = Number(amount.replace(',', '.'));
   const valid = Number.isFinite(parsed) && parsed > 0;
+
+  useModalBackHandler(visible, onCancel);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>

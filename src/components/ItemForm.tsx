@@ -7,6 +7,7 @@ import { Image, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { storageLocationsApi } from '../api/storageLocations';
 import { CONSUME_WITHIN_DAYS_CATEGORIES, useSelectableCategories, useLocationColor, useUnitLabel, UNITS } from '../constants/domain';
+import { useModalBackHandler } from '../hooks/useModalBackHandler';
 import { useStorageLocations } from '../hooks/useStorageLocations';
 import { useVoiceDictation } from '../hooks/useVoiceDictation';
 import type { TranslateFn } from '../i18n/I18nContext';
@@ -319,6 +320,14 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
     setScanModalVisible(false);
     setScanPhotos([]);
   }
+
+  useModalBackHandler(categoryModalVisible, () => setCategoryModalVisible(false));
+  useModalBackHandler(locationModalVisible, () => {
+    setAddingLocation(false);
+    setLocationModalVisible(false);
+  });
+  useModalBackHandler(unitModalVisible, () => setUnitModalVisible(false));
+  useModalBackHandler(scanModalVisible, closeScanModal);
 
   async function addScanPhoto(source: 'camera' | 'gallery') {
     if (source === 'camera') {

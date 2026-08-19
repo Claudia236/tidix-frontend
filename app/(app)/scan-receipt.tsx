@@ -11,6 +11,7 @@ import { itemsApi } from '../../src/api/items';
 import { showAlert } from '../../src/components/AppAlert';
 import { ItemForm } from '../../src/components/ItemForm';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { useModalBackHandler } from '../../src/hooks/useModalBackHandler';
 import { useI18n } from '../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
@@ -38,6 +39,8 @@ export default function ScanReceiptScreen() {
   const [lastCategory, setLastCategory] = useState<Category | undefined>(undefined);
   const [lastStorageLocationId, setLastStorageLocationId] = useState<string | undefined>(undefined);
   const [savingItem, setSavingItem] = useState(false);
+
+  useModalBackHandler(editingLine !== null, () => setEditingLine(null));
 
   async function processImage(uri: string) {
     setPhotoUri(uri);

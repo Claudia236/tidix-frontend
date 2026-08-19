@@ -9,6 +9,7 @@ import { showAlert } from '../../src/components/AppAlert';
 import { EmptyState } from '../../src/components/EmptyState';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { TextField } from '../../src/components/TextField';
+import { useModalBackHandler } from '../../src/hooks/useModalBackHandler';
 import { useI18n } from '../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
@@ -137,6 +138,8 @@ function EditSettlementDialog({
 
   const parsed = Number(amount.replace(',', '.'));
   const valid = Number.isFinite(parsed) && parsed > 0;
+
+  useModalBackHandler(visible, onCancel);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>

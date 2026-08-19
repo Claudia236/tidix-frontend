@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelectableCategories } from '../constants/domain';
+import { useModalBackHandler } from '../hooks/useModalBackHandler';
 import { useVoiceDictation } from '../hooks/useVoiceDictation';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
@@ -51,6 +52,8 @@ export function ShoppingNoteForm({ initial, submitLabel, submitting, onSubmit, o
     if (target === 'name') setName(capitalized);
     else setDetail(capitalized);
   });
+
+  useModalBackHandler(categoryModalVisible, () => setCategoryModalVisible(false));
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">

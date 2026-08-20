@@ -237,7 +237,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const selectedCategoryInfo = categories.find((c) => c.key === category) ?? categories[categories.length - 1];
   const selectedLocation = locations.find((l) => l.id === effectiveLocationId) ?? null;
   const canSubmit = name.trim().length > 0 && !!effectiveLocationId;
-  const hidesExpiration = category === 'CASA_PULIZIA';
+  const hidesExpiration = category === 'CASA_PULIZIA' || category === 'CUCINA';
   const hidesOpenedToggle = hidesExpiration || replacesExpirationWithConsumeWithin;
   const isFreezerLocation = (locations.find((l) => l.id === effectiveLocationId)?.name ?? '').trim().toLowerCase() === 'freezer';
   const showsExpiryModeToggle = !replacesExpirationWithConsumeWithin && !hidesExpiration;

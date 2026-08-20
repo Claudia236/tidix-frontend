@@ -15,6 +15,7 @@ export type Category =
   | 'BEVANDE'
   | 'IGIENE'
   | 'CASA_PULIZIA'
+  | 'CUCINA'
   | 'ANIMALI'
   | 'BEBE'
   | 'FARMACIA'

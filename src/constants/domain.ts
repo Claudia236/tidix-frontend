@@ -29,6 +29,15 @@ export const CONSUME_WITHIN_DAYS_CATEGORIES: ReadonlySet<Category> = new Set([
   'IGIENE', 'ANIMALI', 'BEBE', 'FARMACIA', 'ALTRO',
 ]);
 
+// Categorie di prodotti per la casa (non alimentari) che restano in scorta a
+// lungo e di solito non hanno una vera scadenza/promemoria: nella Panoramica
+// non devono affollare "Prodotti aperti"/"Prodotti in scadenza" a meno che
+// l'utente non abbia impostato esplicitamente un promemoria consumo o una
+// data di scadenza per quel prodotto specifico.
+export const HOUSEHOLD_CATEGORIES: ReadonlySet<Category> = new Set([
+  'CASA', 'CASA_PULIZIA', 'IGIENE', 'CUCINA',
+]);
+
 const CATEGORY_EMOJI: Record<Category, string> = {
   AVANZI: '🥡',
   PIATTI_PRONTI: '🍱',

@@ -8,7 +8,7 @@ import { cleaningApi } from '../../../src/api/cleaning';
 import { itemsApi } from '../../../src/api/items';
 import { wasteApi } from '../../../src/api/waste';
 import { SectionTitle } from '../../../src/components/SectionTitle';
-import { findCategoryInfo, getWasteTypeEmoji, jsWeekdayToDay, useCategories, wasteTypesCollectedOn } from '../../../src/constants/domain';
+import { findCategoryInfo, getWasteTypeEmoji, HOUSEHOLD_CATEGORIES, jsWeekdayToDay, useCategories, wasteTypesCollectedOn } from '../../../src/constants/domain';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import { syncExpiryReminders } from '../../../src/notifications/expiryReminders';
 import { syncOpenedReminders } from '../../../src/notifications/openedReminders';
@@ -73,13 +73,15 @@ export default function OverviewScreen() {
 
   const expiringItems = useMemo(() => {
     const combined = [...(expiredQuery.data ?? []), ...(expiringQuery.data ?? [])];
-    return combined.filter((i) => i.category !== 'AVANZI' && !i.opened).sort((a, b) => (a.daysUntilExpiration ?? 0) - (b.daysUntilExpiration ?? 0));
+    return combined
+      .filter((i) => i.category !== 'AVANZI' && !i.opened && (!HOUSEHOLD_CATEGORIES.has(i.category) || !!i.expirationDate))
+      .sort((a, b) => (a.daysUntilExpiration ?? 0) - (b.daysUntilExpiration ?? 0));
   }, [expiredQuery.data, expiringQuery.data]);
 
   const openedItems = useMemo(
     () =>
       (allItemsQuery.data ?? [])
-        .filter((i) => i.opened)
+        .filter((i) => i.opened && (!HOUSEHOLD_CATEGORIES.has(i.category) || i.openedReminderEnabled))
         .sort((a, b) => {
           if (!a.openedDate && !b.openedDate) return 0;
           if (!a.openedDate) return 1;

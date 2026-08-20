@@ -96,6 +96,8 @@ const ENTRIES: Record<string, EntryTriple> = {
   'category.CASA_PULIZIA.short': { it: 'Pulizia', en: 'Cleaning', es: 'Limpieza' },
   'category.CUCINA.label': { it: 'Cucina', en: 'Kitchen', es: 'Cocina' },
   'category.CUCINA.short': { it: 'Cucina', en: 'Kitchen', es: 'Cocina' },
+  'category.CASA.label': { it: 'Casa', en: 'Home', es: 'Casa' },
+  'category.CASA.short': { it: 'Casa', en: 'Home', es: 'Casa' },
   'category.ANIMALI.label': { it: 'Animali', en: 'Pets', es: 'Animales' },
   'category.ANIMALI.short': { it: 'Animali', en: 'Pets', es: 'Animales' },
   'category.BEBE.label': { it: 'Bebè', en: 'Baby', es: 'Bebé' },

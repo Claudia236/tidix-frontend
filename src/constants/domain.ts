@@ -17,12 +17,12 @@ export interface CategoryInfo {
 const CATEGORY_KEYS: Category[] = [
   'AVANZI', 'PIATTI_PRONTI', 'ORTOFRUTTA', 'PASTA_CEREALI', 'LEGUMI', 'CARNE_PESCE', 'LATTICINI_UOVA', 'SOSTITUTI_VEGETALI',
   'CONSERVE', 'CONDIMENTI', 'DOLCI', 'SNACK_SALATI', 'FORNO_PASTICCERIA', 'BEVANDE',
-  'IGIENE', 'CASA_PULIZIA', 'CUCINA', 'ANIMALI', 'BEBE', 'FARMACIA', 'ALTRO',
+  'IGIENE', 'CASA_PULIZIA', 'CUCINA', 'CASA', 'ANIMALI', 'BEBE', 'FARMACIA', 'ALTRO',
 ];
 
 // Categorie per cui il campo "Consumare entro" mostra un'icona (i) con
 // indicazioni di massima sui tempi di conservazione tipici. Esclude
-// CASA_PULIZIA e CUCINA, per cui il campo scadenza/consumo non viene mai mostrato.
+// CASA_PULIZIA, CUCINA e CASA, per cui il campo scadenza/consumo non viene mai mostrato.
 export const CONSUME_WITHIN_DAYS_CATEGORIES: ReadonlySet<Category> = new Set([
   'AVANZI', 'PIATTI_PRONTI', 'ORTOFRUTTA', 'PASTA_CEREALI', 'LEGUMI', 'CARNE_PESCE', 'LATTICINI_UOVA', 'SOSTITUTI_VEGETALI',
   'CONSERVE', 'CONDIMENTI', 'DOLCI', 'SNACK_SALATI', 'FORNO_PASTICCERIA', 'BEVANDE',
@@ -47,6 +47,7 @@ const CATEGORY_EMOJI: Record<Category, string> = {
   IGIENE: '🧴',
   CASA_PULIZIA: '🧹',
   CUCINA: '🍽️',
+  CASA: '🏠',
   ANIMALI: '🐾',
   BEBE: '🍼',
   FARMACIA: '💊',

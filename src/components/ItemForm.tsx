@@ -237,8 +237,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const selectedCategoryInfo = categories.find((c) => c.key === category) ?? categories[categories.length - 1];
   const selectedLocation = locations.find((l) => l.id === effectiveLocationId) ?? null;
   const canSubmit = name.trim().length > 0 && !!effectiveLocationId;
-  const hidesExpiration = category === 'CASA_PULIZIA' || category === 'CUCINA';
-  const hidesOpenedToggle = hidesExpiration || replacesExpirationWithConsumeWithin;
+  const hidesExpiration = category === 'CASA_PULIZIA' || category === 'CUCINA' || category === 'CASA';
   const isFreezerLocation = (locations.find((l) => l.id === effectiveLocationId)?.name ?? '').trim().toLowerCase() === 'freezer';
   const showsExpiryModeToggle = !replacesExpirationWithConsumeWithin && !hidesExpiration;
   const showsConsumeWithinGuide = CONSUME_WITHIN_DAYS_CATEGORIES.has(category);
@@ -280,7 +279,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       }
     }
 
-    const effectiveOpened = !hidesOpenedToggle && opened;
+    const effectiveOpened = opened;
     let resolvedOpenedReminderEnabled = false;
     let resolvedOpenedReminderDays = 3;
     if (effectiveOpened) {
@@ -570,36 +569,34 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
         </View>
       ) : null}
 
-      {!hidesOpenedToggle ? (
-        <View style={styles.field}>
-          <Pressable onPress={handleToggleOpened} style={styles.openedToggle}>
-            <Ionicons name={opened ? 'checkbox' : 'square-outline'} size={18} color={colors.brand} />
-            <Text style={styles.openedToggleText}>{t('itemForm.openedToggle')}</Text>
-          </Pressable>
-          {opened ? (
-            <>
-              <Text style={styles.label}>{t('itemForm.openedDate.label')}</Text>
-              <DatePickerField value={openedDate} onChange={setOpenedDate} allowClear={false} />
-              <ConsumeWithinFields
-                colors={colors}
-                t={t}
-                styles={styles}
-                label={t('itemForm.openedReminder.label')}
-                amount={openedConsumeWithinAmount}
-                onChangeAmount={setOpenedConsumeWithinAmount}
-                unit={openedConsumeWithinUnit}
-                onSelectUnit={setOpenedConsumeWithinUnit}
-                hint={t('itemForm.openedReminder.hint')}
-                guideOnPress={
-                  showsConsumeWithinGuide
-                    ? () => showAlert(t('itemForm.consumeWithinDays.guideTitleOpened'), t(`itemForm.consumeWithinDays.guideOpened.${category}`))
-                    : undefined
-                }
-              />
-            </>
-          ) : null}
-        </View>
-      ) : null}
+      <View style={styles.field}>
+        <Pressable onPress={handleToggleOpened} style={styles.openedToggle}>
+          <Ionicons name={opened ? 'checkbox' : 'square-outline'} size={18} color={colors.brand} />
+          <Text style={styles.openedToggleText}>{t('itemForm.openedToggle')}</Text>
+        </Pressable>
+        {opened ? (
+          <>
+            <Text style={styles.label}>{t('itemForm.openedDate.label')}</Text>
+            <DatePickerField value={openedDate} onChange={setOpenedDate} allowClear={false} />
+            <ConsumeWithinFields
+              colors={colors}
+              t={t}
+              styles={styles}
+              label={t('itemForm.openedReminder.label')}
+              amount={openedConsumeWithinAmount}
+              onChangeAmount={setOpenedConsumeWithinAmount}
+              unit={openedConsumeWithinUnit}
+              onSelectUnit={setOpenedConsumeWithinUnit}
+              hint={t('itemForm.openedReminder.hint')}
+              guideOnPress={
+                showsConsumeWithinGuide
+                  ? () => showAlert(t('itemForm.consumeWithinDays.guideTitleOpened'), t(`itemForm.consumeWithinDays.guideOpened.${category}`))
+                  : undefined
+              }
+            />
+          </>
+        ) : null}
+      </View>
 
       <View style={styles.actions}>
         {onDelete ? (

@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useI18n } from '../i18n/I18nContext';
@@ -63,6 +64,9 @@ export function AppAlertHost() {
     <Modal visible={state.visible} transparent animationType="fade" onRequestClose={() => setState(EMPTY_STATE)}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
+          <Pressable onPress={() => setState(EMPTY_STATE)} hitSlop={8} style={styles.closeButton}>
+            <Ionicons name="close" size={18} color={colors.inkSoft} />
+          </Pressable>
           <Text style={styles.title}>{state.title}</Text>
           {state.message ? <Text style={styles.message}>{state.message}</Text> : null}
           <View style={styles.actions}>
@@ -90,7 +94,8 @@ function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
     backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center', padding: 24 },
     card: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 14, width: '100%', maxWidth: 360 },
-    title: { fontSize: 15, fontWeight: '700', color: COLORS.ink },
+    closeButton: { position: 'absolute', top: 12, right: 12, zIndex: 1 },
+    title: { fontSize: 15, fontWeight: '700', color: COLORS.ink, paddingRight: 24 },
     message: { fontSize: 13, color: COLORS.inkSoft, lineHeight: 18 },
     actions: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 16, marginTop: 4 },
     button: { paddingVertical: 4 },

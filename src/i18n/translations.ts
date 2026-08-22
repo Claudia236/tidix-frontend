@@ -82,6 +82,8 @@ const ENTRIES: Record<string, EntryTriple> = {
   'category.CONSERVE.short': { it: 'Conserve', en: 'Canned', es: 'Conservas' },
   'category.CONDIMENTI.label': { it: 'Condimenti e spezie', en: 'Condiments and spices', es: 'Condimentos y especias' },
   'category.CONDIMENTI.short': { it: 'Condimenti', en: 'Condiments', es: 'Condimentos' },
+  'category.SPEZIE.label': { it: 'Spezie', en: 'Spices', es: 'Especias' },
+  'category.SPEZIE.short': { it: 'Spezie', en: 'Spices', es: 'Especias' },
   'category.DOLCI.label': { it: 'Dolci', en: 'Sweets', es: 'Dulces' },
   'category.DOLCI.short': { it: 'Dolci', en: 'Sweets', es: 'Dulces' },
   'category.SNACK_SALATI.label': { it: 'Snack salati', en: 'Savoury snacks', es: 'Snacks salados' },
@@ -361,6 +363,16 @@ const ENTRIES: Record<string, EntryTriple> = {
     it: '🫒 Olio aperto: 12-18 mesi dall\'apertura\n🥫 Salse aperte (maionese, ketchup): 1-2 mesi in frigo\n🧂 Spezie aperte: perdono aroma nel tempo ma restano sicure a lungo\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
     en: '🫒 Opened oil: 12-18 months after opening\n🥫 Opened sauces (mayonnaise, ketchup): 1-2 months in the fridge\n🧂 Opened spices: lose aroma over time but stay safe for a long time\n\nThese are indicative values: adjust them based on the product\'s condition.',
     es: '🫒 Aceite abierto: 12-18 meses desde la apertura\n🥫 Salsas abiertas (mayonesa, ketchup): 1-2 meses en la nevera\n🧂 Especias abiertas: pierden aroma con el tiempo pero siguen siendo seguras mucho tiempo\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
+  },
+  'itemForm.consumeWithinDays.guideSealed.SPEZIE': {
+    it: '🌶️ Spezie ed erbe secche integre: 2-3 anni in dispensa, al riparo da luce e umidità\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '🌶️ Sealed dried spices and herbs: 2-3 years in the pantry, away from light and moisture\n\nThese are indicative values: always check the expiry date printed on the packaging.',
+    es: '🌶️ Especias y hierbas secas sin abrir: 2-3 años en la despensa, protegidas de la luz y la humedad\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
+  },
+  'itemForm.consumeWithinDays.guideOpened.SPEZIE': {
+    it: '🌶️ Spezie ed erbe secche aperte: 6-12 mesi in un contenitore ben chiuso, al riparo da luce e umidità\n\nPerdono aroma nel tempo ma restano sicure a lungo: questi sono valori indicativi, regolali in base allo stato del prodotto.',
+    en: '🌶️ Opened dried spices and herbs: 6-12 months in a well-sealed container, away from light and moisture\n\nThey lose aroma over time but stay safe for a long time: these are indicative values, adjust them based on the product\'s condition.',
+    es: '🌶️ Especias y hierbas secas abiertas: 6-12 meses en un recipiente bien cerrado, protegidas de la luz y la humedad\n\nPierden aroma con el tiempo pero siguen siendo seguras mucho tiempo: estos son valores indicativos, ajústalos según el estado del producto.',
   },
   'itemForm.consumeWithinDays.guideSealed.DOLCI': {
     it: '🍪 Biscotti/dolci confezionati integri: segui la scadenza stampata\n🍫 Cioccolato integro: diversi mesi in dispensa\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',

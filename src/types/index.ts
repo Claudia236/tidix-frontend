@@ -9,6 +9,7 @@ export type Category =
   | 'SOSTITUTI_VEGETALI'
   | 'CONSERVE'
   | 'CONDIMENTI'
+  | 'SPEZIE'
   | 'DOLCI'
   | 'SNACK_SALATI'
   | 'FORNO_PASTICCERIA'

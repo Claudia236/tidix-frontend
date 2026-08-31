@@ -133,7 +133,7 @@ export default function ExpensesScreen() {
               </Text>
             </Pressable>
 
-            {summary ? (
+            {summary && !showAll ? (
               <View style={styles.summaryCard}>
                 <View style={styles.summaryTotalRow}>
                   <Text style={styles.summaryTotal}>{t('expenses.total')}: {summary.totalAmount.toFixed(2)} €</Text>

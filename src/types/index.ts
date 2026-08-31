@@ -228,6 +228,7 @@ export interface Settlement {
   amount: number;
   allocations: SettlementAllocation[];
   leftover: number;
+  date: string;
   createdAt: string;
 }
 

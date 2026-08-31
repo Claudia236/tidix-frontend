@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { settlementsApi } from '../../src/api/settlements';
 import { showAlert } from '../../src/components/AppAlert';
+import { DatePickerField } from '../../src/components/DatePickerField';
 import { EmptyState } from '../../src/components/EmptyState';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { TextField } from '../../src/components/TextField';
@@ -15,12 +16,12 @@ import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
 import type { Settlement } from '../../src/types';
-import { formatDateTime } from '../../src/utils/expiry';
+import { formatDashDate, todayLocalISODate } from '../../src/utils/expiry';
 
 export default function SettlementsScreen() {
   const queryClient = useQueryClient();
   const { colors } = useTheme();
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const [editTarget, setEditTarget] = useState<Settlement | null>(null);
@@ -28,7 +29,8 @@ export default function SettlementsScreen() {
   const settlementsQuery = useQuery({ queryKey: ['settlements'], queryFn: () => settlementsApi.list() });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, amount }: { id: string; amount: number }) => settlementsApi.update(id, amount),
+    mutationFn: ({ id, amount, date }: { id: string; amount: number; date: string }) =>
+      settlementsApi.update(id, amount, date),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settlements'] });
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
@@ -67,7 +69,7 @@ export default function SettlementsScreen() {
             <View style={styles.topRow}>
               <View style={styles.topRowText}>
                 <Text style={styles.name}>{t('settlements.paidBy', { name: item.debtorName })}</Text>
-                <Text style={styles.date}>{formatDateTime(item.createdAt, language)}</Text>
+                <Text style={styles.date}>{formatDashDate(item.date)}</Text>
               </View>
               <Text style={styles.amount}>{item.amount.toFixed(2)} €</Text>
             </View>
@@ -105,9 +107,9 @@ export default function SettlementsScreen() {
         settlement={editTarget}
         submitting={updateMutation.isPending}
         onCancel={() => setEditTarget(null)}
-        onConfirm={(amount) => {
+        onConfirm={(amount, date) => {
           if (!editTarget) return;
-          updateMutation.mutate({ id: editTarget.id, amount });
+          updateMutation.mutate({ id: editTarget.id, amount, date });
         }}
       />
     </View>
@@ -124,16 +126,20 @@ function EditSettlementDialog({
   visible: boolean;
   settlement: Settlement | null;
   submitting?: boolean;
-  onConfirm: (amount: number) => void;
+  onConfirm: (amount: number, date: string) => void;
   onCancel: () => void;
 }) {
   const { colors } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [amount, setAmount] = useState('');
+  const [date, setDate] = useState<string | null>(null);
 
   useEffect(() => {
-    if (visible && settlement) setAmount(settlement.amount.toFixed(2));
+    if (visible && settlement) {
+      setAmount(settlement.amount.toFixed(2));
+      setDate(settlement.date);
+    }
   }, [visible, settlement]);
 
   const parsed = Number(amount.replace(',', '.'));
@@ -155,9 +161,13 @@ function EditSettlementDialog({
             onChangeText={setAmount}
             autoFocus
           />
+          <View style={styles.dialogField}>
+            <Text style={styles.dialogFieldLabel}>{t('expenses.dateLabel')}</Text>
+            <DatePickerField value={date} onChange={setDate} allowClear={false} />
+          </View>
           <PrimaryButton
             label={t('common.saveChanges')}
-            onPress={() => onConfirm(parsed)}
+            onPress={() => onConfirm(parsed, date ?? todayLocalISODate())}
             disabled={!valid}
             loading={submitting}
           />
@@ -199,6 +209,14 @@ function createStyles(COLORS: ColorPalette) {
     dialogCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 14, width: '100%', maxWidth: 360 },
     dialogTitle: { fontSize: 15, fontWeight: '700', color: COLORS.ink },
     dialogHint: { fontSize: 13, color: COLORS.inkSoft, lineHeight: 18 },
+    dialogField: { gap: 8 },
+    dialogFieldLabel: {
+      fontSize: 12,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
+      color: COLORS.inkSoft,
+    },
     dialogCancel: { textAlign: 'center', fontSize: 13, color: COLORS.inkSoft, marginTop: 4 },
   });
 }

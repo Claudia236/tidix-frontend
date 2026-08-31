@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { householdApi } from '../api/household';
@@ -93,6 +93,20 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
     if (!effectivePaidBy) return;
     setParticipantIds((prev) => (prev.has(effectivePaidBy) ? prev : new Set(prev).add(effectivePaidBy)));
   }, [effectivePaidBy]);
+
+  // Se i membri della famiglia non erano ancora arrivati al primo render
+  // (es. aprendo "Spesa condivisa" dalla Panoramica prima di aver mai
+  // visitato Scorte/Lista Spesa, che sono le uniche altre schermate a
+  // richiederli), participantIds partiva vuoto e la spesa veniva salvata
+  // come se non fosse condivisa (100% al pagatore, nessun altro incluso).
+  // Appena i membri arrivano, se non e' stata passata una selezione
+  // esplicita (modifica di una spesa esistente), includili tutti.
+  const participantsSeededRef = useRef(!!initial?.participantIds);
+  useEffect(() => {
+    if (participantsSeededRef.current || members.length === 0) return;
+    participantsSeededRef.current = true;
+    setParticipantIds(new Set(members.map((m) => m.id)));
+  }, [members]);
 
   function participantShareAmount(id: string): number {
     const totalAmount = Math.max(0, Number(amount.replace(',', '.')) || 0);

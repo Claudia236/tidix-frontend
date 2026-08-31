@@ -71,3 +71,20 @@ export function computeAllTimeNetBalances(expenses: Expense[], settlements: Sett
   }
   return balances;
 }
+
+// Quanto debtorUserId deve sulle proprie spese, al lordo (ignora eventuali
+// spese nella direzione opposta, cioe' pagate da debtorUserId per cui e'
+// invece lui/lei ad essere in credito). Usato per precompilare "Segna
+// pagamento": pagando questo importo, tutte le spese di debtorUserId
+// risultano saldate per intero in un colpo solo, senza mai scoprirsi di
+// nuovo in seguito. Il saldo netto mostrato altrove (che tiene conto anche
+// dei debiti nella direzione opposta) puo' quindi differire da questo
+// importo se esistono spese pagate da debtorUserId per cui l'altra persona
+// deve ancora saldare la propria quota.
+export function totalOwedByUser(expenses: Expense[], debtorUserId: string): number {
+  const total = expenses
+    .filter((e) => e.paidByUserId !== debtorUserId)
+    .flatMap((e) => e.splits.filter((s) => s.userId === debtorUserId))
+    .reduce((sum, s) => sum + Math.max(0, s.amount - s.paidAmount), 0);
+  return Math.round(total * 100) / 100;
+}

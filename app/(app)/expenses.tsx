@@ -226,9 +226,7 @@ export default function ExpensesScreen() {
                       </Text>
                       {!isPayer ? (
                         <Text style={[styles.splitPaidStatus, { color: settled ? colors.positive : colors.danger }]}>
-                          {actuallyPaid || !netSettled
-                            ? t('expenses.paidOfTotal', { paid: s.paidAmount.toFixed(2), total: s.amount.toFixed(2) })
-                            : t('expenses.settledByBalance')}
+                          {t('expenses.paidOfTotal', { paid: s.paidAmount.toFixed(2), total: s.amount.toFixed(2) })}
                         </Text>
                       ) : null}
                     </View>

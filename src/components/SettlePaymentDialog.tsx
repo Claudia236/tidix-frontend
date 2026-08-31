@@ -52,7 +52,7 @@ export function SettlePaymentDialog({ visible, personName, totalOwed, submitting
             autoFocus
           />
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>{t('expenses.dateLabel')}</Text>
+            <Text style={styles.fieldLabel}>{t('settlements.dateLabel')}</Text>
             <DatePickerField value={date} onChange={setDate} allowClear={false} />
           </View>
           <PrimaryButton

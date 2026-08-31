@@ -847,6 +847,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   'expenses.descriptionPlaceholder': { it: 'Es. Spesa supermercato', en: 'e.g. Grocery shopping', es: 'ej. Compra del supermercado' },
   'expenses.amountLabel': { it: 'Importo (€)', en: 'Amount (€)', es: 'Importe (€)' },
   'expenses.dateLabel': { it: 'Data della spesa', en: 'Expense date', es: 'Fecha del gasto' },
+  'settlements.dateLabel': { it: 'Data del pagamento', en: 'Payment date', es: 'Fecha del pago' },
   'expenses.datePlaceholder': { it: 'Seleziona una data', en: 'Select a date', es: 'Selecciona una fecha' },
   'expenses.paidByLabel': { it: 'Pagato da', en: 'Paid by', es: 'Pagado por' },
   'expenses.splitWithLabel': { it: 'Dividi con', en: 'Split with', es: 'Dividir con' },

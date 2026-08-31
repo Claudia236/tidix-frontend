@@ -162,7 +162,7 @@ function EditSettlementDialog({
             autoFocus
           />
           <View style={styles.dialogField}>
-            <Text style={styles.dialogFieldLabel}>{t('expenses.dateLabel')}</Text>
+            <Text style={styles.dialogFieldLabel}>{t('settlements.dateLabel')}</Text>
             <DatePickerField value={date} onChange={setDate} allowClear={false} />
           </View>
           <PrimaryButton

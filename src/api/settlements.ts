@@ -7,8 +7,8 @@ export const settlementsApi = {
   create: (debtorUserId: string, amount: number) =>
     apiClient.post<Settlement>('/api/settlements', { debtorUserId, amount }).then((r) => r.data),
 
-  update: (id: string, amount: number) =>
-    apiClient.put<Settlement>(`/api/settlements/${id}`, { amount }).then((r) => r.data),
+  update: (id: string, amount: number, date: string) =>
+    apiClient.put<Settlement>(`/api/settlements/${id}`, { amount, date }).then((r) => r.data),
 
   remove: (id: string) => apiClient.delete(`/api/settlements/${id}`).then(() => undefined),
 };

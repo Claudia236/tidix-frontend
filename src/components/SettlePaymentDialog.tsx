@@ -4,6 +4,8 @@ import { useModalBackHandler } from '../hooks/useModalBackHandler';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
+import { todayLocalISODate } from '../utils/expiry';
+import { DatePickerField } from './DatePickerField';
 import { PrimaryButton } from './PrimaryButton';
 import { TextField } from './TextField';
 
@@ -12,7 +14,7 @@ interface Props {
   personName: string;
   totalOwed: number;
   submitting?: boolean;
-  onConfirm: (amount: number) => void;
+  onConfirm: (amount: number, date: string) => void;
   onCancel: () => void;
 }
 
@@ -21,9 +23,13 @@ export function SettlePaymentDialog({ visible, personName, totalOwed, submitting
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [amount, setAmount] = useState('');
+  const [date, setDate] = useState<string | null>(null);
 
   useEffect(() => {
-    if (visible) setAmount(totalOwed > 0 ? totalOwed.toFixed(2) : '');
+    if (visible) {
+      setAmount(totalOwed > 0 ? totalOwed.toFixed(2) : '');
+      setDate(todayLocalISODate());
+    }
   }, [visible, totalOwed]);
 
   const parsed = Number(amount.replace(',', '.'));
@@ -45,9 +51,13 @@ export function SettlePaymentDialog({ visible, personName, totalOwed, submitting
             onChangeText={setAmount}
             autoFocus
           />
+          <View style={styles.field}>
+            <Text style={styles.fieldLabel}>{t('settlements.dateLabel')}</Text>
+            <DatePickerField value={date} onChange={setDate} allowClear={false} />
+          </View>
           <PrimaryButton
             label={t('expenses.settleConfirm')}
-            onPress={() => onConfirm(parsed)}
+            onPress={() => onConfirm(parsed, date ?? todayLocalISODate())}
             disabled={!valid}
             loading={submitting}
           />
@@ -66,6 +76,14 @@ function createStyles(COLORS: ColorPalette) {
     card: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, gap: 14, width: '100%', maxWidth: 360 },
     title: { fontSize: 15, fontWeight: '700', color: COLORS.ink },
     subtitle: { fontSize: 13, color: COLORS.inkSoft, lineHeight: 18 },
+    field: { gap: 8 },
+    fieldLabel: {
+      fontSize: 12,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
+      color: COLORS.inkSoft,
+    },
     cancel: { textAlign: 'center', fontSize: 13, color: COLORS.inkSoft, marginTop: 4 },
   });
 }

@@ -4,8 +4,8 @@ import type { Settlement } from '../types';
 export const settlementsApi = {
   list: () => apiClient.get<Settlement[]>('/api/settlements').then((r) => r.data),
 
-  create: (debtorUserId: string, amount: number) =>
-    apiClient.post<Settlement>('/api/settlements', { debtorUserId, amount }).then((r) => r.data),
+  create: (debtorUserId: string, amount: number, date: string) =>
+    apiClient.post<Settlement>('/api/settlements', { debtorUserId, amount, date }).then((r) => r.data),
 
   update: (id: string, amount: number, date: string) =>
     apiClient.put<Settlement>(`/api/settlements/${id}`, { amount, date }).then((r) => r.data),

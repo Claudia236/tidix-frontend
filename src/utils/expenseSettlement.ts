@@ -71,11 +71,3 @@ export function computeAllTimeNetBalances(expenses: Expense[], settlements: Sett
   }
   return balances;
 }
-
-export function totalOwedByUser(expenses: Expense[], debtorUserId: string): number {
-  const total = expenses
-    .filter((e) => e.paidByUserId !== debtorUserId)
-    .flatMap((e) => e.splits.filter((s) => s.userId === debtorUserId))
-    .reduce((sum, s) => sum + Math.max(0, s.amount - s.paidAmount), 0);
-  return Math.round(total * 100) / 100;
-}

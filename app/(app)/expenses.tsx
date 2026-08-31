@@ -17,7 +17,7 @@ import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
 import type { UserBalance } from '../../src/types';
-import { computeAllTimeNetBalances, totalOwedByUser } from '../../src/utils/expenseSettlement';
+import { computeAllTimeNetBalances } from '../../src/utils/expenseSettlement';
 import { formatDashDate } from '../../src/utils/expiry';
 
 function currentMonth(): string {
@@ -244,7 +244,7 @@ export default function ExpensesScreen() {
       <SettlePaymentDialog
         visible={settleTarget !== null}
         personName={settleTarget ? (settleTarget.userId === user?.id ? t('common.you') : settleTarget.userName) : ''}
-        totalOwed={settleTarget ? totalOwedByUser(allExpensesQuery.data ?? [], settleTarget.userId) : 0}
+        totalOwed={settleTarget ? Math.max(0, -(netBalanceByUser.get(settleTarget.userId) ?? 0)) : 0}
         submitting={settleMutation.isPending}
         onCancel={() => setSettleTarget(null)}
         onConfirm={(amount, date) => {

@@ -46,6 +46,7 @@ export default function ExpensesScreen() {
   const { user } = useAuth();
   const [month, setMonth] = useState(currentMonth());
   const [settleTarget, setSettleTarget] = useState<UserBalance | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   const expensesQuery = useQuery({ queryKey: ['expenses', month], queryFn: () => expensesApi.list(month) });
   const summaryQuery = useQuery({ queryKey: ['expenses', 'summary', month], queryFn: () => expensesApi.summary(month) });
@@ -82,7 +83,11 @@ export default function ExpensesScreen() {
     ]);
   }
 
-  const expenses = expensesQuery.data ?? [];
+  // "Vedi tutte" mostra le stesse spese usate per calcolare il saldo
+  // complessivo (allExpensesQuery, senza filtro mese): serve a trovare
+  // spese che per qualche motivo non compaiono nella vista mensile pur
+  // contribuendo al saldo, cosa che altrimenti le renderebbe introvabili.
+  const expenses = showAll ? allExpensesQuery.data ?? [] : expensesQuery.data ?? [];
   const summary = summaryQuery.data;
   // Il saldo (chi deve dare/ricevere) e' complessivo su tutte le spese di
   // sempre, non solo su quelle del mese selezionato: solo il totale speso
@@ -101,14 +106,20 @@ export default function ExpensesScreen() {
         ListHeaderComponent={
           <>
             <View style={styles.monthRow}>
-              <Pressable onPress={() => setMonth((m) => shiftMonth(m, -1))} hitSlop={8}>
-                <Ionicons name="chevron-back" size={20} color={colors.ink} />
+              <Pressable onPress={() => setMonth((m) => shiftMonth(m, -1))} hitSlop={8} disabled={showAll}>
+                <Ionicons name="chevron-back" size={20} color={showAll ? colors.line : colors.ink} />
               </Pressable>
-              <Text style={styles.monthLabel}>{monthLabel(month, t)}</Text>
-              <Pressable onPress={() => setMonth((m) => shiftMonth(m, 1))} hitSlop={8}>
-                <Ionicons name="chevron-forward" size={20} color={colors.ink} />
+              <Text style={styles.monthLabel}>{showAll ? t('expenses.allMonths') : monthLabel(month, t)}</Text>
+              <Pressable onPress={() => setMonth((m) => shiftMonth(m, 1))} hitSlop={8} disabled={showAll}>
+                <Ionicons name="chevron-forward" size={20} color={showAll ? colors.line : colors.ink} />
               </Pressable>
             </View>
+
+            <Pressable onPress={() => setShowAll((v) => !v)} style={styles.showAllToggle}>
+              <Text style={styles.showAllToggleText}>
+                {showAll ? t('expenses.showMonthToggle') : t('expenses.showAllToggle')}
+              </Text>
+            </Pressable>
 
             {summary ? (
               <View style={styles.summaryCard}>
@@ -233,6 +244,8 @@ function createStyles(COLORS: ColorPalette) {
     scroll: { padding: 20, gap: 16, paddingBottom: 60 },
     monthRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 8 },
     monthLabel: { fontSize: 15, fontWeight: '700', color: COLORS.ink, textTransform: 'capitalize' },
+    showAllToggle: { alignItems: 'center', marginBottom: 8 },
+    showAllToggleText: { fontSize: 12, fontWeight: '700', color: COLORS.brand },
     summaryCard: {
       backgroundColor: COLORS.card,
       borderRadius: 14,

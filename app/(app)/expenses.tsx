@@ -96,6 +96,18 @@ export default function ExpensesScreen() {
     () => computeAllTimeNetBalances(allExpensesQuery.data ?? [], settlementsQuery.data ?? []),
     [allExpensesQuery.data, settlementsQuery.data]
   );
+  // Quanto di ogni saldo e' "credito" residuo da un pagamento versato oltre
+  // al dovuto in quel momento (settlement.leftover): senza questa nota il
+  // saldo finale non torna con la somma delle singole spese ancora segnate
+  // come non pagate, e sembra un errore invece che un pagamento anticipato.
+  const leftoverCreditByUser = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const s of settlementsQuery.data ?? []) {
+      if (s.leftover <= 0.01) continue;
+      map.set(s.debtorUserId, (map.get(s.debtorUserId) ?? 0) + s.leftover);
+    }
+    return map;
+  }, [settlementsQuery.data]);
 
   return (
     <View style={styles.container}>
@@ -136,6 +148,7 @@ export default function ExpensesScreen() {
                 {summary.byUser.map((b) => {
                   const netBalance = netBalanceByUser.get(b.userId) ?? 0;
                   const owesMoney = netBalance < -0.01;
+                  const leftoverCredit = leftoverCreditByUser.get(b.userId) ?? 0;
                   return (
                     <View key={b.userId} style={styles.balanceRow}>
                       <View style={styles.balanceRowText}>
@@ -152,6 +165,11 @@ export default function ExpensesScreen() {
                               ? t('expenses.deveDare', { amount: Math.abs(netBalance).toFixed(2) })
                               : t('expenses.inPari')}
                         </Text>
+                        {owesMoney && leftoverCredit > 0.01 ? (
+                          <Text style={styles.leftoverCreditNote}>
+                            {t('expenses.leftoverCreditNote', { amount: leftoverCredit.toFixed(2) })}
+                          </Text>
+                        ) : null}
                       </View>
                       {owesMoney ? (
                         <Pressable style={styles.settleButton} onPress={() => setSettleTarget(b)}>
@@ -268,6 +286,7 @@ function createStyles(COLORS: ColorPalette) {
     balanceRowText: { gap: 2 },
     balanceName: { fontSize: 13, fontWeight: '700', color: COLORS.ink },
     balanceNet: { fontSize: 12, fontWeight: '700' },
+    leftoverCreditNote: { fontSize: 11, color: COLORS.inkSoft, marginTop: 1 },
     settleButton: {
       flexDirection: 'row',
       alignItems: 'center',

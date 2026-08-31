@@ -837,6 +837,11 @@ const ENTRIES: Record<string, EntryTriple> = {
   'expenses.inPari': { it: 'In pari', en: 'Settled up', es: 'Al día' },
   'expenses.deveRicevere': { it: (v) => `Deve ricevere ${v.amount} €`, en: (v) => `Gets back ${v.amount} €`, es: (v) => `Recibe ${v.amount} €` },
   'expenses.deveDare': { it: (v) => `Deve dare ${v.amount} €`, en: (v) => `Owes ${v.amount} €`, es: (v) => `Debe ${v.amount} €` },
+  'expenses.leftoverCreditNote': {
+    it: (v) => `Include ${v.amount} € già versati in anticipo con un pagamento precedente`,
+    en: (v) => `Includes ${v.amount} € already paid in advance with a previous payment`,
+    es: (v) => `Incluye ${v.amount} € ya pagados por adelantado con un pago anterior`,
+  },
   'expenses.addToggleAdd': { it: 'Aggiungi spesa', en: 'Add expense', es: 'Añadir gasto' },
   'expenses.descriptionLabel': { it: 'Descrizione', en: 'Description', es: 'Descripción' },
   'expenses.descriptionPlaceholder': { it: 'Es. Spesa supermercato', en: 'e.g. Grocery shopping', es: 'ej. Compra del supermercado' },

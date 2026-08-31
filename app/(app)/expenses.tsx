@@ -60,8 +60,8 @@ export default function ExpensesScreen() {
   });
 
   const settleMutation = useMutation({
-    mutationFn: ({ debtorUserId, amount }: { debtorUserId: string; amount: number }) =>
-      settlementsApi.create(debtorUserId, amount),
+    mutationFn: ({ debtorUserId, amount, date }: { debtorUserId: string; amount: number; date: string }) =>
+      settlementsApi.create(debtorUserId, amount, date),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       queryClient.invalidateQueries({ queryKey: ['settlements'] });
@@ -247,9 +247,9 @@ export default function ExpensesScreen() {
         totalOwed={settleTarget ? totalOwedByUser(allExpensesQuery.data ?? [], settleTarget.userId) : 0}
         submitting={settleMutation.isPending}
         onCancel={() => setSettleTarget(null)}
-        onConfirm={(amount) => {
+        onConfirm={(amount, date) => {
           if (!settleTarget) return;
-          settleMutation.mutate({ debtorUserId: settleTarget.userId, amount });
+          settleMutation.mutate({ debtorUserId: settleTarget.userId, amount, date });
         }}
       />
     </View>

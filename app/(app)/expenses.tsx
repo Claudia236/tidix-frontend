@@ -210,9 +210,7 @@ export default function ExpensesScreen() {
               <View style={styles.splitsList}>
                 {item.splits.map((s) => {
                   const isPayer = s.userId === item.paidByUserId;
-                  const actuallyPaid = s.paidAmount >= s.amount - 0.01;
-                  const netSettled = (netBalanceByUser.get(s.userId) ?? 0) >= -0.01;
-                  const settled = !isPayer && (actuallyPaid || netSettled);
+                  const settled = !isPayer && s.paidAmount >= s.amount - 0.01;
                   return (
                     <View key={s.userId} style={styles.splitRow}>
                       <Ionicons

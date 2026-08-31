@@ -907,6 +907,16 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'settlements.paidBy': { it: (v) => `Pagamento di ${v.name}`, en: (v) => `Payment from ${v.name}`, es: (v) => `Pago de ${v.name}` },
   'settlements.allocatedTo': { it: 'Applicato a:', en: 'Applied to:', es: 'Aplicado a:' },
+  'settlements.nettedTo': {
+    it: 'Debiti incrociati compensati:',
+    en: 'Cross-debts offset:',
+    es: 'Deudas cruzadas compensadas:',
+  },
+  'settlements.nettedAllocationLabel': {
+    it: (v) => `${v.description} (${v.userName})`,
+    en: (v) => `${v.description} (${v.userName})`,
+    es: (v) => `${v.description} (${v.userName})`,
+  },
   'settlements.leftoverNote': {
     it: (v) => `${v.amount} € non allocati (nessuna quota residua da saldare)`,
     en: (v) => `${v.amount} € left unallocated (no remaining share to settle)`,

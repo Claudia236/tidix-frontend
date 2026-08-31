@@ -86,6 +86,20 @@ export default function SettlementsScreen() {
               </View>
             ) : null}
 
+            {item.nettedAllocations && item.nettedAllocations.length > 0 ? (
+              <View style={styles.allocations}>
+                <Text style={styles.allocationsLabel}>{t('settlements.nettedTo')}</Text>
+                {item.nettedAllocations.map((a, i) => (
+                  <View key={`${a.expenseId}-${i}`} style={styles.allocationRow}>
+                    <Text style={styles.allocationDescription} numberOfLines={1}>
+                      {t('settlements.nettedAllocationLabel', { description: a.expenseDescription, userName: a.userName ?? '' })}
+                    </Text>
+                    <Text style={styles.allocationAmount}>{a.amountApplied.toFixed(2)} €</Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+
             {item.leftover > 0.01 ? (
               <Text style={styles.leftover}>{t('settlements.leftoverNote', { amount: item.leftover.toFixed(2) })}</Text>
             ) : null}

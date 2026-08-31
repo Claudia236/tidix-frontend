@@ -219,6 +219,8 @@ export interface SettlementAllocation {
   expenseId: string;
   expenseDescription: string;
   amountApplied: number;
+  userId?: string;
+  userName?: string;
 }
 
 export interface Settlement {
@@ -227,6 +229,9 @@ export interface Settlement {
   debtorName: string;
   amount: number;
   allocations: SettlementAllocation[];
+  // Debiti nella direzione opposta (spese pagate dal debitore, quote altrui
+  // non ancora saldate) compensati automaticamente da questo pagamento.
+  nettedAllocations: SettlementAllocation[];
   leftover: number;
   date: string;
   createdAt: string;

@@ -908,7 +908,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   'settlements.paidBy': { it: (v) => `Pagamento di ${v.name}`, en: (v) => `Payment from ${v.name}`, es: (v) => `Pago de ${v.name}` },
   'settlements.allocatedTo': { it: 'Applicato a:', en: 'Applied to:', es: 'Aplicado a:' },
   'settlements.nettedTo': {
-    it: 'Debiti incrociati compensati:',
+    it: 'Saldi incrociati:',
     en: 'Cross-debts offset:',
     es: 'Deudas cruzadas compensadas:',
   },

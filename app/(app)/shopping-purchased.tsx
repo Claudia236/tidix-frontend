@@ -85,7 +85,7 @@ export default function ShoppingPurchasedScreen() {
   }
 
   function confirmDeleteNote(note: ShoppingNote) {
-    showAlert(t('shoppingNote.confirmDeleteTitle'), t('shoppingNote.confirmDeleteMessage'), [
+    showAlert(t('purchased.confirmDeleteTitle'), t('purchased.confirmDeleteMessage'), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.delete'), style: 'destructive', onPress: () => removeNoteMutation.mutate(note.id) },
     ]);

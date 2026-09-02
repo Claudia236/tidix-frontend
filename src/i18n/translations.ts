@@ -612,6 +612,12 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
 
   'purchased.title': { it: 'Acquistati', en: 'Purchased', es: 'Comprados' },
+  'purchased.confirmDeleteTitle': { it: 'Rimuovi dagli acquistati', en: 'Remove from purchased', es: 'Eliminar de comprados' },
+  'purchased.confirmDeleteMessage': {
+    it: 'Rimuovere questo prodotto dagli acquistati?',
+    en: 'Remove this product from purchased?',
+    es: '¿Eliminar este producto de comprados?',
+  },
   'purchased.emptyTitle': { it: 'Nessun prodotto acquistato', en: 'No purchased products', es: 'Ningún producto comprado' },
   'purchased.emptySubtitle': {
     it: 'Quando spunti una voce nella lista della spesa la trovi qui, pronta per essere aggiunta alle scorte.',

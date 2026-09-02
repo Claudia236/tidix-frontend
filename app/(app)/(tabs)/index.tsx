@@ -165,13 +165,6 @@ export default function OverviewScreen() {
     ]);
   }
 
-  function confirmSwipeGoToItem(item: Item) {
-    showAlert(t('overview.confirmOpenDetailTitle'), t('overview.confirmOpenDetailMessage', { name: item.name }), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.confirm'), onPress: () => goToItem(item) },
-    ]);
-  }
-
   const markCleanedMutation = useMutation({
     mutationFn: (id: string) => cleaningApi.markCleaned(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] }),
@@ -255,7 +248,7 @@ export default function OverviewScreen() {
                   <SwipeableRow
                     key={item.id}
                     leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
-                    rightAction={{ onTrigger: () => confirmSwipeGoToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                    rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
                     borderRadius={0}
                     marginBottom={0}
                   >
@@ -294,7 +287,7 @@ export default function OverviewScreen() {
                 <SwipeableRow
                   key={item.id}
                   leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
-                  rightAction={{ onTrigger: () => confirmSwipeGoToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                  rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
                   borderRadius={0}
                   marginBottom={0}
                 >
@@ -338,7 +331,7 @@ export default function OverviewScreen() {
                   <SwipeableRow
                     key={item.id}
                     leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
-                    rightAction={{ onTrigger: () => confirmSwipeGoToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                    rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
                     borderRadius={0}
                     marginBottom={0}
                   >

@@ -8,4 +8,6 @@ Il sito su `https://claudia236.github.io/tidix-frontend/` è una build statica (
 
 # Swipe nelle liste
 
-Quando aggiungi un gesto di swipe (elimina, segna come fatto/acquistato, ecc.) su una riga di una lista, l'azione NON deve scattare subito al termine dello swipe: mostra sempre un popup di conferma (`showAlert`) prima di eseguirla. Vale per ogni nuovo swipe, anche quelli non distruttivi (es. "vai al dettaglio", "segna pulito"). Riusa il componente condiviso `src/components/SwipeableRow.tsx`.
+Quando aggiungi un gesto di swipe su una riga di una lista, riusa il componente condiviso `src/components/SwipeableRow.tsx`. Regola sulla conferma:
+- Se l'azione modifica subito dei dati (elimina, segna pulito/acquistato, ecc.), mostra sempre un popup di conferma (`showAlert`) prima di eseguirla, anche se non distruttiva.
+- Se l'azione si limita a navigare altrove (apre un'altra schermata o un form, es. "vai al dettaglio", "aggiungi a scorte") senza cambiare nulla subito, NON serve popup: si può sempre tornare indietro senza conseguenze. Vale anche per lo stesso pulsante/azione raggiungibile a tocco, non solo via swipe.

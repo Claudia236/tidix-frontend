@@ -497,12 +497,6 @@ const ENTRIES: Record<string, EntryTriple> = {
     es: (v) => (v.n === 1 ? `Limpiado hace ${v.n} día` : `Limpiado hace ${v.n} días`),
   },
   'overview.cleaningCard.allGood': { it: 'Tutto pulito! ✨', en: 'All clean! ✨', es: '¡Todo limpio! ✨' },
-  'overview.confirmOpenDetailTitle': { it: 'Apri dettaglio', en: 'Open detail', es: 'Abrir detalle' },
-  'overview.confirmOpenDetailMessage': {
-    it: (v) => `Aprire il dettaglio di "${v.name}"?`,
-    en: (v) => `Open the detail of "${v.name}"?`,
-    es: (v) => `¿Abrir el detalle de "${v.name}"?`,
-  },
   'overview.confirmMarkCleanedTitle': { it: 'Segna come pulito', en: 'Mark as cleaned', es: 'Marcar como limpiado' },
   'overview.confirmMarkCleanedMessage': {
     it: (v) => `Segnare "${v.name}" come pulito oggi?`,
@@ -632,12 +626,6 @@ const ENTRIES: Record<string, EntryTriple> = {
     it: (v) => `Vuoi eliminare ${v.n} ${v.n === 1 ? 'prodotto' : 'prodotti'} dagli acquistati?`,
     en: (v) => `Delete ${v.n} ${v.n === 1 ? 'product' : 'products'} from purchased?`,
     es: (v) => `¿Eliminar ${v.n} ${v.n === 1 ? 'producto' : 'productos'} de comprados?`,
-  },
-  'purchased.confirmAddToStockTitle': { it: 'Aggiungi alle scorte', en: 'Add to stock', es: 'Añadir al inventario' },
-  'purchased.confirmAddToStockMessage': {
-    it: (v) => `Aggiungere "${v.name}" alle scorte?`,
-    en: (v) => `Add "${v.name}" to stock?`,
-    es: (v) => `¿Añadir "${v.name}" al inventario?`,
   },
 
   // Cleaning

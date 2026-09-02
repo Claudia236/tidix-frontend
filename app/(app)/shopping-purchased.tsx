@@ -91,13 +91,6 @@ export default function ShoppingPurchasedScreen() {
     ]);
   }
 
-  function confirmAddToStock(note: ShoppingNote) {
-    showAlert(t('purchased.confirmAddToStockTitle'), t('purchased.confirmAddToStockMessage', { name: note.text }), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.confirm'), onPress: () => goAddToStock(note) },
-    ]);
-  }
-
   const allSelected = checkedNotes.length > 0 && selectedIds.size === checkedNotes.length;
 
   return (
@@ -134,7 +127,7 @@ export default function ShoppingPurchasedScreen() {
           return (
             <SwipeableRow
               leftAction={deleteAction(colors, () => confirmDeleteNote(note))}
-              rightAction={{ onTrigger: () => confirmAddToStock(note), icon: 'cube-outline', color: colors.brand }}
+              rightAction={{ onTrigger: () => goAddToStock(note), icon: 'cube-outline', color: colors.brand }}
             >
               <View style={styles.row}>
                 <Pressable onPress={() => toggleSelected(note.id)} hitSlop={6}>
@@ -148,7 +141,7 @@ export default function ShoppingPurchasedScreen() {
                   <Text style={styles.rowName} numberOfLines={1}>{note.text}</Text>
                   {note.detail ? <Text style={styles.rowDetail} numberOfLines={1}>{note.detail}</Text> : null}
                 </View>
-                <Pressable onPress={() => confirmAddToStock(note)} style={styles.addToStockButton} hitSlop={6}>
+                <Pressable onPress={() => goAddToStock(note)} style={styles.addToStockButton} hitSlop={6}>
                   <Text style={styles.addToStockText}>{t('shopping.addToStock')}</Text>
                 </Pressable>
                 <Pressable onPress={() => confirmDeleteNote(note)} style={styles.deleteButton} hitSlop={6}>

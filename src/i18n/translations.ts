@@ -577,6 +577,18 @@ const ENTRIES: Record<string, EntryTriple> = {
   'shopping.groupBy.category': { it: 'Per categoria', en: 'By category', es: 'Por categoría' },
   'shopping.groupBy.supermarket': { it: 'Per supermercato', en: 'By supermarket', es: 'Por supermercado' },
   'shopping.noSupermarket': { it: 'Senza supermercato', en: 'No supermarket', es: 'Sin supermercado' },
+  'shopping.confirmRemoveItemTitle': { it: 'Rimuovi dalle scorte', en: 'Remove from stock', es: 'Eliminar del inventario' },
+  'shopping.confirmRemoveItemMessage': {
+    it: (v) => `Eliminare "${v.name}" dalle scorte?`,
+    en: (v) => `Delete "${v.name}" from stock?`,
+    es: (v) => `¿Eliminar "${v.name}" del inventario?`,
+  },
+  'shopping.confirmMarkPurchasedTitle': { it: 'Segna come acquistato', en: 'Mark as purchased', es: 'Marcar como comprado' },
+  'shopping.confirmMarkPurchasedMessage': {
+    it: (v) => `Spostare "${v.name}" tra gli acquistati?`,
+    en: (v) => `Move "${v.name}" to purchased?`,
+    es: (v) => `¿Mover "${v.name}" a comprados?`,
+  },
 
   'shoppingNote.new.title': { it: 'Nuovo prodotto', en: 'New product', es: 'Nuevo producto' },
   'shoppingNote.edit.title': { it: 'Modifica prodotto', en: 'Edit product', es: 'Editar producto' },
@@ -608,6 +620,12 @@ const ENTRIES: Record<string, EntryTriple> = {
     it: (v) => `Vuoi eliminare ${v.n} ${v.n === 1 ? 'prodotto' : 'prodotti'} dagli acquistati?`,
     en: (v) => `Delete ${v.n} ${v.n === 1 ? 'product' : 'products'} from purchased?`,
     es: (v) => `¿Eliminar ${v.n} ${v.n === 1 ? 'producto' : 'productos'} de comprados?`,
+  },
+  'purchased.confirmAddToStockTitle': { it: 'Aggiungi alle scorte', en: 'Add to stock', es: 'Añadir al inventario' },
+  'purchased.confirmAddToStockMessage': {
+    it: (v) => `Aggiungere "${v.name}" alle scorte?`,
+    en: (v) => `Add "${v.name}" to stock?`,
+    es: (v) => `¿Añadir "${v.name}" al inventario?`,
   },
 
   // Cleaning

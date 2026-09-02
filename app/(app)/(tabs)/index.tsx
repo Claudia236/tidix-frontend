@@ -249,7 +249,7 @@ export default function OverviewScreen() {
                     key={item.id}
                     leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
                     rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
-                    borderRadius={0}
+                    borderRadius={10}
                     marginBottom={0}
                   >
                     <Pressable style={styles.detailRow} onPress={() => goToItem(item)}>
@@ -288,7 +288,7 @@ export default function OverviewScreen() {
                   key={item.id}
                   leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
                   rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
-                  borderRadius={0}
+                  borderRadius={10}
                   marginBottom={0}
                 >
                   <Pressable style={styles.detailRow} onPress={() => goToItem(item)}>
@@ -332,7 +332,7 @@ export default function OverviewScreen() {
                     key={item.id}
                     leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
                     rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
-                    borderRadius={0}
+                    borderRadius={10}
                     marginBottom={0}
                   >
                     <Pressable style={styles.detailRow} onPress={() => goToItem(item)}>
@@ -370,7 +370,7 @@ export default function OverviewScreen() {
                 <SwipeableRow
                   key={task.id}
                   leftAction={{ onTrigger: () => confirmSwipeMarkCleaned(task.id, task.name), icon: 'checkmark-done', color: colors.positive }}
-                  borderRadius={0}
+                  borderRadius={10}
                   marginBottom={0}
                 >
                   <Pressable style={styles.detailRow} onPress={() => router.push('/(app)/cleaning')}>
@@ -468,15 +468,16 @@ function createStyles(COLORS: ColorPalette) {
     detailCardTitle: { fontSize: 16, fontWeight: '800', color: COLORS.ink },
     detailCardCount: { fontSize: 20, fontWeight: '800', color: COLORS.ink },
     detailCardEmpty: { fontSize: 12, color: COLORS.inkSoft },
-    detailCardList: { gap: 2 },
+    detailCardList: { gap: 6 },
     detailRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       gap: 10,
-      borderTopWidth: 1,
-      borderColor: COLORS.line,
+      backgroundColor: COLORS.bg,
+      borderRadius: 10,
       paddingVertical: 8,
+      paddingHorizontal: 10,
     },
     detailRowText: { flex: 1, fontSize: 13, fontWeight: '600', color: COLORS.ink },
     detailRowMeta: { fontSize: 11, color: COLORS.inkSoft },

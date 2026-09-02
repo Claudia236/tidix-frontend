@@ -8,6 +8,7 @@ import { getErrorMessage } from '../../src/api/client';
 import { shoppingNotesApi } from '../../src/api/shoppingNotes';
 import { showAlert } from '../../src/components/AppAlert';
 import { EmptyState } from '../../src/components/EmptyState';
+import { deleteAction, SwipeableRow } from '../../src/components/SwipeableRow';
 import { useI18n } from '../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
@@ -83,6 +84,20 @@ export default function ShoppingPurchasedScreen() {
     });
   }
 
+  function confirmDeleteNote(note: ShoppingNote) {
+    showAlert(t('shoppingNote.confirmDeleteTitle'), t('shoppingNote.confirmDeleteMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: () => removeNoteMutation.mutate(note.id) },
+    ]);
+  }
+
+  function confirmAddToStock(note: ShoppingNote) {
+    showAlert(t('purchased.confirmAddToStockTitle'), t('purchased.confirmAddToStockMessage', { name: note.text }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.confirm'), onPress: () => goAddToStock(note) },
+    ]);
+  }
+
   const allSelected = checkedNotes.length > 0 && selectedIds.size === checkedNotes.length;
 
   return (
@@ -117,25 +132,30 @@ export default function ShoppingPurchasedScreen() {
         renderItem={({ item: note }) => {
           const selected = selectedIds.has(note.id);
           return (
-            <View style={styles.row}>
-              <Pressable onPress={() => toggleSelected(note.id)} hitSlop={6}>
-                <Ionicons
-                  name={selected ? 'checkbox' : 'square-outline'}
-                  size={20}
-                  color={selected ? colors.brand : colors.inkSoft}
-                />
-              </Pressable>
-              <View style={styles.rowInfo}>
-                <Text style={styles.rowName} numberOfLines={1}>{note.text}</Text>
-                {note.detail ? <Text style={styles.rowDetail} numberOfLines={1}>{note.detail}</Text> : null}
+            <SwipeableRow
+              leftAction={deleteAction(colors, () => confirmDeleteNote(note))}
+              rightAction={{ onTrigger: () => confirmAddToStock(note), icon: 'cube-outline', color: colors.brand }}
+            >
+              <View style={styles.row}>
+                <Pressable onPress={() => toggleSelected(note.id)} hitSlop={6}>
+                  <Ionicons
+                    name={selected ? 'checkbox' : 'square-outline'}
+                    size={20}
+                    color={selected ? colors.brand : colors.inkSoft}
+                  />
+                </Pressable>
+                <View style={styles.rowInfo}>
+                  <Text style={styles.rowName} numberOfLines={1}>{note.text}</Text>
+                  {note.detail ? <Text style={styles.rowDetail} numberOfLines={1}>{note.detail}</Text> : null}
+                </View>
+                <Pressable onPress={() => confirmAddToStock(note)} style={styles.addToStockButton} hitSlop={6}>
+                  <Text style={styles.addToStockText}>{t('shopping.addToStock')}</Text>
+                </Pressable>
+                <Pressable onPress={() => confirmDeleteNote(note)} style={styles.deleteButton} hitSlop={6}>
+                  <Ionicons name="trash-outline" size={18} color={colors.inkSoft} />
+                </Pressable>
               </View>
-              <Pressable onPress={() => goAddToStock(note)} style={styles.addToStockButton} hitSlop={6}>
-                <Text style={styles.addToStockText}>{t('shopping.addToStock')}</Text>
-              </Pressable>
-              <Pressable onPress={() => removeNoteMutation.mutate(note.id)} style={styles.deleteButton} hitSlop={6}>
-                <Ionicons name="trash-outline" size={18} color={colors.inkSoft} />
-              </Pressable>
-            </View>
+            </SwipeableRow>
           );
         }}
       />

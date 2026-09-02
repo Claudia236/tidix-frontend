@@ -12,6 +12,7 @@ import { useCategories, findCategoryInfo, useLocationColor, locationCode } from 
 import { EmptyState } from '../../../src/components/EmptyState';
 import { RestockDialog } from '../../../src/components/RestockDialog';
 import { SectionTitle } from '../../../src/components/SectionTitle';
+import { deleteAction, SwipeableRow } from '../../../src/components/SwipeableRow';
 import { useStorageLocations } from '../../../src/hooks/useStorageLocations';
 import { useSupermarkets } from '../../../src/hooks/useSupermarkets';
 import { useI18n } from '../../../src/i18n/I18nContext';
@@ -96,6 +97,33 @@ export default function ShoppingScreen() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
+
+  const removeItemMutation = useMutation({
+    mutationFn: (id: string) => itemsApi.remove(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+  });
+
+  function confirmDeleteItem(item: Item) {
+    showAlert(t('shopping.confirmRemoveItemTitle'), t('shopping.confirmRemoveItemMessage', { name: item.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: () => removeItemMutation.mutate(item.id) },
+    ]);
+  }
+
+  function confirmDeleteNote(note: ShoppingNote) {
+    showAlert(t('shoppingNote.confirmDeleteTitle'), t('shoppingNote.confirmDeleteMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: () => removeNoteMutation.mutate(note.id) },
+    ]);
+  }
+
+  function confirmMarkPurchased(note: ShoppingNote) {
+    showAlert(t('shopping.confirmMarkPurchasedTitle'), t('shopping.confirmMarkPurchasedMessage', { name: note.text }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.confirm'), onPress: () => checkNoteMutation.mutate(note.id) },
+    ]);
+  }
 
   const toBuyRows: ToBuyRow[] = useMemo(() => {
     const items = shoppingQuery.data ?? [];
@@ -247,27 +275,32 @@ export default function ShoppingScreen() {
             const note = row.data;
             const supermarket = groupBy === 'category' && note.supermarketId ? supermarketById.get(note.supermarketId) : null;
             return (
-              <View style={styles.row}>
-                <Pressable onPress={() => checkNoteMutation.mutate(note.id)} style={styles.checkbox} hitSlop={8} />
-                <Pressable
-                  style={styles.rowTextInfo}
-                  onPress={() => router.push({ pathname: '/(app)/shopping-note/[id]', params: { id: note.id } })}
-                >
-                  <Text style={styles.rowNameStacked} numberOfLines={1}>{note.text}</Text>
-                  {note.detail ? <Text style={styles.rowDetail} numberOfLines={1}>{note.detail}</Text> : null}
-                  {supermarket ? <Text style={styles.rowDetail} numberOfLines={1}>{supermarket.name}</Text> : null}
-                </Pressable>
-                <Pressable
-                  onPress={() => router.push({ pathname: '/(app)/shopping-note/[id]', params: { id: note.id } })}
-                  style={styles.categoryTag}
-                  hitSlop={8}
-                >
-                  <Text style={{ fontSize: 13 }}>{note.category ? findCategoryInfo(categories, note.category).emoji : '🏷️'}</Text>
-                </Pressable>
-                <Pressable onPress={() => removeNoteMutation.mutate(note.id)} hitSlop={8}>
-                  <Ionicons name="trash-outline" size={16} color={colors.inkSoft} />
-                </Pressable>
-              </View>
+              <SwipeableRow
+                leftAction={deleteAction(colors, () => confirmDeleteNote(note))}
+                rightAction={{ onTrigger: () => confirmMarkPurchased(note), icon: 'checkmark-done', color: colors.brand }}
+              >
+                <View style={styles.row}>
+                  <Pressable onPress={() => checkNoteMutation.mutate(note.id)} style={styles.checkbox} hitSlop={8} />
+                  <Pressable
+                    style={styles.rowTextInfo}
+                    onPress={() => router.push({ pathname: '/(app)/shopping-note/[id]', params: { id: note.id } })}
+                  >
+                    <Text style={styles.rowNameStacked} numberOfLines={1}>{note.text}</Text>
+                    {note.detail ? <Text style={styles.rowDetail} numberOfLines={1}>{note.detail}</Text> : null}
+                    {supermarket ? <Text style={styles.rowDetail} numberOfLines={1}>{supermarket.name}</Text> : null}
+                  </Pressable>
+                  <Pressable
+                    onPress={() => router.push({ pathname: '/(app)/shopping-note/[id]', params: { id: note.id } })}
+                    style={styles.categoryTag}
+                    hitSlop={8}
+                  >
+                    <Text style={{ fontSize: 13 }}>{note.category ? findCategoryInfo(categories, note.category).emoji : '🏷️'}</Text>
+                  </Pressable>
+                  <Pressable onPress={() => confirmDeleteNote(note)} hitSlop={8}>
+                    <Ionicons name="trash-outline" size={16} color={colors.inkSoft} />
+                  </Pressable>
+                </View>
+              </SwipeableRow>
             );
           }
 
@@ -277,26 +310,31 @@ export default function ShoppingScreen() {
           const { color: locationFg, bg: locationBg } = getLocationColor(item.storageLocationId);
           const supermarket = groupBy === 'category' && item.supermarketId ? supermarketById.get(item.supermarketId) : null;
           return (
-            <View style={styles.row}>
-              <Pressable onPress={() => setRestockTarget(item)} style={styles.checkbox} hitSlop={8} />
-              <Pressable
-                style={styles.rowInfo}
-                onPress={() => router.push({ pathname: '/(app)/item/[id]', params: { id: item.id } })}
-              >
-                <Text>{category.emoji}</Text>
-                <View style={styles.rowTextInfo}>
-                  <View style={styles.itemNameRow}>
-                    <Text style={styles.rowName} numberOfLines={1}>{item.name}</Text>
-                    {location ? (
-                      <View style={[styles.zoneBadge, { backgroundColor: locationBg }]}>
-                        <Text style={[styles.zoneBadgeText, { color: locationFg }]}>{locationCode(location.name)}</Text>
-                      </View>
-                    ) : null}
+            <SwipeableRow
+              leftAction={deleteAction(colors, () => confirmDeleteItem(item))}
+              rightAction={{ onTrigger: () => setRestockTarget(item), icon: 'checkmark-done', color: colors.brand }}
+            >
+              <View style={styles.row}>
+                <Pressable onPress={() => setRestockTarget(item)} style={styles.checkbox} hitSlop={8} />
+                <Pressable
+                  style={styles.rowInfo}
+                  onPress={() => router.push({ pathname: '/(app)/item/[id]', params: { id: item.id } })}
+                >
+                  <Text>{category.emoji}</Text>
+                  <View style={styles.rowTextInfo}>
+                    <View style={styles.itemNameRow}>
+                      <Text style={styles.rowName} numberOfLines={1}>{item.name}</Text>
+                      {location ? (
+                        <View style={[styles.zoneBadge, { backgroundColor: locationBg }]}>
+                          <Text style={[styles.zoneBadgeText, { color: locationFg }]}>{locationCode(location.name)}</Text>
+                        </View>
+                      ) : null}
+                    </View>
+                    {supermarket ? <Text style={styles.rowDetail} numberOfLines={1}>{supermarket.name}</Text> : null}
                   </View>
-                  {supermarket ? <Text style={styles.rowDetail} numberOfLines={1}>{supermarket.name}</Text> : null}
-                </View>
-              </Pressable>
-            </View>
+                </Pressable>
+              </View>
+            </SwipeableRow>
           );
         }}
       />

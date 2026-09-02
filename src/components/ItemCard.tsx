@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useMemo, useRef } from 'react';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { useCategoryInfo, useExpiryStatusColors, useLocationColor, locationCode } from '../constants/domain';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
@@ -13,12 +14,14 @@ interface Props {
   location: StorageLocation | undefined;
   onAdjust: (delta: number) => void;
   onPress: () => void;
+  onSwipeDelete: () => void;
 }
 
-export function ItemCard({ item, location, onAdjust, onPress }: Props) {
+export function ItemCard({ item, location, onAdjust, onPress, onSwipeDelete }: Props) {
   const { colors } = useTheme();
   const { t, language } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const swipeableRef = useRef<Swipeable>(null);
   const category = useCategoryInfo(item.category);
   const expiryStatusColors = useExpiryStatusColors();
   const getLocationColor = useLocationColor();
@@ -43,8 +46,34 @@ export function ItemCard({ item, location, onAdjust, onPress }: Props) {
     }
   }
 
+  // Trascinare la card verso destra rivela questa azione a sinistra: appena
+  // lo swipe si "apre" (soglia superata) si richiude subito e si mostra lo
+  // stesso popup di eliminazione della schermata di dettaglio, senza dover
+  // per forza toccare un bottone rivelato dallo swipe.
+  function renderLeftActions(progress: Animated.AnimatedInterpolation<number>) {
+    const scale = progress.interpolate({ inputRange: [0, 1], outputRange: [0.5, 1], extrapolate: 'clamp' });
+    return (
+      <View style={styles.swipeDeleteAction}>
+        <Animated.View style={{ transform: [{ scale }] }}>
+          <Ionicons name="trash-outline" size={20} color={colors.white} />
+        </Animated.View>
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.card}>
+    <Swipeable
+      ref={swipeableRef}
+      renderLeftActions={renderLeftActions}
+      overshootLeft={false}
+      onSwipeableOpen={(direction) => {
+        if (direction === 'left') {
+          swipeableRef.current?.close();
+          onSwipeDelete();
+        }
+      }}
+    >
+      <View style={styles.card}>
       <View style={[styles.stripe, { backgroundColor: stripeColor }]} />
       <View style={styles.body}>
         <Pressable onPress={onPress} style={styles.pressableInfo}>
@@ -85,7 +114,8 @@ export function ItemCard({ item, location, onAdjust, onPress }: Props) {
           </Pressable>
         </View>
       </View>
-    </View>
+      </View>
+    </Swipeable>
   );
 }
 
@@ -103,6 +133,15 @@ function createStyles(COLORS: ColorPalette) {
       borderColor: COLORS.line,
       overflow: 'hidden',
       marginBottom: 8,
+    },
+    swipeDeleteAction: {
+      flex: 1,
+      backgroundColor: COLORS.danger,
+      borderRadius: 14,
+      marginBottom: 8,
+      alignItems: 'flex-start',
+      justifyContent: 'center',
+      paddingLeft: 20,
     },
     stripe: { width: 5 },
     body: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingRight: 12, gap: 8 },

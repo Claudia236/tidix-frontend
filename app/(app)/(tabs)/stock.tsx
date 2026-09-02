@@ -155,6 +155,29 @@ export default function StockScreen() {
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
+  const removeMutation = useMutation({
+    mutationFn: (id: string) => itemsApi.remove(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+  });
+
+  const removeAndAddToShoppingListMutation = useMutation({
+    mutationFn: (item: Item) => itemsApi.adjustQuantity(item.id, { delta: -item.quantity, hideFromShoppingList: false }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+  });
+
+  // Stesso popup a tre opzioni della schermata di dettaglio (item/[id].tsx),
+  // raggiungibile qui anche trascinando la card verso destra: evita di dover
+  // per forza aprire il dettaglio solo per eliminare un prodotto.
+  function confirmSwipeDelete(item: Item) {
+    showAlert(t('item.confirmDeleteTitle'), t('item.confirmDeleteMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('item.deleteAndAddToShoppingList'), onPress: () => removeAndAddToShoppingListMutation.mutate(item) },
+      { text: t('item.deleteOnly'), style: 'destructive', onPress: () => removeMutation.mutate(item.id) },
+    ]);
+  }
+
   function handleAdjust(item: Item, delta: number) {
     if (delta > 0) {
       setRestockTarget(item);
@@ -326,6 +349,7 @@ export default function StockScreen() {
                 location={byId.get(item.storageLocationId)}
                 onAdjust={(delta) => handleAdjust(item, delta)}
                 onPress={() => router.push({ pathname: '/(app)/item/[id]', params: { id: item.id } })}
+                onSwipeDelete={() => confirmSwipeDelete(item)}
               />
             );
           }}

@@ -165,11 +165,25 @@ export default function OverviewScreen() {
     ]);
   }
 
+  function confirmSwipeGoToItem(item: Item) {
+    showAlert(t('overview.confirmOpenDetailTitle'), t('overview.confirmOpenDetailMessage', { name: item.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.confirm'), onPress: () => goToItem(item) },
+    ]);
+  }
+
   const markCleanedMutation = useMutation({
     mutationFn: (id: string) => cleaningApi.markCleaned(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] }),
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
+
+  function confirmSwipeMarkCleaned(taskId: string, taskName: string) {
+    showAlert(t('overview.confirmMarkCleanedTitle'), t('overview.confirmMarkCleanedMessage', { name: taskName }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.confirm'), onPress: () => markCleanedMutation.mutate(taskId) },
+    ]);
+  }
 
   const shoppingCount = shoppingQuery.data?.length ?? 0;
 
@@ -241,7 +255,7 @@ export default function OverviewScreen() {
                   <SwipeableRow
                     key={item.id}
                     leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
-                    rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                    rightAction={{ onTrigger: () => confirmSwipeGoToItem(item), icon: 'chevron-forward', color: colors.brand }}
                     borderRadius={0}
                     marginBottom={0}
                   >
@@ -280,7 +294,7 @@ export default function OverviewScreen() {
                 <SwipeableRow
                   key={item.id}
                   leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
-                  rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                  rightAction={{ onTrigger: () => confirmSwipeGoToItem(item), icon: 'chevron-forward', color: colors.brand }}
                   borderRadius={0}
                   marginBottom={0}
                 >
@@ -324,7 +338,7 @@ export default function OverviewScreen() {
                   <SwipeableRow
                     key={item.id}
                     leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
-                    rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                    rightAction={{ onTrigger: () => confirmSwipeGoToItem(item), icon: 'chevron-forward', color: colors.brand }}
                     borderRadius={0}
                     marginBottom={0}
                   >
@@ -362,7 +376,7 @@ export default function OverviewScreen() {
               {overdueCleaning.map((task) => (
                 <SwipeableRow
                   key={task.id}
-                  leftAction={{ onTrigger: () => markCleanedMutation.mutate(task.id), icon: 'checkmark-done', color: colors.positive }}
+                  leftAction={{ onTrigger: () => confirmSwipeMarkCleaned(task.id, task.name), icon: 'checkmark-done', color: colors.positive }}
                   borderRadius={0}
                   marginBottom={0}
                 >

@@ -497,6 +497,18 @@ const ENTRIES: Record<string, EntryTriple> = {
     es: (v) => (v.n === 1 ? `Limpiado hace ${v.n} día` : `Limpiado hace ${v.n} días`),
   },
   'overview.cleaningCard.allGood': { it: 'Tutto pulito! ✨', en: 'All clean! ✨', es: '¡Todo limpio! ✨' },
+  'overview.confirmOpenDetailTitle': { it: 'Apri dettaglio', en: 'Open detail', es: 'Abrir detalle' },
+  'overview.confirmOpenDetailMessage': {
+    it: (v) => `Aprire il dettaglio di "${v.name}"?`,
+    en: (v) => `Open the detail of "${v.name}"?`,
+    es: (v) => `¿Abrir el detalle de "${v.name}"?`,
+  },
+  'overview.confirmMarkCleanedTitle': { it: 'Segna come pulito', en: 'Mark as cleaned', es: 'Marcar como limpiado' },
+  'overview.confirmMarkCleanedMessage': {
+    it: (v) => `Segnare "${v.name}" come pulito oggi?`,
+    en: (v) => `Mark "${v.name}" as cleaned today?`,
+    es: (v) => `¿Marcar "${v.name}" como limpiado hoy?`,
+  },
   'overview.avanziCard.title': { it: 'Avanzi', en: 'Leftovers', es: 'Sobras' },
   'overview.avanziCard.allGood': {
     it: 'Nessun avanzo al momento',

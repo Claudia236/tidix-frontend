@@ -1,13 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getErrorMessage } from '../../../src/api/client';
 import { cleaningApi } from '../../../src/api/cleaning';
 import { itemsApi } from '../../../src/api/items';
 import { wasteApi } from '../../../src/api/waste';
+import { showAlert } from '../../../src/components/AppAlert';
 import { SectionTitle } from '../../../src/components/SectionTitle';
+import { deleteAction, SwipeableRow } from '../../../src/components/SwipeableRow';
 import { findCategoryInfo, getWasteTypeEmoji, HOUSEHOLD_CATEGORIES, jsWeekdayToDay, useCategories, wasteTypesCollectedOn } from '../../../src/constants/domain';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import { syncExpiryReminders } from '../../../src/notifications/expiryReminders';
@@ -140,6 +143,34 @@ export default function OverviewScreen() {
     router.push({ pathname: '/(app)/(tabs)/stock', params: { storageLocationId: zone.storageLocationId } });
   }
 
+  const removeItemMutation = useMutation({
+    mutationFn: (id: string) => itemsApi.remove(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+  });
+
+  const removeItemAndAddToShoppingListMutation = useMutation({
+    mutationFn: (item: Item) => itemsApi.adjustQuantity(item.id, { delta: -item.quantity, hideFromShoppingList: false }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+  });
+
+  // Stesso popup a tre opzioni del dettaglio prodotto e delle Scorte,
+  // raggiungibile qui trascinando la riga verso destra.
+  function confirmSwipeDeleteItem(item: Item) {
+    showAlert(t('item.confirmDeleteTitle'), t('item.confirmDeleteMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('item.deleteAndAddToShoppingList'), onPress: () => removeItemAndAddToShoppingListMutation.mutate(item) },
+      { text: t('item.deleteOnly'), style: 'destructive', onPress: () => removeItemMutation.mutate(item.id) },
+    ]);
+  }
+
+  const markCleanedMutation = useMutation({
+    mutationFn: (id: string) => cleaningApi.markCleaned(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] }),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+  });
+
   const shoppingCount = shoppingQuery.data?.length ?? 0;
 
   return (
@@ -207,10 +238,18 @@ export default function OverviewScreen() {
                       ? t('overview.avanziCard.cookedToday')
                       : t('overview.avanziCard.cookedDaysAgo', { n: cookedDaysAgo });
                 return (
-                  <Pressable key={item.id} style={styles.detailRow} onPress={() => goToItem(item)}>
-                    <Text style={styles.detailRowText} numberOfLines={1}>{categoryEmoji(item.category)} {item.name}</Text>
-                    {cookedLabel ? <Text style={styles.detailRowMeta}>{cookedLabel}</Text> : null}
-                  </Pressable>
+                  <SwipeableRow
+                    key={item.id}
+                    leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
+                    rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                    borderRadius={0}
+                    marginBottom={0}
+                  >
+                    <Pressable style={styles.detailRow} onPress={() => goToItem(item)}>
+                      <Text style={styles.detailRowText} numberOfLines={1}>{categoryEmoji(item.category)} {item.name}</Text>
+                      {cookedLabel ? <Text style={styles.detailRowMeta}>{cookedLabel}</Text> : null}
+                    </Pressable>
+                  </SwipeableRow>
                 );
               })}
             </View>
@@ -238,14 +277,22 @@ export default function OverviewScreen() {
           ) : (
             <View style={styles.detailCardList}>
               {openedItems.map((item) => (
-                <Pressable key={item.id} style={styles.detailRow} onPress={() => goToItem(item)}>
-                  <Text style={styles.detailRowText} numberOfLines={1}>{categoryEmoji(item.category)} {item.name}</Text>
-                  {item.openedDate ? (
-                    <Text style={styles.detailRowMeta}>
-                      {t('itemCard.openedOn', { date: formatShortDate(item.openedDate, language) })}
-                    </Text>
-                  ) : null}
-                </Pressable>
+                <SwipeableRow
+                  key={item.id}
+                  leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
+                  rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                  borderRadius={0}
+                  marginBottom={0}
+                >
+                  <Pressable style={styles.detailRow} onPress={() => goToItem(item)}>
+                    <Text style={styles.detailRowText} numberOfLines={1}>{categoryEmoji(item.category)} {item.name}</Text>
+                    {item.openedDate ? (
+                      <Text style={styles.detailRowMeta}>
+                        {t('itemCard.openedOn', { date: formatShortDate(item.openedDate, language) })}
+                      </Text>
+                    ) : null}
+                  </Pressable>
+                </SwipeableRow>
               ))}
             </View>
           )}
@@ -274,10 +321,18 @@ export default function OverviewScreen() {
               {expiringItems.map((item) => {
                 const info = getExpiryInfo(item.expirationDate, t, language);
                 return (
-                  <Pressable key={item.id} style={styles.detailRow} onPress={() => goToItem(item)}>
-                    <Text style={styles.detailRowText} numberOfLines={1}>{categoryEmoji(item.category)} {item.name}</Text>
-                    {info ? <Text style={styles.detailRowMeta}>{info.label}</Text> : null}
-                  </Pressable>
+                  <SwipeableRow
+                    key={item.id}
+                    leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
+                    rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                    borderRadius={0}
+                    marginBottom={0}
+                  >
+                    <Pressable style={styles.detailRow} onPress={() => goToItem(item)}>
+                      <Text style={styles.detailRowText} numberOfLines={1}>{categoryEmoji(item.category)} {item.name}</Text>
+                      {info ? <Text style={styles.detailRowMeta}>{info.label}</Text> : null}
+                    </Pressable>
+                  </SwipeableRow>
                 );
               })}
             </View>
@@ -305,14 +360,21 @@ export default function OverviewScreen() {
           ) : (
             <View style={styles.detailCardList}>
               {overdueCleaning.map((task) => (
-                <Pressable key={task.id} style={styles.detailRow} onPress={() => router.push('/(app)/cleaning')}>
-                  <Text style={styles.detailRowText} numberOfLines={1}>{task.name}</Text>
-                  <Text style={styles.detailRowMeta}>
-                    {task.daysSinceCleaned === null
-                      ? t('overview.cleaningNeverCleaned')
-                      : t('overview.cleaningCleanedDaysAgo', { n: task.daysSinceCleaned })}
-                  </Text>
-                </Pressable>
+                <SwipeableRow
+                  key={task.id}
+                  leftAction={{ onTrigger: () => markCleanedMutation.mutate(task.id), icon: 'checkmark-done', color: colors.positive }}
+                  borderRadius={0}
+                  marginBottom={0}
+                >
+                  <Pressable style={styles.detailRow} onPress={() => router.push('/(app)/cleaning')}>
+                    <Text style={styles.detailRowText} numberOfLines={1}>{task.name}</Text>
+                    <Text style={styles.detailRowMeta}>
+                      {task.daysSinceCleaned === null
+                        ? t('overview.cleaningNeverCleaned')
+                        : t('overview.cleaningCleanedDaysAgo', { n: task.daysSinceCleaned })}
+                    </Text>
+                  </Pressable>
+                </SwipeableRow>
               ))}
             </View>
           )}

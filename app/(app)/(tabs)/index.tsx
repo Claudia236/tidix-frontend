@@ -11,7 +11,7 @@ import { wasteApi } from '../../../src/api/waste';
 import { showAlert } from '../../../src/components/AppAlert';
 import { SectionTitle } from '../../../src/components/SectionTitle';
 import { deleteAction, SwipeableRow } from '../../../src/components/SwipeableRow';
-import { findCategoryInfo, getWasteTypeEmoji, HOUSEHOLD_CATEGORIES, jsWeekdayToDay, useCategories, wasteTypesCollectedOn } from '../../../src/constants/domain';
+import { findCategoryInfo, HOUSEHOLD_CATEGORIES, jsWeekdayToDay, useCategories, wasteTypesCollectedOn, wasteTypesLabel } from '../../../src/constants/domain';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import { syncExpiryReminders } from '../../../src/notifications/expiryReminders';
 import { syncOpenedReminders } from '../../../src/notifications/openedReminders';
@@ -104,12 +104,10 @@ export default function OverviewScreen() {
     return wasteTypesCollectedOn(wasteSchedulesQuery.data, tomorrow);
   }, [wasteSchedulesQuery.data]);
 
-  const wasteTomorrowLabel = useMemo(() => {
-    const labels = wasteTomorrow.map((w) => `${t(`wastePartitive.${w}`)} ${getWasteTypeEmoji(w)}`);
-    if (labels.length <= 1) return labels.join('');
-    const conjunction = language === 'it' ? ' e ' : language === 'es' ? ' y ' : ' and ';
-    return `${labels.slice(0, -1).join(', ')}${conjunction}${labels[labels.length - 1]}`;
-  }, [wasteTomorrow, t, language]);
+  const wasteTomorrowLabel = useMemo(
+    () => wasteTypesLabel(wasteTomorrow, t, language),
+    [wasteTomorrow, t, language]
+  );
 
   useEffect(() => {
     if (Platform.OS === 'web' || !expiringQuery.data) return;
@@ -118,8 +116,8 @@ export default function OverviewScreen() {
 
   useEffect(() => {
     if (Platform.OS === 'web' || !wasteSchedulesQuery.data) return;
-    syncWasteReminders(wasteSchedulesQuery.data, t);
-  }, [wasteSchedulesQuery.data, t]);
+    syncWasteReminders(wasteSchedulesQuery.data, t, language);
+  }, [wasteSchedulesQuery.data, t, language]);
 
   useEffect(() => {
     if (Platform.OS === 'web' || !allItemsQuery.data) return;

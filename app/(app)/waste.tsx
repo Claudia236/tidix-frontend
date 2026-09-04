@@ -16,7 +16,7 @@ import type { DayOfWeek, WasteType } from '../../src/types';
 export default function WasteScreen() {
   const queryClient = useQueryClient();
   const { colors } = useTheme();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const wasteTypes = useWasteTypes();
@@ -31,8 +31,8 @@ export default function WasteScreen() {
 
   useEffect(() => {
     if (Platform.OS === 'web' || !schedulesQuery.data) return;
-    syncWasteReminders(schedulesQuery.data, t);
-  }, [schedulesQuery.data, t]);
+    syncWasteReminders(schedulesQuery.data, t, language);
+  }, [schedulesQuery.data, t, language]);
 
   const toggleMutation = useMutation({
     mutationFn: ({ type, daysOfWeek }: { type: WasteType; daysOfWeek: DayOfWeek[] }) =>

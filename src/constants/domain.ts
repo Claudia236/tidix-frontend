@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { householdApi } from '../api/household';
 import { useStorageLocations } from '../hooks/useStorageLocations';
 import { useI18n, type TranslateFn } from '../i18n/I18nContext';
+import type { Language } from '../i18n/translations';
 import type { ColorPalette, ColorScheme } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
 import type { Category, DayOfWeek, Unit, WasteSchedule, WasteType } from '../types';
@@ -213,6 +214,17 @@ export function getWasteTypeEmoji(key: WasteType): string {
   return WASTE_TYPE_EMOJI[key];
 }
 
+// Etichetta unica per uno o piu' tipi di rifiuto raccolti lo stesso giorno
+// (es. "della plastica 🧴 e della carta 📦"), usata sia dal banner in
+// Panoramica sia dal promemoria push serale: cosi' un giorno con piu' tipi di
+// raccolta produce un unico testo/notifica invece di uno per tipo.
+export function wasteTypesLabel(types: WasteType[], t: TranslateFn, language: Language): string {
+  const labels = types.map((w) => `${t(`wastePartitive.${w}`)} ${getWasteTypeEmoji(w)}`);
+  if (labels.length <= 1) return labels.join('');
+  const conjunction = language === 'it' ? ' e ' : language === 'es' ? ' y ' : ' and ';
+  return `${labels.slice(0, -1).join(', ')}${conjunction}${labels[labels.length - 1]}`;
+}
+
 export function buildWasteTypes(t: TranslateFn): WasteTypeInfo[] {
   return WASTE_TYPE_KEYS.map((key) => ({ key, label: t(`waste.${key}.label`), emoji: WASTE_TYPE_EMOJI[key] }));
 }
@@ -259,7 +271,7 @@ export function useDayOfWeekLabel(): (key: DayOfWeek) => string {
 }
 
 // Ordine domenica -> sabato, coerente con Date.getDay() (0 = domenica)
-const DAY_ORDER_FROM_SUNDAY: DayOfWeek[] = [
+export const DAY_ORDER_FROM_SUNDAY: DayOfWeek[] = [
   'SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY',
 ];
 

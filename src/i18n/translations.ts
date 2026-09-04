@@ -157,11 +157,6 @@ const ENTRIES: Record<string, EntryTriple> = {
 
   // notifications
   'notif.wasteReminder.title': { it: 'Tidix ti ricorda 🗑️', en: 'Tidix reminder 🗑️', es: 'Tidix te recuerda 🗑️' },
-  'notif.wasteReminder.body': {
-    it: (v) => `Ehi! Non dimenticare di mettere fuori il secchio ${v.type} ${v.emoji}`,
-    en: (v) => `Hey! Don't forget to put out the bin for ${v.type} ${v.emoji}`,
-    es: (v) => `Oye, no olvides sacar el cubo de ${v.type} ${v.emoji}`,
-  },
   'notif.cleaningReminder.title': { it: 'Tidix ti ricorda 🧽', en: 'Tidix reminder 🧽', es: 'Tidix te recuerda 🧽' },
   'notif.cleaningReminder.body': {
     it: (v) => `Ehi! "${v.name}" ti aspetta: che ne dici di dargli una bella pulita domani? ✨`,
@@ -182,7 +177,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
 
   // waste type names contracted after "di" (dell'/della/del/degli), used in the Panoramica banner
-  // and in the push notification body (stesso testo, vedi notif.wasteReminder.body)
+  // and in the push notification body (stesso testo, vedi overview.wasteTomorrow / wasteTypesLabel)
   'wastePartitive.ORGANICO': { it: "dell'organico", en: 'the organic waste', es: 'el orgánico' },
   'wastePartitive.PLASTICA': { it: 'della plastica', en: 'the plastic', es: 'el plástico' },
   'wastePartitive.CARTA_CARTONE': { it: 'della carta', en: 'the paper', es: 'el papel' },

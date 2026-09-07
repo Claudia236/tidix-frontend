@@ -798,6 +798,12 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: (v) => `Save "${v.name}" under Purchased?`,
     es: (v) => `¿Guardar "${v.name}" en Comprados?`,
   },
+  'scanReceipt.confirmDismissTitle': { it: 'Rimuovi prodotto', en: 'Remove product', es: 'Quitar producto' },
+  'scanReceipt.confirmDismissMessage': {
+    it: (v) => `Rimuovere "${v.name}" dai prodotti riconosciuti?`,
+    en: (v) => `Remove "${v.name}" from the recognized products?`,
+    es: (v) => `¿Quitar "${v.name}" de los productos reconocidos?`,
+  },
   'scanReceipt.noItemsFound': {
     it: 'Non è stato riconosciuto nessun prodotto in questa foto. Prova a rifare la foto con più luce e a inquadrare bene lo scontrino.',
     en: 'No products were recognized in this photo. Try retaking it with more light and framing the receipt well.',

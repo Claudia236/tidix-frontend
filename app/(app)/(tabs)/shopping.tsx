@@ -280,7 +280,7 @@ export default function ShoppingScreen() {
                 rightAction={deleteAction(colors, () => confirmDeleteNote(note))}
               >
                 <View style={styles.row}>
-                  <Pressable onPress={() => checkNoteMutation.mutate(note.id)} style={styles.checkbox} hitSlop={8} />
+                  <Pressable onPress={() => confirmMarkPurchased(note)} style={styles.checkbox} hitSlop={8} />
                   <Pressable
                     style={styles.rowTextInfo}
                     onPress={() => router.push({ pathname: '/(app)/shopping-note/[id]', params: { id: note.id } })}

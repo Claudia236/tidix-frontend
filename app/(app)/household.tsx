@@ -2,13 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { householdApi } from '../../src/api/household';
 import { showAlert } from '../../src/components/AppAlert';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { deleteAction, SwipeableRow } from '../../src/components/SwipeableRow';
+import { ToggleSwitch } from '../../src/components/ToggleSwitch';
 import { useCategories } from '../../src/constants/domain';
 import { useAuth } from '../../src/context/AuthContext';
 import { useI18n } from '../../src/i18n/I18nContext';
@@ -336,12 +337,10 @@ export default function HouseholdScreen() {
                 <Text style={styles.categoryRowLabel}>
                   {cat.emoji} {cat.label}
                 </Text>
-                <Switch
+                <ToggleSwitch
                   value={enabled}
                   onValueChange={() => toggleCategoryEnabled(cat.key)}
                   disabled={isAltro}
-                  trackColor={{ false: colors.line, true: colors.brand }}
-                  thumbColor={colors.white}
                 />
               </View>
             );

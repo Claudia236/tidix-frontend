@@ -12,6 +12,7 @@ import { shoppingNotesApi } from '../../src/api/shoppingNotes';
 import { showAlert } from '../../src/components/AppAlert';
 import { ItemForm } from '../../src/components/ItemForm';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { deleteAction, SwipeableRow } from '../../src/components/SwipeableRow';
 import { useModalBackHandler } from '../../src/hooks/useModalBackHandler';
 import { useI18n } from '../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../src/theme/colors';
@@ -216,27 +217,33 @@ export default function ScanReceiptScreen() {
                   {lines.map((line) => {
                     const selected = selectedIds.has(line.id);
                     return (
-                      <View key={line.id} style={styles.lineRow}>
-                        <Pressable onPress={() => toggleSelected(line.id)} style={styles.lineIconButton} hitSlop={8}>
-                          <Ionicons
-                            name={selected ? 'checkbox' : 'square-outline'}
-                            size={20}
-                            color={selected ? colors.brand : colors.inkSoft}
+                      <SwipeableRow
+                        key={line.id}
+                        leftAction={deleteAction(colors, () => dismissLine(line.id))}
+                        rightAction={{ onTrigger: () => setEditingLine(line), icon: 'pencil-outline', color: colors.brand }}
+                      >
+                        <View style={styles.lineRow}>
+                          <Pressable onPress={() => toggleSelected(line.id)} style={styles.lineIconButton} hitSlop={8}>
+                            <Ionicons
+                              name={selected ? 'checkbox' : 'square-outline'}
+                              size={20}
+                              color={selected ? colors.brand : colors.inkSoft}
+                            />
+                          </Pressable>
+                          <TextInput
+                            value={line.name}
+                            onChangeText={(v) => updateLineName(line.id, v)}
+                            style={styles.lineInput}
+                            placeholderTextColor={colors.inkSoft}
                           />
-                        </Pressable>
-                        <TextInput
-                          value={line.name}
-                          onChangeText={(v) => updateLineName(line.id, v)}
-                          style={styles.lineInput}
-                          placeholderTextColor={colors.inkSoft}
-                        />
-                        <Pressable onPress={() => setEditingLine(line)} style={styles.lineIconButton} hitSlop={8}>
-                          <Ionicons name="pencil-outline" size={18} color={colors.brand} />
-                        </Pressable>
-                        <Pressable onPress={() => dismissLine(line.id)} style={styles.lineIconButton} hitSlop={8}>
-                          <Ionicons name="close" size={18} color={colors.inkSoft} />
-                        </Pressable>
-                      </View>
+                          <Pressable onPress={() => setEditingLine(line)} style={styles.lineIconButton} hitSlop={8}>
+                            <Ionicons name="pencil-outline" size={18} color={colors.brand} />
+                          </Pressable>
+                          <Pressable onPress={() => dismissLine(line.id)} style={styles.lineIconButton} hitSlop={8}>
+                            <Ionicons name="close" size={18} color={colors.inkSoft} />
+                          </Pressable>
+                        </View>
+                      </SwipeableRow>
                     );
                   })}
                 </View>
@@ -297,7 +304,14 @@ function createStyles(COLORS: ColorPalette) {
     selectAllRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     selectAllText: { fontSize: 13, fontWeight: '600', color: COLORS.inkSoft },
     lineList: { gap: 8 },
-    lineRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    lineRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: COLORS.card,
+      borderRadius: 10,
+      padding: 6,
+    },
     lineIconButton: { padding: 2 },
     lineInput: {
       flex: 1,

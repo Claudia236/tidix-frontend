@@ -9,6 +9,7 @@ import { showAlert } from '../../src/components/AppAlert';
 import { DatePickerField } from '../../src/components/DatePickerField';
 import { EmptyState } from '../../src/components/EmptyState';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { deleteAction, SwipeableRow } from '../../src/components/SwipeableRow';
 import { TextField } from '../../src/components/TextField';
 import { useModalBackHandler } from '../../src/hooks/useModalBackHandler';
 import { useI18n } from '../../src/i18n/I18nContext';
@@ -65,6 +66,12 @@ export default function SettlementsScreen() {
           <EmptyState icon="cash-outline" title={t('settlements.emptyTitle')} subtitle={t('settlements.emptySubtitle')} />
         }
         renderItem={({ item }) => (
+          <SwipeableRow
+            leftAction={{ onTrigger: () => setEditTarget(item), icon: 'pencil-outline', color: colors.brand }}
+            rightAction={deleteAction(colors, () => confirmDelete(item.id))}
+            borderRadius={14}
+            marginBottom={0}
+          >
           <View style={styles.card}>
             <View style={styles.topRow}>
               <View style={styles.topRowText}>
@@ -113,6 +120,7 @@ export default function SettlementsScreen() {
               </Pressable>
             </View>
           </View>
+          </SwipeableRow>
         )}
       />
 

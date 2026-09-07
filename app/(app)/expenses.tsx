@@ -11,6 +11,7 @@ import { showAlert } from '../../src/components/AppAlert';
 import { AddFab } from '../../src/components/AddFab';
 import { EmptyState } from '../../src/components/EmptyState';
 import { SettlePaymentDialog } from '../../src/components/SettlePaymentDialog';
+import { deleteAction, SwipeableRow } from '../../src/components/SwipeableRow';
 import { useAuth } from '../../src/context/AuthContext';
 import { useI18n, type TranslateFn } from '../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../src/theme/colors';
@@ -188,6 +189,16 @@ export default function ExpensesScreen() {
           <EmptyState icon="cash-outline" title={t('expenses.emptyTitle')} subtitle={t('expenses.emptySubtitle')} />
         }
         renderItem={({ item }) => (
+            <SwipeableRow
+              leftAction={{
+                onTrigger: () => router.push({ pathname: '/(app)/expense/[id]', params: { id: item.id } }),
+                icon: 'chevron-forward',
+                color: colors.brand,
+              }}
+              rightAction={deleteAction(colors, () => confirmDelete(item.id))}
+              borderRadius={14}
+              marginBottom={0}
+            >
             <View style={styles.expenseCard}>
               <View style={styles.expenseTopRow}>
                 <Pressable
@@ -232,6 +243,7 @@ export default function ExpensesScreen() {
                 })}
               </View>
             </View>
+            </SwipeableRow>
           )}
         />
 

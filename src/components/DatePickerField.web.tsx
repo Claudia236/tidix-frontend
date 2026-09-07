@@ -23,7 +23,6 @@ export function DatePickerField({ value, onChange, placeholder, clearLabel, allo
         {React.createElement('input', {
           type: 'date',
           value: value ?? '',
-          placeholder: placeholder ?? t('common.noDateDefault'),
           onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value || null),
           style: {
             border: 'none',
@@ -35,6 +34,15 @@ export function DatePickerField({ value, onChange, placeholder, clearLabel, allo
             width: '100%',
           },
         })}
+        {/* input[type=date] ignora l'attributo placeholder su Chrome/Edge
+            (mostra sempre il proprio formato mm/dd/yyyy): quando non c'e'
+            valore si copre l'input con questo testo, cliccabile "attraverso"
+            (pointerEvents none) cosi' apre comunque il calendario nativo. */}
+        {!value ? (
+          <View style={styles.placeholderOverlay} pointerEvents="none">
+            <Text style={styles.placeholderText}>{placeholder ?? t('common.noDateDefault')}</Text>
+          </View>
+        ) : null}
       </View>
       {allowClear && value ? (
         <Pressable onPress={() => onChange(null)}>
@@ -48,6 +56,7 @@ export function DatePickerField({ value, onChange, placeholder, clearLabel, allo
 function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
     dateButton: {
+      position: 'relative',
       borderWidth: 1,
       borderColor: COLORS.line,
       borderRadius: 12,
@@ -55,6 +64,18 @@ function createStyles(COLORS: ColorPalette) {
       paddingHorizontal: 14,
       backgroundColor: COLORS.card,
     },
+    placeholderOverlay: {
+      position: 'absolute',
+      left: 1,
+      right: 1,
+      top: 1,
+      bottom: 1,
+      borderRadius: 11,
+      backgroundColor: COLORS.card,
+      justifyContent: 'center',
+      paddingHorizontal: 14,
+    },
+    placeholderText: { fontSize: 14, color: COLORS.inkSoft },
     clearDate: { fontSize: 12, color: COLORS.danger, marginTop: 6, fontWeight: '600' },
   });
 }

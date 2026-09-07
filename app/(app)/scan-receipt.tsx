@@ -163,6 +163,15 @@ export default function ScanReceiptScreen() {
     }
   }
 
+  function confirmSaveSelectedForLater() {
+    const n = lines.filter((l) => selectedIds.has(l.id)).length;
+    if (n === 0) return;
+    showAlert(t('scanReceipt.confirmSaveSelectedTitle'), t('scanReceipt.confirmSaveSelectedMessage', { n }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.confirm'), onPress: saveSelectedForLater },
+    ]);
+  }
+
   function confirmSaveLineForLater(line: ReceiptLine) {
     showAlert(t('scanReceipt.confirmSaveOneTitle'), t('scanReceipt.confirmSaveOneMessage', { name: line.name }), [
       { text: t('common.cancel'), style: 'cancel' },
@@ -282,7 +291,7 @@ export default function ScanReceiptScreen() {
                 {selectedIds.size > 0 ? (
                   <PrimaryButton
                     label={t('scanReceipt.saveSelectedButton', { n: selectedIds.size })}
-                    onPress={saveSelectedForLater}
+                    onPress={confirmSaveSelectedForLater}
                     loading={savingSelected}
                   />
                 ) : null}

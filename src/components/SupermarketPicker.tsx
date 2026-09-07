@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { getErrorMessage } from '../api/client';
 import { supermarketsApi } from '../api/supermarkets';
 import { locationColor } from '../constants/domain';
 import { useModalBackHandler } from '../hooks/useModalBackHandler';
@@ -42,6 +43,7 @@ export function SupermarketPicker({ value, onChange, label }: Props) {
       setAdding(false);
       setModalVisible(false);
     },
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const removeMutation = useMutation({
@@ -56,6 +58,7 @@ export function SupermarketPicker({ value, onChange, label }: Props) {
       queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
       if (value === id) onChange(null);
     },
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   function handleCreate() {

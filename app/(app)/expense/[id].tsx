@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getErrorMessage } from '../../../src/api/client';
 import { expensesApi } from '../../../src/api/expenses';
@@ -45,6 +45,15 @@ export default function EditExpenseScreen() {
       { text: t('common.delete'), style: 'destructive', onPress: () => deleteMutation.mutate() },
     ]);
   }
+
+  // Se la spesa e' stata eliminata da un altro membro della famiglia (o la
+  // lista non si carica) mentre questa schermata era aperta, "expense" non
+  // si trova mai: senza questo, lo spinner sotto girava all'infinito.
+  useEffect(() => {
+    if (!expensesQuery.isLoading && !expense) {
+      showAlert(t('common.recordGoneTitle'), t('common.recordGoneMessage'), [{ text: t('common.ok'), onPress: () => router.back() }]);
+    }
+  }, [expensesQuery.isLoading, expense]);
 
   if (expensesQuery.isLoading || !expense) {
     return (

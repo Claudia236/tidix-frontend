@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getErrorMessage } from '../../../src/api/client';
 import { cleaningApi } from '../../../src/api/cleaning';
@@ -48,6 +48,15 @@ export default function EditCleaningTaskScreen() {
       { text: t('common.delete'), style: 'destructive', onPress: () => deleteMutation.mutate() },
     ]);
   }
+
+  // Se la pulizia e' stata eliminata da un altro membro della famiglia (o la
+  // lista non si carica) mentre questa schermata era aperta, "task" non si
+  // trova mai: senza questo, lo spinner sotto girava all'infinito.
+  useEffect(() => {
+    if (!tasksQuery.isLoading && !task) {
+      showAlert(t('common.recordGoneTitle'), t('common.recordGoneMessage'), [{ text: t('common.ok'), onPress: () => router.back() }]);
+    }
+  }, [tasksQuery.isLoading, task]);
 
   if (tasksQuery.isLoading || !task) {
     return (

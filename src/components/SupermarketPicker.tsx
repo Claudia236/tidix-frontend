@@ -48,6 +48,12 @@ export function SupermarketPicker({ value, onChange, label }: Props) {
     mutationFn: (id: string) => supermarketsApi.remove(id),
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ['supermarkets'] });
+      // Il backend stacca il riferimento da articoli e voci della lista
+      // spesa che usavano questo supermercato: senza invalidare anche
+      // queste cache, il badge del supermercato eliminato resta visibile
+      // finche' quelle query non si riaggiornano da sole.
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+      queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
       if (value === id) onChange(null);
     },
   });

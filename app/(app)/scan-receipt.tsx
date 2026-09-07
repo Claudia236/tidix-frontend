@@ -8,6 +8,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { getErrorMessage } from '../../src/api/client';
 import { itemsApi } from '../../src/api/items';
+import { shoppingNotesApi } from '../../src/api/shoppingNotes';
 import { showAlert } from '../../src/components/AppAlert';
 import { ItemForm } from '../../src/components/ItemForm';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
@@ -39,6 +40,8 @@ export default function ScanReceiptScreen() {
   const [lastCategory, setLastCategory] = useState<Category | undefined>(undefined);
   const [lastStorageLocationId, setLastStorageLocationId] = useState<string | undefined>(undefined);
   const [savingItem, setSavingItem] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [savingSelected, setSavingSelected] = useState(false);
 
   useModalBackHandler(editingLine !== null, () => setEditingLine(null));
 
@@ -50,7 +53,9 @@ export default function ScanReceiptScreen() {
     try {
       const result = await TextRecognition.recognize(uri);
       const candidates = parseReceiptLines(result.text);
-      setLines(candidates.map((name, i) => ({ id: `${i}-${name}`, name })));
+      const newLines = candidates.map((name, i) => ({ id: `${i}-${name}`, name }));
+      setLines(newLines);
+      setSelectedIds(new Set(newLines.map((l) => l.id)));
       setHasRecognized(true);
     } catch {
       showAlert(t('common.error'), t('scanReceipt.recognizeError'));
@@ -87,6 +92,7 @@ export default function ScanReceiptScreen() {
     setPhotoUri(null);
     setLines([]);
     setHasRecognized(false);
+    setSelectedIds(new Set());
   }
 
   function updateLineName(id: string, name: string) {
@@ -95,6 +101,50 @@ export default function ScanReceiptScreen() {
 
   function dismissLine(id: string) {
     setLines((prev) => prev.filter((l) => l.id !== id));
+    setSelectedIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) => (prev.size === lines.length ? new Set() : new Set(lines.map((l) => l.id))));
+  }
+
+  // Le righe selezionate diventano prodotti "Acquistati" (come quelli
+  // spuntati dalla lista della spesa): restano li' pronte per essere
+  // aggiunte alle scorte una alla volta, con calma, invece di dover per
+  // forza scegliere subito zona/categoria/scadenza per ognuna qui.
+  async function saveSelectedForLater() {
+    const toSave = lines.filter((l) => selectedIds.has(l.id));
+    if (toSave.length === 0) return;
+    setSavingSelected(true);
+    try {
+      for (const line of toSave) {
+        const note = await shoppingNotesApi.create({ text: line.name });
+        await shoppingNotesApi.check(note.id);
+      }
+      queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
+      const savedIds = new Set(toSave.map((l) => l.id));
+      setLines((prev) => prev.filter((l) => !savedIds.has(l.id)));
+      setSelectedIds(new Set());
+      showAlert(t('scanReceipt.saveSelectedSuccessTitle'), t('scanReceipt.saveSelectedSuccessMessage', { n: toSave.length }));
+    } catch (e) {
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    } finally {
+      setSavingSelected(false);
+    }
   }
 
   async function handleSaveFromForm(input: ItemInput) {
@@ -107,6 +157,12 @@ export default function ScanReceiptScreen() {
       setLastCategory(created.category);
       setLastStorageLocationId(created.storageLocationId);
       setLines((prev) => prev.filter((l) => l.id !== lineId));
+      setSelectedIds((prev) => {
+        if (!prev.has(lineId)) return prev;
+        const next = new Set(prev);
+        next.delete(lineId);
+        return next;
+      });
       setEditingLine(null);
     } catch (e) {
       showAlert(t('common.error'), getErrorMessage(e, t));
@@ -144,24 +200,54 @@ export default function ScanReceiptScreen() {
               <View style={styles.field}>
                 <Text style={styles.label}>{t('scanReceipt.itemsTitle')}</Text>
                 <Text style={styles.hint}>{t('scanReceipt.itemsHint')}</Text>
+
+                <Pressable style={styles.selectAllRow} onPress={toggleSelectAll} hitSlop={6}>
+                  <Ionicons
+                    name={selectedIds.size === lines.length ? 'checkbox' : 'square-outline'}
+                    size={20}
+                    color={selectedIds.size === lines.length ? colors.brand : colors.inkSoft}
+                  />
+                  <Text style={styles.selectAllText}>
+                    {selectedIds.size === lines.length ? t('purchased.deselectAll') : t('purchased.selectAll')}
+                  </Text>
+                </Pressable>
+
                 <View style={styles.lineList}>
-                  {lines.map((line) => (
-                    <View key={line.id} style={styles.lineRow}>
-                      <Pressable onPress={() => dismissLine(line.id)} style={styles.lineIconButton} hitSlop={8}>
-                        <Ionicons name="close" size={18} color={colors.inkSoft} />
-                      </Pressable>
-                      <TextInput
-                        value={line.name}
-                        onChangeText={(v) => updateLineName(line.id, v)}
-                        style={styles.lineInput}
-                        placeholderTextColor={colors.inkSoft}
-                      />
-                      <Pressable onPress={() => setEditingLine(line)} style={styles.lineIconButton} hitSlop={8}>
-                        <Ionicons name="pencil-outline" size={18} color={colors.brand} />
-                      </Pressable>
-                    </View>
-                  ))}
+                  {lines.map((line) => {
+                    const selected = selectedIds.has(line.id);
+                    return (
+                      <View key={line.id} style={styles.lineRow}>
+                        <Pressable onPress={() => toggleSelected(line.id)} style={styles.lineIconButton} hitSlop={8}>
+                          <Ionicons
+                            name={selected ? 'checkbox' : 'square-outline'}
+                            size={20}
+                            color={selected ? colors.brand : colors.inkSoft}
+                          />
+                        </Pressable>
+                        <TextInput
+                          value={line.name}
+                          onChangeText={(v) => updateLineName(line.id, v)}
+                          style={styles.lineInput}
+                          placeholderTextColor={colors.inkSoft}
+                        />
+                        <Pressable onPress={() => setEditingLine(line)} style={styles.lineIconButton} hitSlop={8}>
+                          <Ionicons name="pencil-outline" size={18} color={colors.brand} />
+                        </Pressable>
+                        <Pressable onPress={() => dismissLine(line.id)} style={styles.lineIconButton} hitSlop={8}>
+                          <Ionicons name="close" size={18} color={colors.inkSoft} />
+                        </Pressable>
+                      </View>
+                    );
+                  })}
                 </View>
+
+                {selectedIds.size > 0 ? (
+                  <PrimaryButton
+                    label={t('scanReceipt.saveSelectedButton', { n: selectedIds.size })}
+                    onPress={saveSelectedForLater}
+                    loading={savingSelected}
+                  />
+                ) : null}
               </View>
             )}
           </>
@@ -208,6 +294,8 @@ function createStyles(COLORS: ColorPalette) {
       color: COLORS.inkSoft,
     },
     hint: { fontSize: 12, color: COLORS.inkSoft },
+    selectAllRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    selectAllText: { fontSize: 13, fontWeight: '600', color: COLORS.inkSoft },
     lineList: { gap: 8 },
     lineRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     lineIconButton: { padding: 2 },

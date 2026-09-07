@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
@@ -43,25 +43,33 @@ export default function ScanReceiptScreen() {
   const [savingItem, setSavingItem] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [savingSelected, setSavingSelected] = useState(false);
+  // Ogni processImage() prende il proprio token: se nel frattempo parte una
+  // nuova scansione (seconda foto scattata prima che la prima abbia finito
+  // di riconoscere), il risultato della prima, quando arriva, non deve piu'
+  // sovrascrivere le righe gia' mostrate per la foto corrente.
+  const scanRequestIdRef = useRef(0);
 
   useModalBackHandler(editingLine !== null, () => setEditingLine(null));
 
   async function processImage(uri: string) {
+    const requestId = ++scanRequestIdRef.current;
     setPhotoUri(uri);
     setRecognizing(true);
     setLines([]);
     setHasRecognized(false);
     try {
       const result = await TextRecognition.recognize(uri);
+      if (scanRequestIdRef.current !== requestId) return;
       const candidates = parseReceiptLines(result.text);
       const newLines = candidates.map((name, i) => ({ id: `${i}-${name}`, name }));
       setLines(newLines);
       setSelectedIds(new Set(newLines.map((l) => l.id)));
       setHasRecognized(true);
     } catch {
+      if (scanRequestIdRef.current !== requestId) return;
       showAlert(t('common.error'), t('scanReceipt.recognizeError'));
     } finally {
-      setRecognizing(false);
+      if (scanRequestIdRef.current === requestId) setRecognizing(false);
     }
   }
 

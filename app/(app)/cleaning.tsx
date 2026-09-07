@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cleaningApi } from '../../src/api/cleaning';
@@ -10,6 +10,7 @@ import { showAlert } from '../../src/components/AppAlert';
 import { AddFab } from '../../src/components/AddFab';
 import { EmptyState } from '../../src/components/EmptyState';
 import { deleteAction, SwipeableRow } from '../../src/components/SwipeableRow';
+import { useSyncQueue } from '../../src/hooks/useSyncQueue';
 import { useI18n } from '../../src/i18n/I18nContext';
 import { cancelCleaningReminder, syncCleaningReminders } from '../../src/notifications/cleaningReminders';
 import type { ColorPalette } from '../../src/theme/colors';
@@ -51,10 +52,11 @@ export default function CleaningScreen() {
     });
   }
 
-  useEffect(() => {
-    if (Platform.OS === 'web' || !tasksQuery.data) return;
-    syncCleaningReminders(tasksQuery.data, t);
-  }, [tasksQuery.data, t]);
+  useSyncQueue(
+    (data) => syncCleaningReminders(data, t),
+    Platform.OS === 'web' ? null : tasksQuery.data,
+    [t]
+  );
 
   const markCleanedMutation = useMutation({
     mutationFn: (id: string) => cleaningApi.markCleaned(id),

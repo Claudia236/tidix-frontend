@@ -276,8 +276,8 @@ export default function ShoppingScreen() {
             const supermarket = groupBy === 'category' && note.supermarketId ? supermarketById.get(note.supermarketId) : null;
             return (
               <SwipeableRow
-                leftAction={deleteAction(colors, () => confirmDeleteNote(note))}
-                rightAction={{ onTrigger: () => confirmMarkPurchased(note), icon: 'checkmark-done', color: colors.brand }}
+                leftAction={{ onTrigger: () => confirmMarkPurchased(note), icon: 'checkmark-done', color: colors.brand }}
+                rightAction={deleteAction(colors, () => confirmDeleteNote(note))}
               >
                 <View style={styles.row}>
                   <Pressable onPress={() => checkNoteMutation.mutate(note.id)} style={styles.checkbox} hitSlop={8} />
@@ -311,8 +311,8 @@ export default function ShoppingScreen() {
           const supermarket = groupBy === 'category' && item.supermarketId ? supermarketById.get(item.supermarketId) : null;
           return (
             <SwipeableRow
-              leftAction={deleteAction(colors, () => confirmDeleteItem(item))}
-              rightAction={{ onTrigger: () => setRestockTarget(item), icon: 'checkmark-done', color: colors.brand }}
+              leftAction={{ onTrigger: () => setRestockTarget(item), icon: 'checkmark-done', color: colors.brand }}
+              rightAction={deleteAction(colors, () => confirmDeleteItem(item))}
             >
               <View style={styles.row}>
                 <Pressable onPress={() => setRestockTarget(item)} style={styles.checkbox} hitSlop={8} />

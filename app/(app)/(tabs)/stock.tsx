@@ -168,7 +168,7 @@ export default function StockScreen() {
   });
 
   // Stesso popup a tre opzioni della schermata di dettaglio (item/[id].tsx),
-  // raggiungibile qui anche trascinando la card verso destra: evita di dover
+  // raggiungibile qui anche trascinando la card verso sinistra: evita di dover
   // per forza aprire il dettaglio solo per eliminare un prodotto.
   function confirmSwipeDelete(item: Item) {
     showAlert(t('item.confirmDeleteTitle'), t('item.confirmDeleteMessage'), [

@@ -126,8 +126,8 @@ export default function ShoppingPurchasedScreen() {
           const selected = selectedIds.has(note.id);
           return (
             <SwipeableRow
-              leftAction={deleteAction(colors, () => confirmDeleteNote(note))}
-              rightAction={{ onTrigger: () => goAddToStock(note), icon: 'cube-outline', color: colors.brand }}
+              leftAction={{ onTrigger: () => goAddToStock(note), icon: 'cube-outline', color: colors.brand }}
+              rightAction={deleteAction(colors, () => confirmDeleteNote(note))}
             >
               <View style={styles.row}>
                 <Pressable onPress={() => toggleSelected(note.id)} hitSlop={6}>

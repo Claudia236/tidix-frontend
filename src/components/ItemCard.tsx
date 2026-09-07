@@ -46,7 +46,7 @@ export function ItemCard({ item, location, onAdjust, onPress, onSwipeDelete }: P
   }
 
   return (
-    <SwipeableRow leftAction={deleteAction(colors, onSwipeDelete)} borderRadius={14} marginBottom={8}>
+    <SwipeableRow rightAction={deleteAction(colors, onSwipeDelete)} borderRadius={14} marginBottom={8}>
       <View style={styles.card}>
       <View style={[styles.stripe, { backgroundColor: stripeColor }]} />
       <View style={styles.body}>

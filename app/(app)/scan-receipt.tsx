@@ -243,8 +243,8 @@ export default function ScanReceiptScreen() {
                     return (
                       <SwipeableRow
                         key={line.id}
-                        leftAction={deleteAction(colors, () => dismissLine(line.id))}
-                        rightAction={{ onTrigger: () => confirmSaveLineForLater(line), icon: 'checkmark-done', color: colors.brand }}
+                        leftAction={{ onTrigger: () => confirmSaveLineForLater(line), icon: 'checkmark-done', color: colors.brand }}
+                        rightAction={deleteAction(colors, () => dismissLine(line.id))}
                       >
                         <View style={styles.lineRow}>
                           <Pressable onPress={() => toggleSelected(line.id)} style={styles.lineIconButton} hitSlop={8}>

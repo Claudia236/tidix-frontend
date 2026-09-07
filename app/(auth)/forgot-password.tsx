@@ -97,7 +97,15 @@ export default function ForgotPasswordScreen() {
               loading={submitting}
               disabled={!code || newPassword.length < 8}
             />
-            <PrimaryButton label={t('auth.forgot.retryButton')} variant="secondary" onPress={() => setStep('request')} />
+            <PrimaryButton
+              label={t('auth.forgot.retryButton')}
+              variant="secondary"
+              onPress={() => {
+                setError(null);
+                setInfo(null);
+                setStep('request');
+              }}
+            />
           </View>
         )}
 

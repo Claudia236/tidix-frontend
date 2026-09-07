@@ -69,7 +69,10 @@ export default function CleaningScreen() {
 
   const removeMutation = useMutation({
     mutationFn: (id: string) => cleaningApi.remove(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] }),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] });
+      cancelCleaningReminder(id);
+    },
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 

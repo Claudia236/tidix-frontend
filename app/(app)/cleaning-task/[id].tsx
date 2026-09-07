@@ -41,6 +41,7 @@ export default function EditCleaningTaskScreen() {
     mutationFn: () => cleaningApi.remove(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] });
+      cancelCleaningReminder(id);
       router.back();
     },
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),

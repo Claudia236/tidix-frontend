@@ -38,6 +38,11 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: 'Could not reach the server. Check your connection.',
     es: 'No se pudo contactar con el servidor. Comprueba tu conexión.',
   },
+  'common.timeoutError': {
+    it: 'Il server sta impiegando troppo tempo a rispondere (potrebbe essersi "addormentato"): riprova tra qualche secondo.',
+    en: 'The server is taking too long to respond (it may be "waking up"): please try again in a few seconds.',
+    es: 'El servidor está tardando demasiado en responder (puede que se haya "dormido"): inténtalo de nuevo en unos segundos.',
+  },
   'common.genericError': {
     it: 'Si è verificato un errore. Riprova.',
     en: 'Something went wrong. Please try again.',

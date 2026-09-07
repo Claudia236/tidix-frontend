@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useModalBackHandler } from '../hooks/useModalBackHandler';
 import { useI18n } from '../i18n/I18nContext';
@@ -25,12 +25,21 @@ export function SettlePaymentDialog({ visible, personName, totalOwed, submitting
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState<string | null>(null);
 
+  // Solo il valore di totalOwed al momento dell'apertura conta: se dipendesse
+  // direttamente da totalOwed, un refetch delle query sottostanti mentre il
+  // dialog e' gia' aperto (es. refetch-on-focus del browser, tornando su
+  // questa scheda) lo ricalcolerebbe e sovrascriverebbe silenziosamente
+  // l'importo che l'utente sta digitando.
+  const totalOwedRef = useRef(totalOwed);
+  totalOwedRef.current = totalOwed;
+
   useEffect(() => {
     if (visible) {
-      setAmount(totalOwed > 0 ? totalOwed.toFixed(2) : '');
+      setAmount(totalOwedRef.current > 0 ? totalOwedRef.current.toFixed(2) : '');
       setDate(todayLocalISODate());
     }
-  }, [visible, totalOwed]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
 
   const parsed = Number(amount.replace(',', '.'));
   const valid = Number.isFinite(parsed) && parsed > 0;

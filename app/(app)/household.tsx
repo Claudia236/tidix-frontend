@@ -8,6 +8,7 @@ import { getErrorMessage } from '../../src/api/client';
 import { householdApi } from '../../src/api/household';
 import { showAlert } from '../../src/components/AppAlert';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { deleteAction, SwipeableRow } from '../../src/components/SwipeableRow';
 import { useCategories } from '../../src/constants/domain';
 import { useAuth } from '../../src/context/AuthContext';
 import { useI18n } from '../../src/i18n/I18nContext';
@@ -206,38 +207,55 @@ export default function HouseholdScreen() {
 
       <View style={styles.card}>
         <Text style={styles.cardLabel}>{t('household.membersLabel', { n: household.members.length })}</Text>
-        {household.members.map((member) => (
-          <View key={member.id} style={styles.member}>
-            <View style={styles.memberRow}>
-              <View style={styles.memberInfo}>
-                <Text style={styles.memberName}>
-                  {member.name}
-                  {member.id === user?.id ? t('household.youSuffix') : ''}
-                  {member.id === household.ownerId ? ' 👑' : ''}
-                </Text>
-                <Text style={styles.memberEmail}>{member.email}</Text>
-              </View>
-              {isOwner && member.id !== user?.id ? (
-                <View style={styles.memberActions}>
-                  <Pressable
-                    onPress={() => handleMakeAdmin(member.id, member.name)}
-                    hitSlop={8}
-                    style={styles.removeMemberButton}
-                  >
-                    <Ionicons name="ribbon-outline" size={18} color={colors.brand} />
-                  </Pressable>
-                  <Pressable
-                    onPress={() => handleRemoveMember(member.id, member.name)}
-                    hitSlop={8}
-                    style={styles.removeMemberButton}
-                  >
-                    <Ionicons name="trash-outline" size={18} color={colors.danger} />
-                  </Pressable>
+        {household.members.map((member) => {
+          const canManage = isOwner && member.id !== user?.id;
+          const memberRow = (
+            <View style={styles.member}>
+              <View style={styles.memberRow}>
+                <View style={styles.memberInfo}>
+                  <Text style={styles.memberName}>
+                    {member.name}
+                    {member.id === user?.id ? t('household.youSuffix') : ''}
+                    {member.id === household.ownerId ? ' 👑' : ''}
+                  </Text>
+                  <Text style={styles.memberEmail}>{member.email}</Text>
                 </View>
-              ) : null}
+                {canManage ? (
+                  <View style={styles.memberActions}>
+                    <Pressable
+                      onPress={() => handleMakeAdmin(member.id, member.name)}
+                      hitSlop={8}
+                      style={styles.removeMemberButton}
+                    >
+                      <Ionicons name="ribbon-outline" size={18} color={colors.brand} />
+                    </Pressable>
+                    <Pressable
+                      onPress={() => handleRemoveMember(member.id, member.name)}
+                      hitSlop={8}
+                      style={styles.removeMemberButton}
+                    >
+                      <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                    </Pressable>
+                  </View>
+                ) : null}
+              </View>
             </View>
-          </View>
-        ))}
+          );
+
+          if (!canManage) return <View key={member.id}>{memberRow}</View>;
+
+          return (
+            <SwipeableRow
+              key={member.id}
+              leftAction={{ onTrigger: () => handleMakeAdmin(member.id, member.name), icon: 'ribbon-outline', color: colors.brand }}
+              rightAction={deleteAction(colors, () => handleRemoveMember(member.id, member.name))}
+              borderRadius={10}
+              marginBottom={0}
+            >
+              {memberRow}
+            </SwipeableRow>
+          );
+        })}
       </View>
 
       <View style={styles.card}>
@@ -377,7 +395,7 @@ function createStyles(COLORS: ColorPalette) {
     cardLabel: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4, color: COLORS.inkSoft },
     inviteCode: { fontSize: 28, fontWeight: '800', color: COLORS.brand, letterSpacing: 4 },
     cardHint: { fontSize: 12, color: COLORS.inkSoft },
-    member: { borderTopWidth: 1, borderColor: COLORS.line, paddingTop: 8, marginTop: 4 },
+    member: { backgroundColor: COLORS.bg, borderRadius: 10, padding: 8 },
     memberRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
     memberInfo: { flex: 1 },
     memberName: { fontSize: 14, fontWeight: '700', color: COLORS.ink },

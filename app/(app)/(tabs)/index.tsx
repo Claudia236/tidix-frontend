@@ -170,7 +170,7 @@ export default function OverviewScreen() {
   });
 
   function confirmSwipeMarkCleaned(taskId: string, taskName: string) {
-    showAlert(t('overview.confirmMarkCleanedTitle'), t('overview.confirmMarkCleanedMessage', { name: taskName }), [
+    showAlert(t('cleaning.confirmMarkCleanedTitle'), t('cleaning.confirmMarkCleanedMessage', { name: taskName }), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.confirm'), onPress: () => markCleanedMutation.mutate(taskId) },
     ]);

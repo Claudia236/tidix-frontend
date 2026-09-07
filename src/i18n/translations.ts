@@ -492,12 +492,6 @@ const ENTRIES: Record<string, EntryTriple> = {
     es: (v) => (v.n === 1 ? `Limpiado hace ${v.n} día` : `Limpiado hace ${v.n} días`),
   },
   'overview.cleaningCard.allGood': { it: 'Tutto pulito! ✨', en: 'All clean! ✨', es: '¡Todo limpio! ✨' },
-  'overview.confirmMarkCleanedTitle': { it: 'Segna come pulito', en: 'Mark as cleaned', es: 'Marcar como limpiado' },
-  'overview.confirmMarkCleanedMessage': {
-    it: (v) => `Segnare "${v.name}" come pulito oggi?`,
-    en: (v) => `Mark "${v.name}" as cleaned today?`,
-    es: (v) => `¿Marcar "${v.name}" como limpiado hoy?`,
-  },
   'overview.avanziCard.title': { it: 'Avanzi', en: 'Leftovers', es: 'Sobras' },
   'overview.avanziCard.allGood': {
     it: 'Nessun avanzo al momento',
@@ -676,6 +670,12 @@ const ENTRIES: Record<string, EntryTriple> = {
     it: (v) => `Rimuovere "${v.name}" dalla lista pulizia?`,
     en: (v) => `Remove "${v.name}" from the cleaning list?`,
     es: (v) => `¿Quitar "${v.name}" de la lista de limpieza?`,
+  },
+  'cleaning.confirmMarkCleanedTitle': { it: 'Segna come pulito', en: 'Mark as cleaned', es: 'Marcar como limpiado' },
+  'cleaning.confirmMarkCleanedMessage': {
+    it: (v) => `Segnare "${v.name}" come pulito oggi?`,
+    en: (v) => `Mark "${v.name}" as cleaned today?`,
+    es: (v) => `¿Marcar "${v.name}" como limpiado hoy?`,
   },
 
   // Waste

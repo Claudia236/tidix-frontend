@@ -9,6 +9,7 @@ import { getErrorMessage } from '../../src/api/client';
 import { showAlert } from '../../src/components/AppAlert';
 import { AddFab } from '../../src/components/AddFab';
 import { EmptyState } from '../../src/components/EmptyState';
+import { deleteAction, SwipeableRow } from '../../src/components/SwipeableRow';
 import { useI18n } from '../../src/i18n/I18nContext';
 import { cancelCleaningReminder, syncCleaningReminders } from '../../src/notifications/cleaningReminders';
 import type { ColorPalette } from '../../src/theme/colors';
@@ -74,6 +75,15 @@ export default function CleaningScreen() {
     showAlert(t('cleaning.confirmDeleteTitle'), t('cleaning.confirmDeleteMessage', { name: task.name }), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.delete'), style: 'destructive', onPress: () => removeMutation.mutate(task.id) },
+    ]);
+  }
+
+  // Swipe a sinistra: stesso popup usato in Panoramica per la stessa azione
+  // (cleaning.confirmMarkCleanedTitle/Message), dato che segna subito pulito.
+  function confirmMarkCleaned(task: CleaningTask) {
+    showAlert(t('cleaning.confirmMarkCleanedTitle'), t('cleaning.confirmMarkCleanedMessage', { name: task.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.confirm'), onPress: () => markCleanedMutation.mutate(task.id) },
     ]);
   }
 
@@ -156,31 +166,38 @@ export default function CleaningScreen() {
 
           const item = row.data;
           return (
-            <View style={[styles.card, item.overdue && styles.cardOverdue]}>
-              <Pressable style={styles.cardInfo} onPress={() => router.push({ pathname: '/(app)/cleaning-task/[id]', params: { id: item.id } })}>
-                <Text style={styles.cardName}>{item.name}</Text>
-                <Text style={styles.cardStatus}>
-                  {item.daysSinceCleaned === null
-                    ? t('cleaning.neverCleaned')
-                    : item.daysSinceCleaned === 0
-                      ? t('cleaning.cleanedToday')
-                      : t('cleaning.cleanedDaysAgo', { n: item.daysSinceCleaned })}
-                  {item.frequencyDays ? t('cleaning.everyDaysSuffix', { n: item.frequencyDays }) : ''}
-                </Text>
-                {item.overdue ? <Text style={styles.overdueLabel}>{t('cleaning.overdue')}</Text> : null}
-              </Pressable>
-              <View style={styles.cardActions}>
-                <Pressable onPress={() => markCleanedMutation.mutate(item.id)} style={styles.cleanButton} hitSlop={8}>
-                  <Ionicons name="checkmark" size={16} color={colors.white} />
+            <SwipeableRow
+              leftAction={deleteAction(colors, () => confirmDelete(item))}
+              rightAction={{ onTrigger: () => confirmMarkCleaned(item), icon: 'checkmark-done', color: colors.brand }}
+              borderRadius={14}
+              marginBottom={0}
+            >
+              <View style={[styles.card, item.overdue && styles.cardOverdue]}>
+                <Pressable style={styles.cardInfo} onPress={() => router.push({ pathname: '/(app)/cleaning-task/[id]', params: { id: item.id } })}>
+                  <Text style={styles.cardName}>{item.name}</Text>
+                  <Text style={styles.cardStatus}>
+                    {item.daysSinceCleaned === null
+                      ? t('cleaning.neverCleaned')
+                      : item.daysSinceCleaned === 0
+                        ? t('cleaning.cleanedToday')
+                        : t('cleaning.cleanedDaysAgo', { n: item.daysSinceCleaned })}
+                    {item.frequencyDays ? t('cleaning.everyDaysSuffix', { n: item.frequencyDays }) : ''}
+                  </Text>
+                  {item.overdue ? <Text style={styles.overdueLabel}>{t('cleaning.overdue')}</Text> : null}
                 </Pressable>
-                <Pressable onPress={() => router.push({ pathname: '/(app)/cleaning-task/[id]', params: { id: item.id } })} hitSlop={8}>
-                  <Ionicons name="pencil-outline" size={18} color={colors.inkSoft} />
-                </Pressable>
-                <Pressable onPress={() => confirmDelete(item)} hitSlop={8}>
-                  <Ionicons name="trash-outline" size={18} color={colors.inkSoft} />
-                </Pressable>
+                <View style={styles.cardActions}>
+                  <Pressable onPress={() => markCleanedMutation.mutate(item.id)} style={styles.cleanButton} hitSlop={8}>
+                    <Ionicons name="checkmark" size={16} color={colors.white} />
+                  </Pressable>
+                  <Pressable onPress={() => router.push({ pathname: '/(app)/cleaning-task/[id]', params: { id: item.id } })} hitSlop={8}>
+                    <Ionicons name="pencil-outline" size={18} color={colors.inkSoft} />
+                  </Pressable>
+                  <Pressable onPress={() => confirmDelete(item)} hitSlop={8}>
+                    <Ionicons name="trash-outline" size={18} color={colors.inkSoft} />
+                  </Pressable>
+                </View>
               </View>
-            </View>
+            </SwipeableRow>
           );
         }}
       />

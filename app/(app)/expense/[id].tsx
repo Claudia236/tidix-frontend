@@ -18,8 +18,13 @@ export default function EditExpenseScreen() {
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const expensesQuery = useQuery({ queryKey: ['expenses', 'all'], queryFn: () => expensesApi.list() });
-  const expense = expensesQuery.data?.find((e) => e.id === id);
+  // Query diretta per id (non dedotta dalla lista 'expenses'): la schermata
+  // e' raggiungibile sia dalla lista del mese (['expenses', month]) sia da
+  // altre viste, e una di queste liste in cache-ma-non-in-fetch poteva far
+  // scattare un falso "non piu' disponibile" per una spesa che esiste ancora
+  // ma non e' (ancora) in QUELLA cache specifica.
+  const expenseQuery = useQuery({ queryKey: ['expenses', id], queryFn: () => expensesApi.get(id), enabled: !!id });
+  const expense = expenseQuery.data;
 
   const updateMutation = useMutation({
     mutationFn: (input: ExpenseFormOutput) => expensesApi.update(id, input),
@@ -46,19 +51,16 @@ export default function EditExpenseScreen() {
     ]);
   }
 
-  // Se la spesa e' stata eliminata da un altro membro della famiglia (o la
-  // lista non si carica) mentre questa schermata era aperta, "expense" non
-  // si trova mai: senza questo, lo spinner sotto girava all'infinito. Usa
-  // isFetching (non isLoading, vero solo al primissimo caricamento
-  // assoluto): durante un refetch in background su una lista gia' in cache
-  // l'alert non deve scattare prima che il refetch abbia finito di cercare.
+  // Se la spesa e' stata eliminata da un altro membro della famiglia mentre
+  // questa schermata era aperta, la query per id va in errore (404): senza
+  // questo, lo spinner sotto girava all'infinito.
   useEffect(() => {
-    if (!expensesQuery.isFetching && !expense) {
+    if (expenseQuery.isError) {
       showAlert(t('common.recordGoneTitle'), t('common.recordGoneMessage'), [{ text: t('common.ok'), onPress: () => router.back() }]);
     }
-  }, [expensesQuery.isFetching, expense]);
+  }, [expenseQuery.isError]);
 
-  if (expensesQuery.isLoading || !expense) {
+  if (expenseQuery.isLoading || !expense) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator color={colors.brand} />

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
@@ -41,6 +41,13 @@ export default function WasteScreen() {
     onError: (e) => showAlert(t('waste.errorTitle'), getErrorMessage(e, t)),
   });
 
+  // Una richiesta di rete in coda per ciascun tipo di rifiuto: senza questo,
+  // due tap rapidi sullo stesso tipo partivano in parallelo, e se le
+  // risposte arrivavano fuori ordine lo stato salvato sul server poteva non
+  // corrispondere all'ultimo tap (anche se la cache locale, aggiornata in
+  // modo sincrono qui sotto, mostrava gia' il valore giusto).
+  const pendingByType = useRef<Partial<Record<WasteType, Promise<unknown>>>>({});
+
   // Legge e aggiorna la cache di react-query in modo sincrono (non lo stato
   // derivato daysByType, che si aggiorna solo al prossimo render): due tap
   // rapidi su giorni diversi dello stesso tipo altrimenti leggerebbero
@@ -59,7 +66,10 @@ export default function WasteScreen() {
     const updated = next.length > 0 ? [...others, { id: existing?.id ?? type, type, daysOfWeek: next }] : others;
     queryClient.setQueryData(['waste-schedules'], updated);
 
-    toggleMutation.mutate({ type, daysOfWeek: next });
+    const previous = pendingByType.current[type] ?? Promise.resolve();
+    const request = previous.catch(() => {}).then(() => toggleMutation.mutateAsync({ type, daysOfWeek: next }));
+    pendingByType.current[type] = request;
+    request.catch(() => {});
   }
 
   return (

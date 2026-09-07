@@ -5,6 +5,8 @@ export const expensesApi = {
   list: (month?: string) =>
     apiClient.get<Expense[]>('/api/expenses', { params: month ? { month } : undefined }).then((r) => r.data),
 
+  get: (id: string) => apiClient.get<Expense>(`/api/expenses/${id}`).then((r) => r.data),
+
   create: (input: ExpenseInput) => apiClient.post<Expense>('/api/expenses', input).then((r) => r.data),
 
   update: (id: string, input: ExpenseInput) => apiClient.put<Expense>(`/api/expenses/${id}`, input).then((r) => r.data),

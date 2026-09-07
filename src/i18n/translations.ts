@@ -771,9 +771,26 @@ const ENTRIES: Record<string, EntryTriple> = {
   'scanReceipt.retake': { it: 'Rifai foto', en: 'Retake photo', es: 'Repetir foto' },
   'scanReceipt.itemsTitle': { it: 'Prodotti riconosciuti', en: 'Recognized products', es: 'Productos reconocidos' },
   'scanReceipt.itemsHint': {
-    it: "Tocca la matita per aggiungere un prodotto alle scorte scegliendo zona e categoria, oppure la X per scartare una riga che non è un prodotto.",
-    en: 'Tap the pencil to add a product to stock choosing its zone and category, or the X to discard a line that is not a product.',
-    es: 'Toca el lápiz para añadir un producto a existencias eligiendo zona y categoría, o la X para descartar una línea que no es un producto.',
+    it: 'Tocca la matita per aggiungere subito un prodotto alle scorte scegliendo zona e categoria, la X per scartare una riga che non è un prodotto, oppure seleziona quelli che vuoi e salvali per dopo: li ritrovi in "Acquistati", pronti per essere aggiunti alle scorte con calma.',
+    en: 'Tap the pencil to add a product to stock right away choosing its zone and category, the X to discard a line that is not a product, or select the ones you want and save them for later: you\'ll find them in "Purchased", ready to be added to stock whenever you like.',
+    es: 'Toca el lápiz para añadir enseguida un producto a existencias eligiendo zona y categoría, la X para descartar una línea que no es un producto, o selecciona los que quieras y guárdalos para después: los encontrarás en "Comprados", listos para añadir a existencias con calma.',
+  },
+  'scanReceipt.saveSelectedButton': {
+    it: (v) => (v.n === 1 ? 'Salva 1 prodotto per dopo' : `Salva ${v.n} prodotti per dopo`),
+    en: (v) => (v.n === 1 ? 'Save 1 product for later' : `Save ${v.n} products for later`),
+    es: (v) => (v.n === 1 ? 'Guardar 1 producto para después' : `Guardar ${v.n} productos para después`),
+  },
+  'scanReceipt.saveSelectedSuccessTitle': { it: 'Salvati per dopo', en: 'Saved for later', es: 'Guardados para después' },
+  'scanReceipt.saveSelectedSuccessMessage': {
+    it: (v) => (v.n === 1
+      ? '1 prodotto salvato tra gli Acquistati: potrai aggiungerlo alle scorte quando vuoi.'
+      : `${v.n} prodotti salvati tra gli Acquistati: potrai aggiungerli alle scorte quando vuoi, uno alla volta.`),
+    en: (v) => (v.n === 1
+      ? '1 product saved under Purchased: you can add it to stock whenever you like.'
+      : `${v.n} products saved under Purchased: you can add them to stock whenever you like, one at a time.`),
+    es: (v) => (v.n === 1
+      ? '1 producto guardado en Comprados: podrás añadirlo a existencias cuando quieras.'
+      : `${v.n} productos guardados en Comprados: podrás añadirlos a existencias cuando quieras, uno a uno.`),
   },
   'scanReceipt.noItemsFound': {
     it: 'Non è stato riconosciuto nessun prodotto in questa foto. Prova a rifare la foto con più luce e a inquadrare bene lo scontrino.',

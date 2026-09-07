@@ -798,6 +798,18 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: (v) => `Save "${v.name}" under Purchased?`,
     es: (v) => `¿Guardar "${v.name}" en Comprados?`,
   },
+  'scanReceipt.confirmSaveSelectedTitle': { it: 'Salva per dopo', en: 'Save for later', es: 'Guardar para después' },
+  'scanReceipt.confirmSaveSelectedMessage': {
+    it: (v) => (v.n === 1
+      ? 'Salvare 1 prodotto negli Acquistati?'
+      : `Salvare ${v.n} prodotti negli Acquistati?`),
+    en: (v) => (v.n === 1
+      ? 'Save 1 product under Purchased?'
+      : `Save ${v.n} products under Purchased?`),
+    es: (v) => (v.n === 1
+      ? '¿Guardar 1 producto en Comprados?'
+      : `¿Guardar ${v.n} productos en Comprados?`),
+  },
   'scanReceipt.confirmDismissTitle': { it: 'Rimuovi prodotto', en: 'Remove product', es: 'Quitar producto' },
   'scanReceipt.confirmDismissMessage': {
     it: (v) => `Rimuovere "${v.name}" dai prodotti riconosciuti?`,

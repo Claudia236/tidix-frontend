@@ -46,6 +46,10 @@ export default function WasteScreen() {
   // rapidi su giorni diversi dello stesso tipo altrimenti leggerebbero
   // entrambi lo stesso "current" precedente al primo tap, perdendolo.
   function toggleDay(type: WasteType, day: DayOfWeek) {
+    // Se la prima fetch e' ancora in corso, il suo arrivo sovrascriverebbe
+    // subito dopo lo stato ottimistico scritto qui sotto (col dato server
+    // precedente al tap), facendo lampeggiare il chip appena spuntato.
+    if (schedulesQuery.isLoading) return;
     const list = queryClient.getQueryData<WasteSchedule[]>(['waste-schedules']) ?? [];
     const existing = list.find((s) => s.type === type);
     const current = existing?.daysOfWeek ?? [];
@@ -80,7 +84,8 @@ export default function WasteScreen() {
                   <Pressable
                     key={d.key}
                     onPress={() => toggleDay(w.key, d.key)}
-                    style={[styles.dayChip, active && styles.dayChipActive]}
+                    disabled={schedulesQuery.isLoading}
+                    style={[styles.dayChip, active && styles.dayChipActive, schedulesQuery.isLoading && styles.dayChipDisabled]}
                   >
                     <Text style={[styles.dayChipText, active && styles.dayChipTextActive]}>{d.short}</Text>
                   </Pressable>
@@ -121,6 +126,7 @@ function createStyles(COLORS: ColorPalette) {
       paddingVertical: 8,
     },
     dayChipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
+    dayChipDisabled: { opacity: 0.5 },
     dayChipText: { fontSize: 13, fontWeight: '700', color: COLORS.ink },
     dayChipTextActive: { color: COLORS.white },
   });

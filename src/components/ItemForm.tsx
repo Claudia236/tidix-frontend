@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import * as ImagePicker from 'expo-image-picker';
-import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../api/client';
@@ -175,6 +175,11 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
     }
     return String(Math.max(0, Math.round((target.getTime() - base.getTime()) / 86_400_000)));
   });
+  // Falso finche' l'utente non modifica il campo a mano (o sceglie
+  // esplicitamente l'unita'): permette all'effect qui sotto di correggere il
+  // valore iniziale, calcolato prima che le zone fossero disponibili, senza
+  // sovrascrivere una modifica dell'utente nel frattempo.
+  const consumeWithinAmountTouchedRef = useRef(false);
   const [consumeWithinUnit, setConsumeWithinUnit] = useState<ConsumeWithinUnit>('giorni');
   const [consumeWithinUnitTouched, setConsumeWithinUnitTouched] = useState(false);
   const [purchaseDate, setPurchaseDate] = useState<string | null>(
@@ -259,7 +264,31 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const consumeWithinDefaultUnit: ConsumeWithinUnit = isFreezerLocation ? 'mesi' : 'giorni';
   const effectiveConsumeWithinUnit = consumeWithinUnitTouched ? consumeWithinUnit : consumeWithinDefaultUnit;
 
+  // Il valore iniziale di consumeWithinAmount (calcolato nell'inizializzatore
+  // lazy di useState sopra) usa "locations" cosi' com'e' al primissimo
+  // render: se il form di modifica si apre prima che le zone siano gia' in
+  // cache, non sa distinguere freezer (mesi) da altrove (giorni) e assume
+  // sempre giorni. Appena le zone arrivano, se l'utente non ha ancora
+  // toccato il campo, si ricalcola con l'unita' corretta.
+  useEffect(() => {
+    if (consumeWithinAmountTouchedRef.current) return;
+    if (!initial?.expirationDate || initial?.category === 'AVANZI') return;
+    if (locations.length === 0) return;
+
+    const purchase = initial?.purchaseDate ?? todayLocalISODate();
+    const base = new Date(`${purchase}T00:00:00`);
+    const target = new Date(`${initial.expirationDate}T00:00:00`);
+    const location = locations.find((l) => l.id === initial?.storageLocationId);
+    const isFreezer = (location?.name ?? '').trim().toLowerCase() === 'freezer';
+    const amount = isFreezer
+      ? Math.max(0, (target.getFullYear() - base.getFullYear()) * 12 + (target.getMonth() - base.getMonth()))
+      : Math.max(0, Math.round((target.getTime() - base.getTime()) / 86_400_000));
+    setConsumeWithinAmount(String(amount));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locations]);
+
   function handleConsumeWithinAmountChange(text: string, unitOverride?: ConsumeWithinUnit) {
+    consumeWithinAmountTouchedRef.current = true;
     setConsumeWithinAmount(text);
     if (replacesExpirationWithConsumeWithin) return;
     const amount = Number(text.trim().replace(',', '.'));

@@ -48,6 +48,11 @@ export function getErrorMessage(error: unknown, t: TranslateFn): string {
     const body = axiosError.response?.data;
     if (body?.details?.length) return body.details.join('\n');
     if (body?.message) return body.message;
+    // Un timeout (axios code ECONNABORTED, es. dopo i 45s configurati sopra)
+    // non ha una response e non e' un 'Network Error': senza questo ramo
+    // ricadeva nel messaggio generico, proprio nello scenario di risveglio
+    // del backend per cui il timeout stesso e' stato introdotto.
+    if (axiosError.code === 'ECONNABORTED') return t('common.timeoutError');
     if (axiosError.message === 'Network Error') return t('common.networkError');
   }
   return t('common.genericError');

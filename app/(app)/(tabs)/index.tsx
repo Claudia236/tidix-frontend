@@ -14,6 +14,7 @@ import { deleteAction, SwipeableRow } from '../../../src/components/SwipeableRow
 import { findCategoryInfo, HOUSEHOLD_CATEGORIES, jsWeekdayToDay, useCategories, wasteTypesCollectedOn, wasteTypesLabel } from '../../../src/constants/domain';
 import { useSyncQueue } from '../../../src/hooks/useSyncQueue';
 import { useI18n } from '../../../src/i18n/I18nContext';
+import { cancelCleaningReminder } from '../../../src/notifications/cleaningReminders';
 import { syncExpiryReminders } from '../../../src/notifications/expiryReminders';
 import { syncOpenedReminders } from '../../../src/notifications/openedReminders';
 import { syncWasteReminders } from '../../../src/notifications/wasteReminders';
@@ -169,7 +170,10 @@ export default function OverviewScreen() {
 
   const markCleanedMutation = useMutation({
     mutationFn: (id: string) => cleaningApi.markCleaned(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] }),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] });
+      cancelCleaningReminder(id);
+    },
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 

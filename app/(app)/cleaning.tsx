@@ -78,7 +78,7 @@ export default function CleaningScreen() {
     ]);
   }
 
-  // Swipe a sinistra: stesso popup usato in Panoramica per la stessa azione
+  // Swipe a destra: stesso popup usato in Panoramica per la stessa azione
   // (cleaning.confirmMarkCleanedTitle/Message), dato che segna subito pulito.
   function confirmMarkCleaned(task: CleaningTask) {
     showAlert(t('cleaning.confirmMarkCleanedTitle'), t('cleaning.confirmMarkCleanedMessage', { name: task.name }), [
@@ -167,8 +167,8 @@ export default function CleaningScreen() {
           const item = row.data;
           return (
             <SwipeableRow
-              leftAction={deleteAction(colors, () => confirmDelete(item))}
-              rightAction={{ onTrigger: () => confirmMarkCleaned(item), icon: 'checkmark-done', color: colors.brand }}
+              leftAction={{ onTrigger: () => confirmMarkCleaned(item), icon: 'checkmark-done', color: colors.brand }}
+              rightAction={deleteAction(colors, () => confirmDelete(item))}
               borderRadius={14}
               marginBottom={0}
             >

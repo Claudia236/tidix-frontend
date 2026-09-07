@@ -154,7 +154,7 @@ export default function OverviewScreen() {
   });
 
   // Stesso popup a tre opzioni del dettaglio prodotto e delle Scorte,
-  // raggiungibile qui trascinando la riga verso destra.
+  // raggiungibile qui trascinando la riga verso sinistra.
   function confirmSwipeDeleteItem(item: Item) {
     showAlert(t('item.confirmDeleteTitle'), t('item.confirmDeleteMessage'), [
       { text: t('common.cancel'), style: 'cancel' },
@@ -245,8 +245,8 @@ export default function OverviewScreen() {
                 return (
                   <SwipeableRow
                     key={item.id}
-                    leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
-                    rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                    leftAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                    rightAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
                     borderRadius={10}
                     marginBottom={0}
                   >
@@ -284,8 +284,8 @@ export default function OverviewScreen() {
               {openedItems.map((item) => (
                 <SwipeableRow
                   key={item.id}
-                  leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
-                  rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                  leftAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                  rightAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
                   borderRadius={10}
                   marginBottom={0}
                 >
@@ -328,8 +328,8 @@ export default function OverviewScreen() {
                 return (
                   <SwipeableRow
                     key={item.id}
-                    leftAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
-                    rightAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                    leftAction={{ onTrigger: () => goToItem(item), icon: 'chevron-forward', color: colors.brand }}
+                    rightAction={deleteAction(colors, () => confirmSwipeDeleteItem(item))}
                     borderRadius={10}
                     marginBottom={0}
                   >

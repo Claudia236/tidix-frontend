@@ -186,7 +186,7 @@ export default function CleaningScreen() {
                   {item.overdue ? <Text style={styles.overdueLabel}>{t('cleaning.overdue')}</Text> : null}
                 </Pressable>
                 <View style={styles.cardActions}>
-                  <Pressable onPress={() => markCleanedMutation.mutate(item.id)} style={styles.cleanButton} hitSlop={8}>
+                  <Pressable onPress={() => confirmMarkCleaned(item)} style={styles.cleanButton} hitSlop={8}>
                     <Ionicons name="checkmark" size={16} color={colors.white} />
                   </Pressable>
                   <Pressable onPress={() => router.push({ pathname: '/(app)/cleaning-task/[id]', params: { id: item.id } })} hitSlop={8}>

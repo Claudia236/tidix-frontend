@@ -85,6 +85,8 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
   const [paidInFull, setPaidInFull] = useState<Record<string, boolean>>(initial?.paidInFull ?? {});
 
   const effectivePaidBy = paidByUserId || user?.id || members[0]?.id || '';
+  const parsedAmount = Number(amount.replace(',', '.'));
+  const amountValid = Number.isFinite(parsedAmount) && parsedAmount > 0;
 
   // Chi paga fa sempre parte della divisione (non c'e' un chip per toglierlo):
   // se cambia il pagatore, assicurati che resti incluso anche se in
@@ -138,7 +140,7 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
   }
 
   function handleSubmit() {
-    if (!description.trim() || !amount.trim()) return;
+    if (!description.trim() || !amountValid) return;
     const ids = Array.from(participantIds);
     let splits: ExpenseSplitInput[] = [];
     if (ids.length > 0) {
@@ -164,7 +166,7 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
     }
     onSubmit({
       description: description.trim(),
-      amount: Math.max(0, Number(amount.replace(',', '.')) || 0),
+      amount: parsedAmount,
       paidByUserId: effectivePaidBy,
       date: date ?? todayLocalISODate(),
       splits,
@@ -281,7 +283,7 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
           <PrimaryButton
             label={submitLabel}
             onPress={handleSubmit}
-            disabled={!description.trim() || !amount.trim()}
+            disabled={!description.trim() || !amountValid}
             loading={submitting}
             style={{ flex: 1 }}
           />

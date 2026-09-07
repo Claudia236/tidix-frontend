@@ -23,7 +23,10 @@ export default function EditZoneScreen() {
 
   function invalidateZones() {
     queryClient.invalidateQueries({ queryKey: ['storage-locations'] });
-    queryClient.invalidateQueries({ queryKey: ['items', 'summary'] });
+    // Prefisso generico (non solo 'summary'): una zona eliminata puo' aver
+    // fatto sparire/spostare articoli, e Scorte/Panoramica/Lista spesa
+    // devono rivederli tutti, non solo il riepilogo per zona.
+    queryClient.invalidateQueries({ queryKey: ['items'] });
   }
 
   const updateMutation = useMutation({

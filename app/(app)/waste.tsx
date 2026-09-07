@@ -11,7 +11,7 @@ import { syncWasteReminders } from '../../src/notifications/wasteReminders';
 import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
-import type { DayOfWeek, WasteType } from '../../src/types';
+import type { DayOfWeek, WasteSchedule, WasteType } from '../../src/types';
 
 export default function WasteScreen() {
   const queryClient = useQueryClient();
@@ -41,9 +41,20 @@ export default function WasteScreen() {
     onError: (e) => showAlert(t('waste.errorTitle'), getErrorMessage(e, t)),
   });
 
+  // Legge e aggiorna la cache di react-query in modo sincrono (non lo stato
+  // derivato daysByType, che si aggiorna solo al prossimo render): due tap
+  // rapidi su giorni diversi dello stesso tipo altrimenti leggerebbero
+  // entrambi lo stesso "current" precedente al primo tap, perdendolo.
   function toggleDay(type: WasteType, day: DayOfWeek) {
-    const current = daysByType.get(type) ?? [];
+    const list = queryClient.getQueryData<WasteSchedule[]>(['waste-schedules']) ?? [];
+    const existing = list.find((s) => s.type === type);
+    const current = existing?.daysOfWeek ?? [];
     const next = current.includes(day) ? current.filter((d) => d !== day) : [...current, day];
+
+    const others = list.filter((s) => s.type !== type);
+    const updated = next.length > 0 ? [...others, { id: existing?.id ?? type, type, daysOfWeek: next }] : others;
+    queryClient.setQueryData(['waste-schedules'], updated);
+
     toggleMutation.mutate({ type, daysOfWeek: next });
   }
 

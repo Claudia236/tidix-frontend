@@ -7,11 +7,12 @@ import { useTheme } from '../theme/ThemeContext';
 interface Props {
   value: string | null;
   onChange: (value: string | null) => void;
+  placeholder?: string;
   clearLabel?: string;
   allowClear?: boolean;
 }
 
-export function DatePickerField({ value, onChange, clearLabel, allowClear = true }: Props) {
+export function DatePickerField({ value, onChange, placeholder, clearLabel, allowClear = true }: Props) {
   const { colors } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -22,6 +23,7 @@ export function DatePickerField({ value, onChange, clearLabel, allowClear = true
         {React.createElement('input', {
           type: 'date',
           value: value ?? '',
+          placeholder: placeholder ?? t('common.noDateDefault'),
           onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value || null),
           style: {
             border: 'none',

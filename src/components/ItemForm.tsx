@@ -236,7 +236,9 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
 
   const selectedCategoryInfo = categories.find((c) => c.key === category) ?? categories[categories.length - 1];
   const selectedLocation = locations.find((l) => l.id === effectiveLocationId) ?? null;
-  const canSubmit = name.trim().length > 0 && !!effectiveLocationId;
+  const parsedQuantity = Number(quantity.replace(',', '.'));
+  const quantityValid = Number.isFinite(parsedQuantity) && parsedQuantity >= 0;
+  const canSubmit = name.trim().length > 0 && !!effectiveLocationId && quantityValid;
   const hidesExpiration = category === 'CASA_PULIZIA' || category === 'CUCINA' || category === 'CASA';
   const isFreezerLocation = (locations.find((l) => l.id === effectiveLocationId)?.name ?? '').trim().toLowerCase() === 'freezer';
   const showsExpiryModeToggle = !replacesExpirationWithConsumeWithin && !hidesExpiration;
@@ -295,7 +297,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       storageLocationId: effectiveLocationId,
       supermarketId,
       category,
-      quantity: Math.max(0, Number(quantity.replace(',', '.')) || 0),
+      quantity: parsedQuantity,
       unit,
       expirationDate: resolvedExpirationDate,
       purchaseDate,

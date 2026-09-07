@@ -110,6 +110,13 @@ export default function ScanReceiptScreen() {
     });
   }
 
+  function confirmDismissLine(line: ReceiptLine) {
+    showAlert(t('scanReceipt.confirmDismissTitle'), t('scanReceipt.confirmDismissMessage', { name: line.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: () => dismissLine(line.id) },
+    ]);
+  }
+
   function toggleSelected(id: string) {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -244,7 +251,7 @@ export default function ScanReceiptScreen() {
                       <SwipeableRow
                         key={line.id}
                         leftAction={{ onTrigger: () => confirmSaveLineForLater(line), icon: 'checkmark-done', color: colors.brand }}
-                        rightAction={deleteAction(colors, () => dismissLine(line.id))}
+                        rightAction={deleteAction(colors, () => confirmDismissLine(line))}
                       >
                         <View style={styles.lineRow}>
                           <Pressable onPress={() => toggleSelected(line.id)} style={styles.lineIconButton} hitSlop={8}>
@@ -263,7 +270,7 @@ export default function ScanReceiptScreen() {
                           <Pressable onPress={() => setEditingLine(line)} style={styles.lineIconButton} hitSlop={8}>
                             <Ionicons name="pencil-outline" size={18} color={colors.brand} />
                           </Pressable>
-                          <Pressable onPress={() => dismissLine(line.id)} style={styles.lineIconButton} hitSlop={8}>
+                          <Pressable onPress={() => confirmDismissLine(line)} style={styles.lineIconButton} hitSlop={8}>
                             <Ionicons name="close" size={18} color={colors.inkSoft} />
                           </Pressable>
                         </View>

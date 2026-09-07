@@ -14,7 +14,7 @@ export default function NewZoneScreen() {
 
   function invalidateZones() {
     queryClient.invalidateQueries({ queryKey: ['storage-locations'] });
-    queryClient.invalidateQueries({ queryKey: ['items', 'summary'] });
+    queryClient.invalidateQueries({ queryKey: ['items'] });
   }
 
   const createMutation = useMutation({

@@ -46,6 +46,9 @@ export function CleaningTaskForm({ initial, submitLabel, submitting, onSubmit, o
   const [frequencyUnit, setFrequencyUnit] = useState<FrequencyUnit>(initialFrequency?.unit ?? 'giorni');
   const [lastCleanedDate, setLastCleanedDate] = useState<string | null>(initial?.lastCleanedDate ?? null);
 
+  const parsedFrequency = frequencyAmount.trim() ? Number(frequencyAmount.trim().replace(',', '.')) : null;
+  const frequencyValid = parsedFrequency === null || (Number.isFinite(parsedFrequency) && parsedFrequency > 0);
+
   function applySuggestion(suggestion: CleaningSuggestion) {
     setName(suggestion.name);
     const display = frequencyDaysToDisplay(suggestion.frequencyDays);
@@ -54,8 +57,8 @@ export function CleaningTaskForm({ initial, submitLabel, submitting, onSubmit, o
   }
 
   function handleSubmit() {
-    if (!name.trim()) return;
-    const amount = frequencyAmount.trim() ? Math.max(1, Number(frequencyAmount)) : null;
+    if (!name.trim() || !frequencyValid) return;
+    const amount = parsedFrequency !== null ? Math.max(1, Math.round(parsedFrequency)) : null;
     onSubmit({
       name: name.trim(),
       frequencyDays: amount ? amount * (frequencyUnit === 'mesi' ? DAYS_PER_MONTH : 1) : null,
@@ -134,7 +137,7 @@ export function CleaningTaskForm({ initial, submitLabel, submitting, onSubmit, o
           {onDelete ? (
             <PrimaryButton label={t('common.delete')} variant="danger" onPress={onDelete} loading={deleting} style={{ flex: 0 }} />
           ) : null}
-          <PrimaryButton label={submitLabel} onPress={handleSubmit} disabled={!name.trim()} loading={submitting} style={{ flex: 1 }} />
+          <PrimaryButton label={submitLabel} onPress={handleSubmit} disabled={!name.trim() || !frequencyValid} loading={submitting} style={{ flex: 1 }} />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
@@ -6,7 +6,6 @@ import { getErrorMessage } from '../../../src/api/client';
 import { storageLocationsApi } from '../../../src/api/storageLocations';
 import { showAlert } from '../../../src/components/AppAlert';
 import { ZoneForm, type ZoneFormInput } from '../../../src/components/ZoneForm';
-import { useStorageLocations } from '../../../src/hooks/useStorageLocations';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
@@ -18,8 +17,13 @@ export default function EditZoneScreen() {
   const { colors } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { byId, isLoading, isFetching } = useStorageLocations();
-  const zone = byId.get(id);
+
+  // Query diretta per id (non dedotta dalla lista 'storage-locations'): una
+  // lista in cache-ma-non-in-fetch poteva far scattare un falso "non piu'
+  // disponibile" se la schermata veniva raggiunta da una query diversa (es.
+  // il riepilogo zone di Panoramica) ancora fresca ma non aggiornata.
+  const zoneQuery = useQuery({ queryKey: ['storage-locations', id], queryFn: () => storageLocationsApi.get(id), enabled: !!id });
+  const zone = zoneQuery.data;
 
   function invalidateZones() {
     queryClient.invalidateQueries({ queryKey: ['storage-locations'] });
@@ -55,19 +59,15 @@ export default function EditZoneScreen() {
   }
 
   // Se la zona e' stata eliminata da un altro membro della famiglia mentre
-  // questa schermata era aperta, "zone" non si trova mai: senza questo, lo
-  // spinner sotto girava all'infinito. Usa isFetching (non isLoading, vero
-  // solo al primissimo caricamento assoluto): appena creata una zona la
-  // lista e' in cache ma invalidata, e senza aspettare il refetch in corso
-  // l'alert scattava subito su una zona che in realta' esiste ed e' solo in
-  // arrivo.
+  // questa schermata era aperta, la query per id va in errore (404): senza
+  // questo, lo spinner sotto girava all'infinito.
   useEffect(() => {
-    if (!isFetching && !zone) {
+    if (zoneQuery.isError) {
       showAlert(t('common.recordGoneTitle'), t('common.recordGoneMessage'), [{ text: t('common.ok'), onPress: () => router.back() }]);
     }
-  }, [isFetching, zone]);
+  }, [zoneQuery.isError]);
 
-  if (isLoading || !zone) {
+  if (zoneQuery.isLoading || !zone) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator color={colors.brand} />

@@ -4,6 +4,8 @@ import type { CleaningTask, CleaningTaskInput } from '../types';
 export const cleaningApi = {
   list: () => apiClient.get<CleaningTask[]>('/api/cleaning-tasks').then((r) => r.data),
 
+  get: (id: string) => apiClient.get<CleaningTask>(`/api/cleaning-tasks/${id}`).then((r) => r.data),
+
   create: (input: CleaningTaskInput) =>
     apiClient.post<CleaningTask>('/api/cleaning-tasks', input).then((r) => r.data),
 

@@ -20,8 +20,12 @@ export default function EditCleaningTaskScreen() {
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const tasksQuery = useQuery({ queryKey: ['cleaning-tasks'], queryFn: cleaningApi.list });
-  const task = tasksQuery.data?.find((tsk) => tsk.id === id);
+  // Query diretta per id (non dedotta dalla lista 'cleaning-tasks'): una
+  // lista in cache-ma-non-in-fetch poteva far scattare un falso "non piu'
+  // disponibile" se la schermata veniva raggiunta da una query diversa,
+  // ancora fresca ma non aggiornata.
+  const taskQuery = useQuery({ queryKey: ['cleaning-tasks', id], queryFn: () => cleaningApi.get(id), enabled: !!id });
+  const task = taskQuery.data;
 
   const updateMutation = useMutation({
     mutationFn: (input: CleaningTaskInput) => cleaningApi.update(id, input),
@@ -49,19 +53,16 @@ export default function EditCleaningTaskScreen() {
     ]);
   }
 
-  // Se la pulizia e' stata eliminata da un altro membro della famiglia (o la
-  // lista non si carica) mentre questa schermata era aperta, "task" non si
-  // trova mai: senza questo, lo spinner sotto girava all'infinito. Usa
-  // isFetching (non isLoading, vero solo al primissimo caricamento
-  // assoluto): durante un refetch in background su una lista gia' in cache
-  // l'alert non deve scattare prima che il refetch abbia finito di cercare.
+  // Se la pulizia e' stata eliminata da un altro membro della famiglia mentre
+  // questa schermata era aperta, la query per id va in errore (404): senza
+  // questo, lo spinner sotto girava all'infinito.
   useEffect(() => {
-    if (!tasksQuery.isFetching && !task) {
+    if (taskQuery.isError) {
       showAlert(t('common.recordGoneTitle'), t('common.recordGoneMessage'), [{ text: t('common.ok'), onPress: () => router.back() }]);
     }
-  }, [tasksQuery.isFetching, task]);
+  }, [taskQuery.isError]);
 
-  if (tasksQuery.isLoading || !task) {
+  if (taskQuery.isLoading || !task) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator color={colors.brand} />

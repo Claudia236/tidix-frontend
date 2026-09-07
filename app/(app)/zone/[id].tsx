@@ -18,7 +18,7 @@ export default function EditZoneScreen() {
   const { colors } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { byId, isLoading } = useStorageLocations();
+  const { byId, isLoading, isFetching } = useStorageLocations();
   const zone = byId.get(id);
 
   function invalidateZones() {
@@ -56,12 +56,16 @@ export default function EditZoneScreen() {
 
   // Se la zona e' stata eliminata da un altro membro della famiglia mentre
   // questa schermata era aperta, "zone" non si trova mai: senza questo, lo
-  // spinner sotto girava all'infinito.
+  // spinner sotto girava all'infinito. Usa isFetching (non isLoading, vero
+  // solo al primissimo caricamento assoluto): appena creata una zona la
+  // lista e' in cache ma invalidata, e senza aspettare il refetch in corso
+  // l'alert scattava subito su una zona che in realta' esiste ed e' solo in
+  // arrivo.
   useEffect(() => {
-    if (!isLoading && !zone) {
+    if (!isFetching && !zone) {
       showAlert(t('common.recordGoneTitle'), t('common.recordGoneMessage'), [{ text: t('common.ok'), onPress: () => router.back() }]);
     }
-  }, [isLoading, zone]);
+  }, [isFetching, zone]);
 
   if (isLoading || !zone) {
     return (

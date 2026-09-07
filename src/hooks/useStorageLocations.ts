@@ -16,5 +16,6 @@ export function useStorageLocations() {
     locations: query.data ?? [],
     byId,
     isLoading: query.isLoading,
+    isFetching: query.isFetching,
   };
 }

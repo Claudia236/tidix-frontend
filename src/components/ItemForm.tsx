@@ -138,7 +138,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   ref
 ) {
   const { colors } = useTheme();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const queryClient = useQueryClient();
@@ -219,6 +219,11 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       }
     }
   });
+  // parseSpokenDateIT capisce solo frasi italiane ("domani", "tra 3 giorni",
+  // nomi di mese in italiano): mostrare il microfono per la data anche in
+  // inglese/spagnolo darebbe solo errori "data non capita", quindi si
+  // nasconde finche' non viene localizzato anche il parser.
+  const voiceDateAvailable = voice.available && language === 'it';
 
   const effectiveLocationId = storageLocationId || locations[0]?.id || '';
 
@@ -506,7 +511,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
                   ? () => showAlert(t('itemForm.consumeWithinDays.guideTitleSealed'), t(`itemForm.consumeWithinDays.guideSealed.${category}`))
                   : undefined
               }
-              voice={voice.available ? { active: voice.target === 'expiration', onPress: () => voice.start('expiration') } : undefined}
+              voice={voiceDateAvailable ? { active: voice.target === 'expiration', onPress: () => voice.start('expiration') } : undefined}
             />
           ) : (
             <>
@@ -535,7 +540,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
                 <>
                   <View style={styles.voiceLabelRow}>
                     <Text style={styles.label}>{t('itemForm.expirationDate.label')}</Text>
-                    {voice.available ? (
+                    {voiceDateAvailable ? (
                       <Pressable onPress={() => voice.start('expiration')} hitSlop={8}>
                         <Ionicons
                           name={voice.target === 'expiration' ? 'mic' : 'mic-outline'}
@@ -563,7 +568,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
                       ? () => showAlert(t('itemForm.consumeWithinDays.guideTitleSealed'), t(`itemForm.consumeWithinDays.guideSealed.${category}`))
                       : undefined
                   }
-                  voice={voice.available ? { active: voice.target === 'expiration', onPress: () => voice.start('expiration') } : undefined}
+                  voice={voiceDateAvailable ? { active: voice.target === 'expiration', onPress: () => voice.start('expiration') } : undefined}
                 />
               )}
             </>

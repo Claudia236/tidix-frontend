@@ -88,7 +88,10 @@ export function RestockDialog({ visible, itemName, currentExpirationDate, submit
               <Text style={styles.subtitle}>{t('restock.newBatchHint')}</Text>
               <View style={styles.dateLabelRow}>
                 <Text style={styles.label}>{t('restock.newDateLabel')}</Text>
-                {voice.available ? (
+                {/* parseSpokenDateIT capisce solo frasi italiane: si nasconde il
+                    microfono nelle altre lingue, altrimenti darebbe solo
+                    errori "data non capita". */}
+                {voice.available && language === 'it' ? (
                   <Pressable onPress={() => voice.start('newDate')} hitSlop={8}>
                     <Ionicons
                       name={voice.target === 'newDate' ? 'mic' : 'mic-outline'}

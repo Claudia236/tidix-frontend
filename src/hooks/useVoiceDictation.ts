@@ -2,12 +2,22 @@ import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-spe
 import { useEffect, useState } from 'react';
 import { showAlert } from '../components/AppAlert';
 import { useI18n } from '../i18n/I18nContext';
+import type { Language } from '../i18n/translations';
+
+// Locale passato al riconoscitore vocale nativo: prima era sempre 'it-IT' a
+// prescindere dalla lingua scelta nell'app, producendo trascrizioni senza
+// senso per chi usa l'app in inglese o spagnolo e prova a dettare.
+const RECOGNITION_LOCALES: Record<Language, string> = {
+  it: 'it-IT',
+  en: 'en-US',
+  es: 'es-ES',
+};
 
 // Dettatura vocale generica per compilare campi di testo: target identifica
 // quale campo dell'form chiamante deve ricevere la trascrizione (un solo
 // riconoscimento alla volta, condiviso dal modulo nativo).
 export function useVoiceDictation<T extends string>(onResult: (target: T, transcript: string) => void) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [available, setAvailable] = useState(false);
   const [target, setTarget] = useState<T | null>(null);
 
@@ -44,7 +54,7 @@ export function useVoiceDictation<T extends string>(onResult: (target: T, transc
       return;
     }
     setTarget(nextTarget);
-    ExpoSpeechRecognitionModule.start({ lang: 'it-IT', interimResults: false });
+    ExpoSpeechRecognitionModule.start({ lang: RECOGNITION_LOCALES[language], interimResults: false });
   }
 
   return { available, target, start };

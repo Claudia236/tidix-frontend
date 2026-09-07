@@ -31,6 +31,18 @@ type ConsumeWithinUnit = 'giorni' | 'mesi';
 type ExpiryMode = 'date' | 'consumeWithin';
 
 const MAX_SCAN_PHOTOS = 2;
+const DAYS_PER_MONTH = 30;
+
+// Un openedReminderDays si mostra in mesi solo se e' un multiplo esatto di 30
+// (cosi' come impostato scegliendo "mesi" in creazione): altrimenti mostrarlo
+// diviso per 30 arrotonderebbe in modo fuorviante. Stessa euristica di
+// frequencyDaysToDisplay in CleaningTaskForm.
+function openedReminderDaysToDisplay(days: number): { amount: string; unit: ConsumeWithinUnit } {
+  if (days > 0 && days % DAYS_PER_MONTH === 0) {
+    return { amount: String(days / DAYS_PER_MONTH), unit: 'mesi' };
+  }
+  return { amount: String(days), unit: 'giorni' };
+}
 
 interface Props {
   initial?: Partial<ItemInput>;
@@ -189,10 +201,14 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const [openedDate, setOpenedDate] = useState<string | null>(
     initial?.openedDate ?? todayLocalISODate()
   );
-  const [openedConsumeWithinAmount, setOpenedConsumeWithinAmount] = useState<string>(() =>
-    initial?.openedReminderEnabled && initial?.openedReminderDays ? String(initial.openedReminderDays) : ''
+  const initialOpenedReminder =
+    initial?.openedReminderEnabled && initial?.openedReminderDays
+      ? openedReminderDaysToDisplay(initial.openedReminderDays)
+      : null;
+  const [openedConsumeWithinAmount, setOpenedConsumeWithinAmount] = useState<string>(initialOpenedReminder?.amount ?? '');
+  const [openedConsumeWithinUnit, setOpenedConsumeWithinUnit] = useState<ConsumeWithinUnit>(
+    initialOpenedReminder?.unit ?? 'giorni'
   );
-  const [openedConsumeWithinUnit, setOpenedConsumeWithinUnit] = useState<ConsumeWithinUnit>('giorni');
   const [addingLocation, setAddingLocation] = useState(false);
   const [newLocationName, setNewLocationName] = useState('');
   const [newLocationEmoji, setNewLocationEmoji] = useState('');

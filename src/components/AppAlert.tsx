@@ -58,13 +58,31 @@ export function AppAlertHost() {
     button.onPress?.();
   }
 
-  useModalBackHandler(state.visible, () => setState(EMPTY_STATE));
+  // Chiudere con la X o con Indietro non deve limitarsi a nascondere il
+  // popup: per un alert con un solo pulsante informativo (es. "record
+  // cancellato" con onPress: () => router.back()) quell'azione e' necessaria
+  // per uscire dalla schermata bloccata, non solo un "annulla" facoltativo.
+  // Se c'e' un pulsante "cancel" esplicito si esegue quello (di norma senza
+  // effetti); con piu' pulsanti non-cancel (scelte distruttive alternative,
+  // nessuna delle quali e' un default sicuro) non si esegue nulla.
+  function dismiss() {
+    const buttons = state.buttons;
+    setState(EMPTY_STATE);
+    const cancelButton = buttons.find((b) => b.style === 'cancel');
+    if (cancelButton) {
+      cancelButton.onPress?.();
+    } else if (buttons.length === 1) {
+      buttons[0].onPress?.();
+    }
+  }
+
+  useModalBackHandler(state.visible, dismiss);
 
   return (
-    <Modal visible={state.visible} transparent animationType="fade" onRequestClose={() => setState(EMPTY_STATE)}>
+    <Modal visible={state.visible} transparent animationType="fade" onRequestClose={dismiss}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
-          <Pressable onPress={() => setState(EMPTY_STATE)} hitSlop={8} style={styles.closeButton}>
+          <Pressable onPress={dismiss} hitSlop={8} style={styles.closeButton}>
             <Ionicons name="close" size={18} color={colors.inkSoft} />
           </Pressable>
           <Text style={styles.title}>{state.title}</Text>

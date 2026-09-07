@@ -98,7 +98,13 @@ export default function ScanReceiptScreen() {
   }
 
   function reset() {
+    // Invalida anche una scansione OCR eventualmente ancora in corso: senza
+    // incrementare il token qui, un risultato arrivato in ritardo dopo aver
+    // premuto "Ritocca" ripopolava questa schermata (ormai senza foto) con
+    // le righe di uno scontrino che l'utente aveva gia' scartato.
+    scanRequestIdRef.current++;
     setPhotoUri(null);
+    setRecognizing(false);
     setLines([]);
     setHasRecognized(false);
     setSelectedIds(new Set());

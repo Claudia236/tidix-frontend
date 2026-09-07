@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../../src/api/client';
@@ -98,13 +98,27 @@ export default function OverviewScreen() {
 
   const avanziItems = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.category === 'AVANZI'), [allItemsQuery.data]);
 
+  // Forza il ricalcolo di wasteTomorrow allo scoccare delle 20:00: senza
+  // questo, se lo schermo restava aperto a cavallo di quell'orario senza che
+  // nient'altro innescasse un refetch di wasteSchedulesQuery, il banner
+  // "raccolta domani" non compariva finche' l'utente non usciva e rientrava.
+  const [pastEightPmTick, setPastEightPmTick] = useState(0);
+  useEffect(() => {
+    const target = new Date();
+    target.setHours(20, 0, 0, 0);
+    if (target.getTime() <= Date.now()) target.setDate(target.getDate() + 1);
+    const timeout = setTimeout(() => setPastEightPmTick((n) => n + 1), target.getTime() - Date.now());
+    return () => clearTimeout(timeout);
+  }, [pastEightPmTick]);
+
   const wasteTomorrow = useMemo(() => {
     if (!wasteSchedulesQuery.data) return [];
     const now = new Date();
     if (now.getHours() < 20) return [];
     const tomorrow = jsWeekdayToDay((now.getDay() + 1) % 7);
     return wasteTypesCollectedOn(wasteSchedulesQuery.data, tomorrow);
-  }, [wasteSchedulesQuery.data]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wasteSchedulesQuery.data, pastEightPmTick]);
 
   const wasteTomorrowLabel = useMemo(
     () => wasteTypesLabel(wasteTomorrow, t, language),

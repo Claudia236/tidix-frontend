@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
@@ -23,7 +23,7 @@ import {
 import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme, type ThemeMode } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
-import type { Category } from '../../src/types';
+import type { Category, HouseholdResponse } from '../../src/types';
 
 const LANGUAGES: Language[] = ['it', 'en', 'es'];
 const LANGUAGE_NATIVE_LABELS: Record<Language, string> = { it: 'Italiano', en: 'English', es: 'Español' };
@@ -105,15 +105,40 @@ export default function HouseholdScreen() {
   const updateCategoriesMutation = useMutation({
     mutationFn: (disabledCategories: Category[]) => householdApi.updateDisabledCategories(disabledCategories),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['household', 'me'] }),
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+    // Anche su errore si invalida (non solo su successo): senza questo, se
+    // proprio l'ULTIMO toggle di una serie di tap rapidi falliva, la cache
+    // locale restava ottimisticamente "salvata" ma il server no.
+    onError: (e) => {
+      showAlert(t('common.error'), getErrorMessage(e, t));
+      queryClient.invalidateQueries({ queryKey: ['household', 'me'] });
+    },
   });
 
+  // Una richiesta di rete in coda alla volta: senza questo, due toggle rapidi
+  // su categorie diverse leggevano entrambi lo stesso disabledCategories di
+  // partenza (obsoleto) e le due PUT in corsa si sovrascrivevano a vicenda,
+  // stesso problema gia' risolto in waste.tsx con pendingByType.
+  const pendingCategoriesRef = useRef<Promise<unknown>>(Promise.resolve());
+
   function toggleCategoryEnabled(key: Category) {
-    if (!householdQuery.data || key === 'ALTRO') return;
-    const current = new Set(householdQuery.data.disabledCategories);
-    if (current.has(key)) current.delete(key);
-    else current.add(key);
-    updateCategoriesMutation.mutate(Array.from(current));
+    if (key === 'ALTRO') return;
+    const current = queryClient.getQueryData<HouseholdResponse>(['household', 'me']);
+    if (!current) return;
+    const disabled = new Set(current.disabledCategories);
+    if (disabled.has(key)) disabled.delete(key);
+    else disabled.add(key);
+    const next = Array.from(disabled);
+
+    // Aggiorna subito la cache in modo sincrono (non lo stato derivato
+    // householdQuery.data, che si aggiorna solo al prossimo render): due tap
+    // rapidi su categorie diverse altrimenti leggerebbero entrambi lo stesso
+    // "current" precedente al primo tap, perdendolo.
+    queryClient.setQueryData<HouseholdResponse>(['household', 'me'], { ...current, disabledCategories: next });
+
+    const previous = pendingCategoriesRef.current;
+    const request = previous.catch(() => {}).then(() => updateCategoriesMutation.mutateAsync(next));
+    pendingCategoriesRef.current = request;
+    request.catch(() => {});
   }
 
   async function shareInviteCode() {

@@ -189,6 +189,12 @@ export default function ShoppingScreen() {
 
   const purchasedCount = useMemo(() => (notesQuery.data ?? []).filter((n) => n.checked).length, [notesQuery.data]);
 
+  // Prima che il primissimo caricamento risponda, toBuyRows e' vuoto solo
+  // perche' i dati non sono ancora arrivati (non perche' la lista sia
+  // davvero vuota): senza questo controllo l'EmptyState lampeggiava per un
+  // istante ad ogni apertura della schermata.
+  const initialLoading = shoppingQuery.isLoading || notesQuery.isLoading;
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <FlatList
@@ -230,11 +236,13 @@ export default function ShoppingScreen() {
           </>
         }
         ListEmptyComponent={
-          <EmptyState
-            icon="cart-outline"
-            title={t('shopping.emptyTitle')}
-            subtitle={t('shopping.emptySubtitle')}
-          />
+          initialLoading ? null : (
+            <EmptyState
+              icon="cart-outline"
+              title={t('shopping.emptyTitle')}
+              subtitle={t('shopping.emptySubtitle')}
+            />
+          )
         }
         renderItem={({ item: row }) => {
           if (row.type === 'header' && row.group === 'category') {

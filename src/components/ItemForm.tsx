@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getErrorMessage } from '../api/client';
 import { storageLocationsApi } from '../api/storageLocations';
 import { CONSUME_WITHIN_DAYS_CATEGORIES, useSelectableCategories, useLocationColor, useUnitLabel, UNITS } from '../constants/domain';
 import { useModalBackHandler } from '../hooks/useModalBackHandler';
@@ -243,6 +244,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       setAddingLocation(false);
       setLocationModalVisible(false);
     },
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const selectedCategoryInfo = categories.find((c) => c.key === category) ?? categories[categories.length - 1];

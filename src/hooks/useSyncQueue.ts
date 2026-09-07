@@ -14,22 +14,38 @@ export function useSyncQueue<T>(
   extraDeps: unknown[] = []
 ) {
   const latestInputRef = useRef<T | null | undefined>(input);
+  const latestSyncFnRef = useRef(syncFn);
   const runningRef = useRef(false);
+  const rerunPendingRef = useRef(false);
 
   latestInputRef.current = input;
+  latestSyncFnRef.current = syncFn;
 
   useEffect(() => {
-    if (input == null || runningRef.current) return;
+    if (input == null) return;
+
+    if (runningRef.current) {
+      // Un giro e' gia' in corso, avviato con la syncFn/extraDeps di un
+      // render precedente (es. lingua non ancora cambiata): senza questo
+      // flag, se l'unica cosa cambiata e' extraDeps (stesso riferimento di
+      // input), il giro in corso finirebbe silenziosamente con la versione
+      // superata di syncFn, senza alcuna correzione successiva.
+      rerunPendingRef.current = true;
+      return;
+    }
 
     async function runLoop() {
       runningRef.current = true;
       try {
         let current = latestInputRef.current;
         while (current != null) {
-          await syncFn(current);
-          // Se durante l'attesa e' arrivato un input piu' recente, si
-          // riparte subito con quello; altrimenti la coda e' esaurita.
-          current = latestInputRef.current === current ? null : latestInputRef.current;
+          rerunPendingRef.current = false;
+          await latestSyncFnRef.current(current);
+          // Si riparte subito se durante l'attesa e' arrivato un input piu'
+          // recente, oppure se extraDeps e' cambiato nel frattempo (stesso
+          // input ma rerunPendingRef segnalato dall'effetto qui sopra);
+          // altrimenti la coda e' esaurita.
+          current = latestInputRef.current === current && !rerunPendingRef.current ? null : latestInputRef.current;
         }
       } finally {
         runningRef.current = false;

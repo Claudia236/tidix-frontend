@@ -45,12 +45,21 @@ export default function HouseholdScreen() {
   useFocusEffect(
     useCallback(() => {
       if (Platform.OS === 'web') return;
-      getNotificationPermissionStatus().then(setNotifStatus);
+      // Se lo schermo perde il focus prima che la Promise risponda, il
+      // risultato tardivo di questo focus non deve aggiornare lo stato di
+      // un'istanza rimontata (es. entrando e uscendo rapidamente piu' volte).
+      let cancelled = false;
+      getNotificationPermissionStatus().then((status) => {
+        if (!cancelled) setNotifStatus(status);
+      });
       // Non esiste piu' un interruttore in-app per le notifiche (l'unico
       // controllo reale e' il permesso del sistema operativo): ci si assicura
       // che la preferenza interna resti sempre attiva, cosi' chi l'aveva
       // disattivata quando esisteva ancora lo switch non resta bloccato.
       setNotificationsEnabledPref(true);
+      return () => {
+        cancelled = true;
+      };
     }, [])
   );
 

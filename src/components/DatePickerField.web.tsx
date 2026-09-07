@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useI18n } from '../i18n/I18nContext';
 import type { ColorPalette } from '../theme/colors';
@@ -16,6 +16,7 @@ export function DatePickerField({ value, onChange, placeholder, clearLabel, allo
   const { colors } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const [focused, setFocused] = useState(false);
 
   return (
     <View>
@@ -24,6 +25,8 @@ export function DatePickerField({ value, onChange, placeholder, clearLabel, allo
           type: 'date',
           value: value ?? '',
           onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value || null),
+          onFocus: () => setFocused(true),
+          onBlur: () => setFocused(false),
           style: {
             border: 'none',
             outline: 'none',
@@ -37,8 +40,12 @@ export function DatePickerField({ value, onChange, placeholder, clearLabel, allo
         {/* input[type=date] ignora l'attributo placeholder su Chrome/Edge
             (mostra sempre il proprio formato mm/dd/yyyy): quando non c'e'
             valore si copre l'input con questo testo, cliccabile "attraverso"
-            (pointerEvents none) cosi' apre comunque il calendario nativo. */}
-        {!value ? (
+            (pointerEvents none) cosi' apre comunque il calendario nativo.
+            Nascosto mentre il campo ha il focus, altrimenti coprirebbe le
+            cifre che l'utente sta digitando a mano (l'input valorizza
+            value solo a data completa, quindi resterebbe "vuoto" per
+            tutta la digitazione). */}
+        {!value && !focused ? (
           <View style={styles.placeholderOverlay} pointerEvents="none">
             <Text style={styles.placeholderText}>{placeholder ?? t('common.noDateDefault')}</Text>
           </View>

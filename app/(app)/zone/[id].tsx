@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getErrorMessage } from '../../../src/api/client';
 import { storageLocationsApi } from '../../../src/api/storageLocations';
@@ -53,6 +53,15 @@ export default function EditZoneScreen() {
       { text: t('common.delete'), style: 'destructive', onPress: () => deleteMutation.mutate() },
     ]);
   }
+
+  // Se la zona e' stata eliminata da un altro membro della famiglia mentre
+  // questa schermata era aperta, "zone" non si trova mai: senza questo, lo
+  // spinner sotto girava all'infinito.
+  useEffect(() => {
+    if (!isLoading && !zone) {
+      showAlert(t('common.recordGoneTitle'), t('common.recordGoneMessage'), [{ text: t('common.ok'), onPress: () => router.back() }]);
+    }
+  }, [isLoading, zone]);
 
   if (isLoading || !zone) {
     return (

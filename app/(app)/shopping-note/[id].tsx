@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getErrorMessage } from '../../../src/api/client';
 import { shoppingNotesApi } from '../../../src/api/shoppingNotes';
@@ -45,6 +45,15 @@ export default function EditShoppingNoteScreen() {
       { text: t('common.delete'), style: 'destructive', onPress: () => deleteMutation.mutate() },
     ]);
   }
+
+  // Se la voce e' stata eliminata da un altro membro della famiglia mentre
+  // questa schermata era aperta, la query va in errore (404): senza questo,
+  // lo spinner sotto girava all'infinito con nessun modo di uscire.
+  useEffect(() => {
+    if (noteQuery.isError) {
+      showAlert(t('common.recordGoneTitle'), t('common.recordGoneMessage'), [{ text: t('common.ok'), onPress: () => router.back() }]);
+    }
+  }, [noteQuery.isError]);
 
   if (noteQuery.isLoading || !noteQuery.data) {
     return (

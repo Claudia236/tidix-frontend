@@ -43,6 +43,12 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: 'Something went wrong. Please try again.',
     es: 'Se ha producido un error. Inténtalo de nuevo.',
   },
+  'common.recordGoneTitle': { it: 'Non più disponibile', en: 'No longer available', es: 'Ya no disponible' },
+  'common.recordGoneMessage': {
+    it: 'Questo elemento non esiste più (potrebbe essere stato eliminato da un altro membro della famiglia).',
+    en: 'This item no longer exists (it may have been removed by another household member).',
+    es: 'Este elemento ya no existe (puede que otro miembro de la familia lo haya eliminado).',
+  },
 
   // AppAlert / dialogs
   'categoryPicker.defaultTitle': { it: 'Scegli una categoria', en: 'Choose a category', es: 'Elige una categoría' },

@@ -40,10 +40,14 @@ export function formatDateTime(isoInstant: string, language: Language = 'it'): s
   });
 }
 
-// Converte "YYYY-MM-DD" in "DD-MM-YYYY".
-export function formatDashDate(dateStr: string): string {
-  const [y, m, d] = dateStr.split('-');
-  return `${d}-${m}-${y}`;
+// Converte "YYYY-MM-DD" nell'ordine dei campi corretto per la lingua
+// (giorno/mese/anno per it/es, mese/giorno/anno per en), sempre con
+// separatore "-": prima era sempre DD-MM-YYYY anche in inglese.
+export function formatDashDate(dateStr: string, language: Language = 'it'): string {
+  const d = new Date(`${dateStr}T00:00:00`);
+  return d
+    .toLocaleDateString(LOCALE_MAP[language] ?? 'it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    .replace(/[/.]/g, '-');
 }
 
 // Converte un Date in "YYYY-MM-DD" usando i componenti locali: a differenza

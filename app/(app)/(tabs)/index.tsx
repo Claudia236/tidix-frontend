@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../../src/api/client';
@@ -12,6 +12,7 @@ import { showAlert } from '../../../src/components/AppAlert';
 import { SectionTitle } from '../../../src/components/SectionTitle';
 import { deleteAction, SwipeableRow } from '../../../src/components/SwipeableRow';
 import { findCategoryInfo, HOUSEHOLD_CATEGORIES, jsWeekdayToDay, useCategories, wasteTypesCollectedOn, wasteTypesLabel } from '../../../src/constants/domain';
+import { useSyncQueue } from '../../../src/hooks/useSyncQueue';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import { syncExpiryReminders } from '../../../src/notifications/expiryReminders';
 import { syncOpenedReminders } from '../../../src/notifications/openedReminders';
@@ -109,20 +110,23 @@ export default function OverviewScreen() {
     [wasteTomorrow, t, language]
   );
 
-  useEffect(() => {
-    if (Platform.OS === 'web' || !expiringQuery.data) return;
-    syncExpiryReminders(expiringQuery.data, t);
-  }, [expiringQuery.data, t]);
+  useSyncQueue(
+    (data) => syncExpiryReminders(data, t),
+    Platform.OS === 'web' ? null : expiringQuery.data,
+    [t]
+  );
 
-  useEffect(() => {
-    if (Platform.OS === 'web' || !wasteSchedulesQuery.data) return;
-    syncWasteReminders(wasteSchedulesQuery.data, t, language);
-  }, [wasteSchedulesQuery.data, t, language]);
+  useSyncQueue(
+    (data) => syncWasteReminders(data, t, language),
+    Platform.OS === 'web' ? null : wasteSchedulesQuery.data,
+    [t, language]
+  );
 
-  useEffect(() => {
-    if (Platform.OS === 'web' || !allItemsQuery.data) return;
-    syncOpenedReminders(allItemsQuery.data, t);
-  }, [allItemsQuery.data, t]);
+  useSyncQueue(
+    (data) => syncOpenedReminders(data, t),
+    Platform.OS === 'web' ? null : allItemsQuery.data,
+    [t]
+  );
 
   function refresh() {
     summaryQuery.refetch();

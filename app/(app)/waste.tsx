@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { wasteApi } from '../../src/api/waste';
 import { showAlert } from '../../src/components/AppAlert';
 import { useDaysOfWeek, useWasteTypes } from '../../src/constants/domain';
+import { useSyncQueue } from '../../src/hooks/useSyncQueue';
 import { useI18n } from '../../src/i18n/I18nContext';
 import { syncWasteReminders } from '../../src/notifications/wasteReminders';
 import type { ColorPalette } from '../../src/theme/colors';
@@ -29,16 +30,25 @@ export default function WasteScreen() {
     return map;
   }, [schedulesQuery.data]);
 
-  useEffect(() => {
-    if (Platform.OS === 'web' || !schedulesQuery.data) return;
-    syncWasteReminders(schedulesQuery.data, t, language);
-  }, [schedulesQuery.data, t, language]);
+  useSyncQueue(
+    (data) => syncWasteReminders(data, t, language),
+    Platform.OS === 'web' ? null : schedulesQuery.data,
+    [t, language]
+  );
 
   const toggleMutation = useMutation({
     mutationFn: ({ type, daysOfWeek }: { type: WasteType; daysOfWeek: DayOfWeek[] }) =>
       daysOfWeek.length > 0 ? wasteApi.setSchedule(type, daysOfWeek) : wasteApi.remove(type),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['waste-schedules'] }),
-    onError: (e) => showAlert(t('waste.errorTitle'), getErrorMessage(e, t)),
+    // Anche su errore si invalida (non solo su successo): senza questo, se
+    // proprio l'ULTIMA richiesta di una serie di tap rapidi sullo stesso tipo
+    // falliva, la cache locale restava ottimisticamente "salvata" ma il
+    // server no, senza alcuna correzione visibile fino al prossimo refresh
+    // naturale (fino a 30+ secondi, vedi staleTime).
+    onError: (e) => {
+      showAlert(t('waste.errorTitle'), getErrorMessage(e, t));
+      queryClient.invalidateQueries({ queryKey: ['waste-schedules'] });
+    },
   });
 
   // Una richiesta di rete in coda per ciascun tipo di rifiuto: senza questo,

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import * as ImagePicker from 'expo-image-picker';
-import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { storageLocationsApi } from '../api/storageLocations';
@@ -199,6 +199,12 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   useImperativeHandle(ref, () => ({ openScan: () => setScanModalVisible(true) }), []);
   const [scanPhotos, setScanPhotos] = useState<string[]>([]);
   const [scanRecognizing, setScanRecognizing] = useState(false);
+  // Incrementato ogni volta che la scansione corrente va considerata
+  // invalidata (annullata, o una nuova scansione avviata): un risultato di
+  // OCR arrivato in ritardo per un token ormai superato non deve piu'
+  // toccare lo stato del form, altrimenti potrebbe sovrascrivere quanto
+  // l'utente ha nel frattempo digitato a mano o con una scansione piu' recente.
+  const scanRequestIdRef = useRef(0);
 
   const isAvanzi = category === 'AVANZI';
   const replacesExpirationWithConsumeWithin = isAvanzi;
@@ -323,6 +329,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   }
 
   function closeScanModal() {
+    scanRequestIdRef.current += 1;
     setScanModalVisible(false);
     setScanPhotos([]);
   }
@@ -365,9 +372,15 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
 
   async function runScan() {
     if (scanPhotos.length === 0) return;
+    const requestId = ++scanRequestIdRef.current;
     setScanRecognizing(true);
     try {
       const texts = await Promise.all(scanPhotos.map((uri) => TextRecognition.recognize(uri)));
+      // La scansione e' stata annullata (o superata da una piu' recente)
+      // mentre il riconoscimento era in corso: il risultato e' ormai stantio,
+      // non deve toccare cio' che l'utente ha fatto nel frattempo.
+      if (scanRequestIdRef.current !== requestId) return;
+
       const combinedText = texts.map((r) => r.text).join('\n');
       const recognizedName = parseProductName(combinedText);
       const recognizedDate = parseExpirationDate(combinedText);
@@ -390,9 +403,10 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       closeScanModal();
       showAlert(t('scanProduct.resultTitle'), t('scanProduct.resultMessage'));
     } catch {
+      if (scanRequestIdRef.current !== requestId) return;
       showAlert(t('common.error'), t('scanProduct.recognizeError'));
     } finally {
-      setScanRecognizing(false);
+      if (scanRequestIdRef.current === requestId) setScanRecognizing(false);
     }
   }
 

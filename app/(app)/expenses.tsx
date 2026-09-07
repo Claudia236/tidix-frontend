@@ -41,7 +41,7 @@ export default function ExpensesScreen() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { colors } = useTheme();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
@@ -210,7 +210,7 @@ export default function ExpensesScreen() {
                     <Text style={styles.expenseAmount}>{item.amount.toFixed(2)} €</Text>
                   </View>
                   <Text style={styles.expenseMeta}>
-                    {item.paidByUserId === user?.id ? t('common.you') : item.paidByName} · {formatDashDate(item.date)}
+                    {item.paidByUserId === user?.id ? t('common.you') : item.paidByName} · {formatDashDate(item.date, language)}
                   </Text>
                 </Pressable>
                 <Pressable onPress={() => confirmDelete(item.id)} hitSlop={8}>

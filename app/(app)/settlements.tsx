@@ -22,7 +22,7 @@ import { formatDashDate, todayLocalISODate } from '../../src/utils/expiry';
 export default function SettlementsScreen() {
   const queryClient = useQueryClient();
   const { colors } = useTheme();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const [editTarget, setEditTarget] = useState<Settlement | null>(null);
@@ -76,7 +76,7 @@ export default function SettlementsScreen() {
             <View style={styles.topRow}>
               <View style={styles.topRowText}>
                 <Text style={styles.name}>{t('settlements.paidBy', { name: item.debtorName })}</Text>
-                <Text style={styles.date}>{formatDashDate(item.date)}</Text>
+                <Text style={styles.date}>{formatDashDate(item.date, language)}</Text>
               </View>
               <Text style={styles.amount}>{item.amount.toFixed(2)} €</Text>
             </View>

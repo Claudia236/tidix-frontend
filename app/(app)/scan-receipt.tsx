@@ -123,29 +123,53 @@ export default function ScanReceiptScreen() {
     setSelectedIds((prev) => (prev.size === lines.length ? new Set() : new Set(lines.map((l) => l.id))));
   }
 
-  // Le righe selezionate diventano prodotti "Acquistati" (come quelli
-  // spuntati dalla lista della spesa): restano li' pronte per essere
-  // aggiunte alle scorte una alla volta, con calma, invece di dover per
-  // forza scegliere subito zona/categoria/scadenza per ognuna qui.
+  // Le righe scelte diventano prodotti "Acquistati" (come quelli spuntati
+  // dalla lista della spesa): restano li' pronte per essere aggiunte alle
+  // scorte una alla volta, con calma, invece di dover per forza scegliere
+  // subito zona/categoria/scadenza per ognuna qui.
+  async function saveLinesAsPurchased(toSave: ReceiptLine[]) {
+    for (const line of toSave) {
+      const note = await shoppingNotesApi.create({ text: line.name });
+      await shoppingNotesApi.check(note.id);
+    }
+    queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
+    const savedIds = new Set(toSave.map((l) => l.id));
+    setLines((prev) => prev.filter((l) => !savedIds.has(l.id)));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      savedIds.forEach((id) => next.delete(id));
+      return next;
+    });
+  }
+
   async function saveSelectedForLater() {
     const toSave = lines.filter((l) => selectedIds.has(l.id));
     if (toSave.length === 0) return;
     setSavingSelected(true);
     try {
-      for (const line of toSave) {
-        const note = await shoppingNotesApi.create({ text: line.name });
-        await shoppingNotesApi.check(note.id);
-      }
-      queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
-      const savedIds = new Set(toSave.map((l) => l.id));
-      setLines((prev) => prev.filter((l) => !savedIds.has(l.id)));
-      setSelectedIds(new Set());
+      await saveLinesAsPurchased(toSave);
       showAlert(t('scanReceipt.saveSelectedSuccessTitle'), t('scanReceipt.saveSelectedSuccessMessage', { n: toSave.length }));
     } catch (e) {
       showAlert(t('common.error'), getErrorMessage(e, t));
     } finally {
       setSavingSelected(false);
     }
+  }
+
+  function confirmSaveLineForLater(line: ReceiptLine) {
+    showAlert(t('scanReceipt.confirmSaveOneTitle'), t('scanReceipt.confirmSaveOneMessage', { name: line.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.confirm'),
+        onPress: async () => {
+          try {
+            await saveLinesAsPurchased([line]);
+          } catch (e) {
+            showAlert(t('common.error'), getErrorMessage(e, t));
+          }
+        },
+      },
+    ]);
   }
 
   async function handleSaveFromForm(input: ItemInput) {
@@ -220,7 +244,7 @@ export default function ScanReceiptScreen() {
                       <SwipeableRow
                         key={line.id}
                         leftAction={deleteAction(colors, () => dismissLine(line.id))}
-                        rightAction={{ onTrigger: () => setEditingLine(line), icon: 'pencil-outline', color: colors.brand }}
+                        rightAction={{ onTrigger: () => confirmSaveLineForLater(line), icon: 'checkmark-done', color: colors.brand }}
                       >
                         <View style={styles.lineRow}>
                           <Pressable onPress={() => toggleSelected(line.id)} style={styles.lineIconButton} hitSlop={8}>

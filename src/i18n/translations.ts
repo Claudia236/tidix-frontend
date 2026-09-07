@@ -792,6 +792,12 @@ const ENTRIES: Record<string, EntryTriple> = {
       ? '1 producto guardado en Comprados: podrás añadirlo a existencias cuando quieras.'
       : `${v.n} productos guardados en Comprados: podrás añadirlos a existencias cuando quieras, uno a uno.`),
   },
+  'scanReceipt.confirmSaveOneTitle': { it: 'Salva per dopo', en: 'Save for later', es: 'Guardar para después' },
+  'scanReceipt.confirmSaveOneMessage': {
+    it: (v) => `Salvare "${v.name}" negli Acquistati?`,
+    en: (v) => `Save "${v.name}" under Purchased?`,
+    es: (v) => `¿Guardar "${v.name}" en Comprados?`,
+  },
   'scanReceipt.noItemsFound': {
     it: 'Non è stato riconosciuto nessun prodotto in questa foto. Prova a rifare la foto con più luce e a inquadrare bene lo scontrino.',
     en: 'No products were recognized in this photo. Try retaking it with more light and framing the receipt well.',

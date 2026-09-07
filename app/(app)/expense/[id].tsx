@@ -48,12 +48,15 @@ export default function EditExpenseScreen() {
 
   // Se la spesa e' stata eliminata da un altro membro della famiglia (o la
   // lista non si carica) mentre questa schermata era aperta, "expense" non
-  // si trova mai: senza questo, lo spinner sotto girava all'infinito.
+  // si trova mai: senza questo, lo spinner sotto girava all'infinito. Usa
+  // isFetching (non isLoading, vero solo al primissimo caricamento
+  // assoluto): durante un refetch in background su una lista gia' in cache
+  // l'alert non deve scattare prima che il refetch abbia finito di cercare.
   useEffect(() => {
-    if (!expensesQuery.isLoading && !expense) {
+    if (!expensesQuery.isFetching && !expense) {
       showAlert(t('common.recordGoneTitle'), t('common.recordGoneMessage'), [{ text: t('common.ok'), onPress: () => router.back() }]);
     }
-  }, [expensesQuery.isLoading, expense]);
+  }, [expensesQuery.isFetching, expense]);
 
   if (expensesQuery.isLoading || !expense) {
     return (

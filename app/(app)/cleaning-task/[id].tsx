@@ -51,12 +51,15 @@ export default function EditCleaningTaskScreen() {
 
   // Se la pulizia e' stata eliminata da un altro membro della famiglia (o la
   // lista non si carica) mentre questa schermata era aperta, "task" non si
-  // trova mai: senza questo, lo spinner sotto girava all'infinito.
+  // trova mai: senza questo, lo spinner sotto girava all'infinito. Usa
+  // isFetching (non isLoading, vero solo al primissimo caricamento
+  // assoluto): durante un refetch in background su una lista gia' in cache
+  // l'alert non deve scattare prima che il refetch abbia finito di cercare.
   useEffect(() => {
-    if (!tasksQuery.isLoading && !task) {
+    if (!tasksQuery.isFetching && !task) {
       showAlert(t('common.recordGoneTitle'), t('common.recordGoneMessage'), [{ text: t('common.ok'), onPress: () => router.back() }]);
     }
-  }, [tasksQuery.isLoading, task]);
+  }, [tasksQuery.isFetching, task]);
 
   if (tasksQuery.isLoading || !task) {
     return (

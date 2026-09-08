@@ -59,6 +59,16 @@ export async function setNotificationsEnabledPref(enabled: boolean): Promise<voi
   }
 }
 
+/**
+ * Cancella tutti i promemoria programmati, di qualunque funzionalita': va
+ * usata al logout, altrimenti restano attivi e finiscono per notificare
+ * scadenze/attivita' della famiglia lasciata anche a utente sloggato.
+ */
+export async function cancelAllNotifications(): Promise<void> {
+  if (Platform.OS === 'web') return;
+  await Notifications.cancelAllScheduledNotificationsAsync();
+}
+
 export async function ensureChannel(channelName: string) {
   if (Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync(CHANNEL_ID, {

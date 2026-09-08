@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useColorScheme } from 'react-native';
 import { secureStorage } from '../api/secureStorage';
 import { buildPalette, type ColorPalette, type ColorScheme } from './colors';
 
@@ -16,7 +17,11 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>('light');
+  const systemScheme = useColorScheme();
+  // Parte dallo schema di sistema (invece di un fisso 'light') per evitare
+  // un flash del tema sbagliato all'avvio a freddo, prima che la preferenza
+  // salvata venga letta in modo asincrono da secureStorage.
+  const [mode, setModeState] = useState<ThemeMode>(systemScheme === 'dark' ? 'dark' : 'light');
 
   useEffect(() => {
     (async () => {

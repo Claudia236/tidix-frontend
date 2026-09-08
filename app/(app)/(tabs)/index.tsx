@@ -149,6 +149,7 @@ export default function OverviewScreen() {
     expiringQuery.refetch();
     shoppingQuery.refetch();
     cleaningQuery.refetch();
+    wasteSchedulesQuery.refetch();
     allItemsQuery.refetch();
   }
 

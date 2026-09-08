@@ -209,6 +209,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   const [openedConsumeWithinUnit, setOpenedConsumeWithinUnit] = useState<ConsumeWithinUnit>(
     initialOpenedReminder?.unit ?? 'giorni'
   );
+  const [hiddenFromOpenedOverview, setHiddenFromOpenedOverview] = useState(initial?.hiddenFromOpenedOverview ?? false);
   const [addingLocation, setAddingLocation] = useState(false);
   const [newLocationName, setNewLocationName] = useState('');
   const [newLocationEmoji, setNewLocationEmoji] = useState('');
@@ -363,6 +364,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       openedDate: effectiveOpened ? openedDate : null,
       openedReminderEnabled: resolvedOpenedReminderEnabled,
       openedReminderDays: resolvedOpenedReminderDays,
+      hiddenFromOpenedOverview: effectiveOpened && hiddenFromOpenedOverview,
     });
   }
 
@@ -663,6 +665,10 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
                     : undefined
                 }
               />
+              <Pressable onPress={() => setHiddenFromOpenedOverview((prev) => !prev)} style={styles.openedToggle}>
+                <Ionicons name={hiddenFromOpenedOverview ? 'checkbox' : 'square-outline'} size={18} color={colors.brand} />
+                <Text style={styles.openedToggleText}>{t('itemForm.hideFromOverviewToggle')}</Text>
+              </Pressable>
             </>
           ) : null}
         </View>

@@ -149,18 +149,27 @@ export default function ScanReceiptScreen() {
   // scorte una alla volta, con calma, invece di dover per forza scegliere
   // subito zona/categoria/scadenza per ognuna qui.
   async function saveLinesAsPurchased(toSave: ReceiptLine[]) {
-    for (const line of toSave) {
-      const note = await shoppingNotesApi.create({ text: line.name });
-      await shoppingNotesApi.check(note.id);
+    // Se una riga a meta' elenco fallisce (rete/timeout), le righe gia'
+    // create vanno comunque rimosse subito: altrimenti un retry dopo
+    // l'errore le ricreerebbe una seconda volta come acquisti duplicati.
+    const savedIds = new Set<string>();
+    try {
+      for (const line of toSave) {
+        const note = await shoppingNotesApi.create({ text: line.name });
+        await shoppingNotesApi.check(note.id);
+        savedIds.add(line.id);
+      }
+    } finally {
+      if (savedIds.size > 0) {
+        queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
+        setLines((prev) => prev.filter((l) => !savedIds.has(l.id)));
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          savedIds.forEach((id) => next.delete(id));
+          return next;
+        });
+      }
     }
-    queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
-    const savedIds = new Set(toSave.map((l) => l.id));
-    setLines((prev) => prev.filter((l) => !savedIds.has(l.id)));
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      savedIds.forEach((id) => next.delete(id));
-      return next;
-    });
   }
 
   async function saveSelectedForLater() {

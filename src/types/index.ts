@@ -1,7 +1,8 @@
 export type Category =
   | 'AVANZI'
   | 'PIATTI_PRONTI'
-  | 'ORTOFRUTTA'
+  | 'FRUTTA_VERDURA'
+  | 'FRUTTA_SECCA'
   | 'PASTA_CEREALI'
   | 'LEGUMI'
   | 'CARNE_PESCE'

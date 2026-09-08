@@ -77,8 +77,10 @@ const ENTRIES: Record<string, EntryTriple> = {
   'category.AVANZI.short': { it: 'Avanzi', en: 'Leftovers', es: 'Sobras' },
   'category.PIATTI_PRONTI.label': { it: 'Piatti pronti', en: 'Ready meals', es: 'Platos preparados' },
   'category.PIATTI_PRONTI.short': { it: 'Piatti pronti', en: 'Ready meals', es: 'Platos preparados' },
-  'category.ORTOFRUTTA.label': { it: 'Ortofrutta', en: 'Fruit and vegetables', es: 'Fruta y verdura' },
-  'category.ORTOFRUTTA.short': { it: 'Ortofrutta', en: 'Fruit/Veg', es: 'Fruta/Verdura' },
+  'category.FRUTTA_VERDURA.label': { it: 'Frutta e verdura', en: 'Fruit and vegetables', es: 'Fruta y verdura' },
+  'category.FRUTTA_VERDURA.short': { it: 'Frutta/Verdura', en: 'Fruit/Veg', es: 'Fruta/Verdura' },
+  'category.FRUTTA_SECCA.label': { it: 'Frutta secca', en: 'Dried fruit and nuts', es: 'Frutos secos' },
+  'category.FRUTTA_SECCA.short': { it: 'Frutta secca', en: 'Dried fruit', es: 'Frutos secos' },
   'category.PASTA_CEREALI.label': { it: 'Pasta e cereali', en: 'Pasta and grains', es: 'Pasta y cereales' },
   'category.PASTA_CEREALI.short': { it: 'Pasta/Cereali', en: 'Pasta/Grains', es: 'Pasta/Cereales' },
   'category.LEGUMI.label': { it: 'Legumi', en: 'Legumes', es: 'Legumbres' },
@@ -275,15 +277,25 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: 'How long does it keep once opened?',
     es: '¿Cuánto se conserva una vez abierto?',
   },
-  'itemForm.consumeWithinDays.guideSealed.ORTOFRUTTA': {
+  'itemForm.consumeWithinDays.guideSealed.FRUTTA_VERDURA': {
     it: '🥬 Verdura a foglia (insalata, spinaci): 3-5 giorni in frigo\n🍎 Frutta matura (mele, banane, agrumi): 5-7 giorni\n🥕 Ortaggi robusti (carote, zucchine, peperoni): 1-2 settimane in frigo\n🌿 Erbe fresche: 3-5 giorni in frigo\n\nQuesti sono valori indicativi: regolali in base allo stato del prodotto.',
     en: '🥬 Leafy greens (lettuce, spinach): 3-5 days in the fridge\n🍎 Ripe fruit (apples, bananas, citrus): 5-7 days\n🥕 Sturdy vegetables (carrots, zucchini, peppers): 1-2 weeks in the fridge\n🌿 Fresh herbs: 3-5 days in the fridge\n\nThese are indicative values: adjust them based on the product\'s condition.',
     es: '🥬 Verduras de hoja (lechuga, espinacas): 3-5 días en la nevera\n🍎 Fruta madura (manzanas, plátanos, cítricos): 5-7 días\n🥕 Verduras robustas (zanahorias, calabacines, pimientos): 1-2 semanas en la nevera\n🌿 Hierbas frescas: 3-5 días en la nevera\n\nEstos son valores indicativos: ajústalos según el estado del producto.',
   },
-  'itemForm.consumeWithinDays.guideOpened.ORTOFRUTTA': {
+  'itemForm.consumeWithinDays.guideOpened.FRUTTA_VERDURA': {
     it: '🥬 Insalata in busta già aperta: 1-2 giorni in frigo\n🍎 Frutta già tagliata: 1-2 giorni in frigo, ben coperta\n🥕 Verdure tagliate o pelate: 2-3 giorni in frigo\n\nUna volta aperta o tagliata, la frutta e verdura si deteriora molto più in fretta: consumala il prima possibile.',
     en: '🥬 Opened bagged salad: 1-2 days in the fridge\n🍎 Cut fruit: 1-2 days in the fridge, well covered\n🥕 Cut or peeled vegetables: 2-3 days in the fridge\n\nOnce opened or cut, fruit and vegetables spoil much faster: eat them as soon as possible.',
     es: '🥬 Ensalada en bolsa ya abierta: 1-2 días en la nevera\n🍎 Fruta ya cortada: 1-2 días en la nevera, bien cubierta\n🥕 Verduras cortadas o peladas: 2-3 días en la nevera\n\nUna vez abierta o cortada, la fruta y verdura se estropea mucho más rápido: consúmela lo antes posible.',
+  },
+  'itemForm.consumeWithinDays.guideSealed.FRUTTA_SECCA': {
+    it: '🥜 Frutta secca e semi (noci, mandorle, nocciole): 6-12 mesi in dispensa, al riparo da luce e umidità\n🍇 Frutta essiccata (uvetta, albicocche, prugne): 6-12 mesi in dispensa\n❄️ Per una conservazione più lunga: in frigo o freezer\n\nQuesti sono valori indicativi: controlla sempre la data di scadenza stampata sulla confezione.',
+    en: '🥜 Nuts and seeds (walnuts, almonds, hazelnuts): 6-12 months in the pantry, away from light and moisture\n🍇 Dried fruit (raisins, apricots, prunes): 6-12 months in the pantry\n❄️ For longer storage: in the fridge or freezer\n\nThese are indicative values: always check the expiry date printed on the package.',
+    es: '🥜 Frutos secos y semillas (nueces, almendras, avellanas): 6-12 meses en la despensa, lejos de la luz y la humedad\n🍇 Fruta deshidratada (pasas, albaricoques, ciruelas): 6-12 meses en la despensa\n❄️ Para una conservación más larga: en la nevera o el congelador\n\nEstos son valores indicativos: comprueba siempre la fecha de caducidad impresa en el envase.',
+  },
+  'itemForm.consumeWithinDays.guideOpened.FRUTTA_SECCA': {
+    it: '🥜 Una volta aperta, conservala in un contenitore ermetico: 1-2 mesi a temperatura ambiente\n❄️ In frigo: fino a 4-6 mesi, rallenta l\'irrancidimento\n\nLa frutta secca aperta assorbe umidità e odori ed è soggetta a irrancidimento: chiudila bene dopo ogni uso.',
+    en: '🥜 Once opened, store it in an airtight container: 1-2 months at room temperature\n❄️ In the fridge: up to 4-6 months, slows down rancidity\n\nOpened nuts and dried fruit absorb moisture and odors and can turn rancid: seal well after each use.',
+    es: '🥜 Una vez abierta, guárdala en un recipiente hermético: 1-2 meses a temperatura ambiente\n❄️ En la nevera: hasta 4-6 meses, ralentiza el enranciamiento\n\nLos frutos secos abiertos absorben humedad y olores y pueden ponerse rancios: ciérralos bien después de cada uso.',
   },
   'itemForm.consumeWithinDays.guideSealed.AVANZI': {
     it: '🍝 Piatti cotti (pasta, riso, carne, pesce): 3-4 giorni in frigo\n🍲 Zuppe e minestre: 3-5 giorni in frigo\n❄️ Se congelati: fino a 2-3 mesi\n\nConserva sempre gli avanzi in un contenitore chiuso e raffreddali entro 2 ore dalla cottura.',

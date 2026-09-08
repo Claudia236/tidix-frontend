@@ -369,7 +369,15 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
   }
 
   function handleToggleOpened() {
-    setOpened((prev) => !prev);
+    setOpened((prev) => {
+      const next = !prev;
+      // Disattivando "Prodotto aperto" si azzera anche l'interruttore
+      // "nascondi dalla Panoramica": senza questo, riattivandolo nella
+      // stessa sessione di modifica il checkbox ricompariva gia' spuntato
+      // senza che l'utente l'avesse toccato in quel momento.
+      if (!next) setHiddenFromOpenedOverview(false);
+      return next;
+    });
   }
 
   function handleCreateLocation() {

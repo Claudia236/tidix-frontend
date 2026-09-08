@@ -482,6 +482,11 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: "If filled in, you'll get a notification if the product is still opened after this period.",
     es: 'Si se rellena, recibirás una notificación si el producto sigue abierto después de este período.',
   },
+  'itemForm.hideFromOverviewToggle': {
+    it: 'Non mostrare nella card "Prodotti aperti" della Panoramica',
+    en: 'Don\'t show in the "Opened products" card on the Overview',
+    es: 'No mostrar en la tarjeta "Productos abiertos" del Resumen',
+  },
 
   // Overview (Panoramica)
   'overview.title': { it: 'Panoramica', en: 'Overview', es: 'Resumen' },

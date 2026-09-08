@@ -86,7 +86,7 @@ export default function OverviewScreen() {
   const openedItems = useMemo(
     () =>
       (allItemsQuery.data ?? [])
-        .filter((i) => i.opened && (!HOUSEHOLD_CATEGORIES.has(i.category) || i.openedReminderEnabled))
+        .filter((i) => i.opened && !i.hiddenFromOpenedOverview && (!HOUSEHOLD_CATEGORIES.has(i.category) || i.openedReminderEnabled))
         .sort((a, b) => {
           if (!a.openedDate && !b.openedDate) return 0;
           if (!a.openedDate) return 1;

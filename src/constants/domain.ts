@@ -42,8 +42,8 @@ export const HOUSEHOLD_CATEGORIES: ReadonlySet<Category> = new Set([
 const CATEGORY_EMOJI: Record<Category, string> = {
   AVANZI: '🥡',
   PIATTI_PRONTI: '🍱',
-  FRUTTA: '🍎',
-  VERDURA: '🥦',
+  FRUTTA: '🍊',
+  VERDURA: '🥬',
   FRUTTA_SECCA: '🥜',
   PASTA_CEREALI: '🍝',
   LEGUMI: '🫘',

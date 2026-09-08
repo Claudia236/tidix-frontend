@@ -3,13 +3,14 @@ import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { queryClient } from '../src/api/queryClient';
 import { AppAlertHost } from '../src/components/AppAlert';
+import { PrimaryButton } from '../src/components/PrimaryButton';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
-import { I18nProvider } from '../src/i18n/I18nContext';
+import { I18nProvider, useI18n } from '../src/i18n/I18nContext';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -40,8 +41,9 @@ function ThemedStatusBar() {
 }
 
 function RootNavigator() {
-  const { user, loading } = useAuth();
+  const { user, loading, bootError, retryBootstrap } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
 
   useEffect(() => {
     if (!loading) {
@@ -57,6 +59,21 @@ function RootNavigator() {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
         <ActivityIndicator color={colors.brand} />
+      </View>
+    );
+  }
+
+  if (bootError) {
+    // Il token persistito non e' stato verificabile per un errore di rete/
+    // timeout (non un 401 esplicito, gia' gestito con un logout vero e
+    // proprio in AuthContext): non si manda l'utente al login, che gli
+    // farebbe perdere una sessione in realta' ancora valida, solo
+    // temporaneamente non confermabile (es. il backend gratuito su Render
+    // si sta "risvegliando" e puo' impiegare svariate decine di secondi).
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg, padding: 24, gap: 16 }}>
+        <Text style={{ color: colors.ink, textAlign: 'center', fontSize: 14 }}>{t('common.networkError')}</Text>
+        <PrimaryButton label={t('common.retry')} onPress={retryBootstrap} />
       </View>
     );
   }

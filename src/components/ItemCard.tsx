@@ -65,6 +65,11 @@ export function ItemCard({ item, location, onAdjust, onPress, onSwipeDelete }: P
                   <Ionicons name="lock-open-outline" size={10} color={colors.gold} />
                 </View>
               ) : null}
+              {item.opened && item.hiddenFromOpenedOverview ? (
+                <View style={styles.openedBadge} accessibilityLabel={t('itemCard.hiddenFromOverview')}>
+                  <Ionicons name="eye-off-outline" size={10} color={colors.gold} />
+                </View>
+              ) : null}
             </View>
             {noteText ? <Text style={[styles.note, { color: noteColor }]}>{noteText}</Text> : null}
             {item.opened && item.openedDate ? (

@@ -199,6 +199,11 @@ const ENTRIES: Record<string, EntryTriple> = {
   // ItemCard
   'itemCard.needsBuying': { it: 'Da comprare', en: 'To buy', es: 'A comprar' },
   'itemCard.openedOn': { it: (v) => `Aperto il ${v.date}`, en: (v) => `Opened on ${v.date}`, es: (v) => `Abierto el ${v.date}` },
+  'itemCard.hiddenFromOverview': {
+    it: 'Nascosto dalla card "Prodotti aperti" della Panoramica',
+    en: 'Hidden from the "Opened products" card on the Overview',
+    es: 'Oculto de la tarjeta "Productos abiertos" del Resumen',
+  },
 
   // ItemForm
   'itemForm.voice.permissionDenied': {

@@ -23,6 +23,11 @@ export default function HouseholdSetupScreen() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  function switchMode(next: Mode) {
+    setError(null);
+    setMode(next);
+  }
+
   async function handleCreate() {
     setError(null);
     setSubmitting(true);
@@ -57,11 +62,11 @@ export default function HouseholdSetupScreen() {
 
         {mode === 'choose' && (
           <View style={styles.choices}>
-            <Pressable style={styles.choiceCard} onPress={() => setMode('create')}>
+            <Pressable style={styles.choiceCard} onPress={() => switchMode('create')}>
               <Text style={styles.choiceTitle}>{t('householdSetup.createTitle')}</Text>
               <Text style={styles.choiceSubtitle}>{t('householdSetup.createSubtitle')}</Text>
             </Pressable>
-            <Pressable style={styles.choiceCard} onPress={() => setMode('join')}>
+            <Pressable style={styles.choiceCard} onPress={() => switchMode('join')}>
               <Text style={styles.choiceTitle}>{t('householdSetup.joinTitle')}</Text>
               <Text style={styles.choiceSubtitle}>{t('householdSetup.joinSubtitle')}</Text>
             </Pressable>
@@ -73,7 +78,7 @@ export default function HouseholdSetupScreen() {
             <TextField label={t('householdSetup.householdNameLabel')} placeholder={t('householdSetup.householdNamePlaceholder')} value={name} onChangeText={setName} />
             {error ? <Text style={styles.error}>{error}</Text> : null}
             <PrimaryButton label={t('householdSetup.createButton')} onPress={handleCreate} loading={submitting} disabled={!name.trim()} />
-            <PrimaryButton label={t('householdSetup.back')} variant="secondary" onPress={() => setMode('choose')} />
+            <PrimaryButton label={t('householdSetup.back')} variant="secondary" onPress={() => switchMode('choose')} />
           </View>
         )}
 
@@ -88,7 +93,7 @@ export default function HouseholdSetupScreen() {
             />
             {error ? <Text style={styles.error}>{error}</Text> : null}
             <PrimaryButton label={t('householdSetup.joinButton')} onPress={handleJoin} loading={submitting} disabled={!inviteCode.trim()} />
-            <PrimaryButton label={t('householdSetup.back')} variant="secondary" onPress={() => setMode('choose')} />
+            <PrimaryButton label={t('householdSetup.back')} variant="secondary" onPress={() => switchMode('choose')} />
           </View>
         )}
 

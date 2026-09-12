@@ -84,6 +84,18 @@ function isAllCodeTokens(line: string): boolean {
   return tokens.every((token) => isAlnumCodeToken(token) || /^\d+$/.test(token));
 }
 
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Confronto a parola intera (non sottostringa): "chip" da solo non deve far
+// scartare "PATATINE CHIPS", ne' "iva" deve far scartare "OLIVA" - un errore
+// concreto gia' capitato con la corrispondenza a sottostringa usata in
+// precedenza.
+const NOISE_KEYWORD_PATTERNS = NOISE_KEYWORDS.map(
+  (keyword) => new RegExp(`\\b${escapeRegExp(keyword.trim())}\\b`, 'i')
+);
+
 function looksLikeProductLine(rawLine: string): boolean {
   const line = rawLine.trim();
   if (line.length < 3) return false;
@@ -92,8 +104,7 @@ function looksLikeProductLine(rawLine: string): boolean {
   if (isAllCodeTokens(line)) return false;
   if (DATE_LIKE.test(line) && line.replace(DATE_LIKE, '').trim().length < 3) return false;
   if (TIME_LIKE.test(line) && line.replace(TIME_LIKE, '').trim().length < 3) return false;
-  const lower = line.toLowerCase();
-  if (NOISE_KEYWORDS.some((keyword) => lower.includes(keyword))) return false;
+  if (NOISE_KEYWORD_PATTERNS.some((pattern) => pattern.test(line))) return false;
   return true;
 }
 

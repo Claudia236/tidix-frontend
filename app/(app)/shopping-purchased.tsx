@@ -27,27 +27,45 @@ export default function ShoppingPurchasedScreen() {
   const notesQuery = useQuery({ queryKey: ['shopping-notes'], queryFn: shoppingNotesApi.list });
   const checkedNotes = useMemo(() => (notesQuery.data ?? []).filter((n) => n.checked), [notesQuery.data]);
 
+  // Stesso aggiornamento ottimistico gia' usato per la gemella in
+  // shopping.tsx (stessa risorsa shopping-notes): la riga sparisce subito
+  // invece di restare visibile per l'intero giro di rete.
   const removeNoteMutation = useMutation({
     mutationFn: (id: string) => shoppingNotesApi.remove(id),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['shopping-notes'] });
+      const previous = queryClient.getQueryData<ShoppingNote[]>(['shopping-notes']);
+      queryClient.setQueryData<ShoppingNote[]>(['shopping-notes'], (old) => old?.filter((note) => note.id !== id));
       setSelectedIds((prev) => {
         if (!prev.has(id)) return prev;
         const next = new Set(prev);
         next.delete(id);
         return next;
       });
+      return { previous };
     },
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+    onError: (e, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['shopping-notes'], context.previous);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
   });
 
   const removeSelectedMutation = useMutation({
     mutationFn: (ids: string[]) => Promise.all(ids.map((id) => shoppingNotesApi.remove(id))),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
+    onMutate: async (ids) => {
+      await queryClient.cancelQueries({ queryKey: ['shopping-notes'] });
+      const previous = queryClient.getQueryData<ShoppingNote[]>(['shopping-notes']);
+      const idSet = new Set(ids);
+      queryClient.setQueryData<ShoppingNote[]>(['shopping-notes'], (old) => old?.filter((note) => !idSet.has(note.id)));
       setSelectedIds(new Set());
+      return { previous };
     },
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+    onError: (e, _ids, context) => {
+      if (context?.previous) queryClient.setQueryData(['shopping-notes'], context.previous);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
   });
 
   function toggleSelected(id: string) {

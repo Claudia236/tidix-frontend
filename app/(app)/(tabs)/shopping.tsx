@@ -70,11 +70,25 @@ export default function ShoppingScreen() {
   const adjustMutation = useMutation({
     mutationFn: ({ id, delta, expirationDate }: { id: string; delta: number; expirationDate?: string | null }) =>
       itemsApi.adjustQuantity(id, { delta, expirationDate: expirationDate ?? undefined }),
+    // Segnare un prodotto come riacquistato lo rimuove subito dalla lista
+    // invece di aspettare il refetch: stesso trattamento gia' riservato alle
+    // note "gemelle" in questa schermata (checkNoteMutation), altrimenti la
+    // riga di un prodotto restava visibile piu' a lungo di quella di una nota
+    // per la stessa identica azione.
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: ['items', 'shopping-list'] });
+      const previous = queryClient.getQueryData<Item[]>(['items', 'shopping-list']);
+      queryClient.setQueryData<Item[]>(['items', 'shopping-list'], (old) => old?.filter((item) => item.id !== id));
+      return { previous };
+    },
+    onError: (e, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['items', 'shopping-list'], context.previous);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       setRestockTarget(null);
     },
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const newBatchMutation = useMutation({

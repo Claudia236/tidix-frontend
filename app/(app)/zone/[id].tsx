@@ -55,6 +55,12 @@ export default function EditZoneScreen() {
   const deleteMutation = useMutation({
     mutationFn: () => storageLocationsApi.remove(id),
     onSuccess: () => {
+      // Rimossa (non solo invalidata) prima di invalidateZones(): un
+      // invalidateQueries generico su ['storage-locations'] avrebbe
+      // rifetchato anche questa query per id, ancora osservata mentre
+      // router.back() e' in transizione, ottenendo un 404 sulla zona appena
+      // cancellata di proposito e un alert "non piu' disponibile" spurio.
+      queryClient.removeQueries({ queryKey: ['storage-locations', id], exact: true });
       invalidateZones();
       router.back();
     },

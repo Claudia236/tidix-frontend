@@ -48,6 +48,12 @@ export default function EditItemScreen() {
   const deleteMutation = useMutation({
     mutationFn: () => itemsApi.remove(id),
     onSuccess: () => {
+      // Rimossa (non solo invalidata) prima dell'invalidateQueries
+      // generico: senza questo, ['items', id] - ancora osservata mentre
+      // router.back() e' in transizione - veniva rifetchata, ottenendo un
+      // 404 sul prodotto appena cancellato di proposito e un alert "non
+      // piu' disponibile" spurio sovrapposto all'eliminazione.
+      queryClient.removeQueries({ queryKey: ['items', id], exact: true });
       queryClient.invalidateQueries({ queryKey: ['items'] });
       router.back();
     },
@@ -60,6 +66,10 @@ export default function EditItemScreen() {
       return itemsApi.adjustQuantity(id, { delta: -quantity, hideFromShoppingList: false });
     },
     onSuccess: () => {
+      // Stesso motivo di deleteMutation: questa azione esaurisce il
+      // prodotto (diventa una nota nella lista della spesa lato backend),
+      // quindi la query per id andrebbe comunque in 404 se rifetchata.
+      queryClient.removeQueries({ queryKey: ['items', id], exact: true });
       queryClient.invalidateQueries({ queryKey: ['items'] });
       router.back();
     },

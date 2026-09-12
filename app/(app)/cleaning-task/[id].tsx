@@ -49,6 +49,12 @@ export default function EditCleaningTaskScreen() {
   const deleteMutation = useMutation({
     mutationFn: () => cleaningApi.remove(id),
     onSuccess: () => {
+      // Rimossa (non solo invalidata) prima dell'invalidateQueries
+      // generico: senza questo, ['cleaning-tasks', id] - ancora osservata
+      // mentre router.back() e' in transizione - veniva rifetchata,
+      // ottenendo un 404 sull'attivita' appena cancellata di proposito e un
+      // alert "non piu' disponibile" spurio sovrapposto all'eliminazione.
+      queryClient.removeQueries({ queryKey: ['cleaning-tasks', id], exact: true });
       queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] });
       cancelCleaningReminder(id);
       router.back();

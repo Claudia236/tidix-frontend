@@ -43,6 +43,12 @@ export default function EditShoppingNoteScreen() {
   const deleteMutation = useMutation({
     mutationFn: () => shoppingNotesApi.remove(id),
     onSuccess: () => {
+      // Rimossa (non solo invalidata) prima dell'invalidateQueries
+      // generico: senza questo, ['shopping-notes', id] - ancora osservata
+      // mentre router.back() e' in transizione - veniva rifetchata,
+      // ottenendo un 404 sulla voce appena cancellata di proposito e un
+      // alert "non piu' disponibile" spurio sovrapposto all'eliminazione.
+      queryClient.removeQueries({ queryKey: ['shopping-notes', id], exact: true });
       queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
       router.back();
     },

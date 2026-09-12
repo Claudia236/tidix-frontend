@@ -18,6 +18,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { webCentered } from '../theme/responsive';
 import type { Category, ItemInput, Unit } from '../types';
 import { daysUntil, toLocalISODate, todayLocalISODate } from '../utils/expiry';
+import { resizeForRecognition } from '../utils/imageResize';
 import { parseExpirationDate, parseProductName } from '../utils/productLabelParser';
 import { parseSpokenDateIT } from '../utils/voiceDate';
 import { showAlert } from './AppAlert';
@@ -408,7 +409,9 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       }
       const result = await ImagePicker.launchCameraAsync({ mediaTypes: 'images', quality: 0.7 });
       if (!result.canceled && result.assets[0]) {
-        setScanPhotos((prev) => [...prev, result.assets[0].uri].slice(0, MAX_SCAN_PHOTOS));
+        const asset = result.assets[0];
+        const uri = await resizeForRecognition(asset.uri, asset.width, asset.height);
+        setScanPhotos((prev) => [...prev, uri].slice(0, MAX_SCAN_PHOTOS));
       }
     } else {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -418,7 +421,9 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       }
       const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', quality: 0.7 });
       if (!result.canceled && result.assets[0]) {
-        setScanPhotos((prev) => [...prev, result.assets[0].uri].slice(0, MAX_SCAN_PHOTOS));
+        const asset = result.assets[0];
+        const uri = await resizeForRecognition(asset.uri, asset.width, asset.height);
+        setScanPhotos((prev) => [...prev, uri].slice(0, MAX_SCAN_PHOTOS));
       }
     }
   }

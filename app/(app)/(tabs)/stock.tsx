@@ -120,8 +120,14 @@ export default function StockScreen() {
 
   // Query separata, sempre senza filtri, usata solo per sapere se esistono
   // prodotti aperti (e quanti) a prescindere dalla zona/ricerca selezionata:
-  // cosi' il chip "Aperti" non appare/scompare cambiando zona.
-  const allItemsQuery = useQuery({ queryKey: ['items', 'list', 'TUTTI', ''], queryFn: () => itemsApi.list({}) });
+  // cosi' il chip "Aperti" non appare/scompare cambiando zona. Quando
+  // filtro/ricerca non sono attivi la chiave coincide con quella di
+  // itemsQuery: disabilitata in quel caso per non duplicare la stessa fetch.
+  const allItemsQuery = useQuery({
+    queryKey: ['items', 'list', 'TUTTI', ''],
+    queryFn: () => itemsApi.list({}),
+    enabled: filterLocationId !== 'TUTTI' || search.length > 0,
+  });
 
   const adjustMutation = useMutation({
     mutationFn: ({

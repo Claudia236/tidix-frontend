@@ -18,6 +18,7 @@ import { useI18n } from '../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
 import type { Category, ItemInput } from '../../src/types';
+import { resizeForRecognition } from '../../src/utils/imageResize';
 import { parseReceiptLines } from '../../src/utils/receiptParser';
 
 interface ReceiptLine {
@@ -51,14 +52,20 @@ export default function ScanReceiptScreen() {
 
   useModalBackHandler(editingLine !== null, () => setEditingLine(null));
 
-  async function processImage(uri: string) {
+  async function processImage(uri: string, width: number, height: number) {
     const requestId = ++scanRequestIdRef.current;
     setPhotoUri(uri);
     setRecognizing(true);
     setLines([]);
     setHasRecognized(false);
     try {
-      const result = await TextRecognition.recognize(uri);
+      // L'OCR gira su una copia ridimensionata (la foto a schermo resta
+      // quella originale): una foto scattata dalla fotocamera e' molto piu'
+      // grande di quanto serva per leggere il testo di uno scontrino, e
+      // ridurla prima velocizza sensibilmente il riconoscimento.
+      const recognitionUri = await resizeForRecognition(uri, width, height);
+      if (scanRequestIdRef.current !== requestId) return;
+      const result = await TextRecognition.recognize(recognitionUri);
       if (scanRequestIdRef.current !== requestId) return;
       const candidates = parseReceiptLines(result.text);
       const newLines = candidates.map((c, i) => ({ id: `${i}-${c.text}`, name: c.text }));
@@ -85,7 +92,8 @@ export default function ScanReceiptScreen() {
     }
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: 'images', quality: 0.7 });
     if (!result.canceled && result.assets[0]) {
-      processImage(result.assets[0].uri);
+      const asset = result.assets[0];
+      processImage(asset.uri, asset.width, asset.height);
     }
   }
 
@@ -97,7 +105,8 @@ export default function ScanReceiptScreen() {
     }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', quality: 0.7 });
     if (!result.canceled && result.assets[0]) {
-      processImage(result.assets[0].uri);
+      const asset = result.assets[0];
+      processImage(asset.uri, asset.width, asset.height);
     }
   }
 

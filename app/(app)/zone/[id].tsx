@@ -9,6 +9,7 @@ import { ZoneForm, type ZoneFormInput } from '../../../src/components/ZoneForm';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
+import type { StorageLocation } from '../../../src/types';
 
 export default function EditZoneScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,7 +23,16 @@ export default function EditZoneScreen() {
   // lista in cache-ma-non-in-fetch poteva far scattare un falso "non piu'
   // disponibile" se la schermata veniva raggiunta da una query diversa (es.
   // il riepilogo zone di Panoramica) ancora fresca ma non aggiornata.
-  const zoneQuery = useQuery({ queryKey: ['storage-locations', id], queryFn: () => storageLocationsApi.get(id), enabled: !!id });
+  const zoneQuery = useQuery({
+    queryKey: ['storage-locations', id],
+    queryFn: () => storageLocationsApi.get(id),
+    enabled: !!id,
+    // La zona e' quasi sempre gia' nella lista ['storage-locations'] appena
+    // lasciata: usarla come placeholder evita uno spinner a schermo intero
+    // mentre arriva la stessa identica risposta dalla rete.
+    placeholderData: () =>
+      queryClient.getQueryData<StorageLocation[]>(['storage-locations'])?.find((loc) => loc.id === id),
+  });
   const zone = zoneQuery.data;
 
   function invalidateZones() {

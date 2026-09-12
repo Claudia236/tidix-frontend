@@ -10,7 +10,7 @@ import { useI18n } from '../../../src/i18n/I18nContext';
 import { cancelCleaningReminder } from '../../../src/notifications/cleaningReminders';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
-import type { CleaningTaskInput } from '../../../src/types';
+import type { CleaningTask, CleaningTaskInput } from '../../../src/types';
 
 export default function EditCleaningTaskScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -24,7 +24,16 @@ export default function EditCleaningTaskScreen() {
   // lista in cache-ma-non-in-fetch poteva far scattare un falso "non piu'
   // disponibile" se la schermata veniva raggiunta da una query diversa,
   // ancora fresca ma non aggiornata.
-  const taskQuery = useQuery({ queryKey: ['cleaning-tasks', id], queryFn: () => cleaningApi.get(id), enabled: !!id });
+  const taskQuery = useQuery({
+    queryKey: ['cleaning-tasks', id],
+    queryFn: () => cleaningApi.get(id),
+    enabled: !!id,
+    // L'attivita' e' quasi sempre gia' nella lista ['cleaning-tasks'] appena
+    // lasciata: usarla come placeholder evita uno spinner a schermo intero
+    // mentre arriva la stessa identica risposta dalla rete.
+    placeholderData: () =>
+      queryClient.getQueryData<CleaningTask[]>(['cleaning-tasks'])?.find((task) => task.id === id),
+  });
   const task = taskQuery.data;
 
   const updateMutation = useMutation({

@@ -21,7 +21,7 @@ import { syncWasteReminders } from '../../../src/notifications/wasteReminders';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import { webCentered } from '../../../src/theme/responsive';
-import type { Item, ZoneSummary } from '../../../src/types';
+import type { CleaningTask, Item, ZoneSummary } from '../../../src/types';
 import { daysUntil, formatShortDate, getExpiryInfo } from '../../../src/utils/expiry';
 
 export default function OverviewScreen() {
@@ -37,7 +37,10 @@ export default function OverviewScreen() {
   const expiringQuery = useQuery({ queryKey: ['items', 'expiring', 3], queryFn: () => itemsApi.expiring(3) });
   const shoppingQuery = useQuery({ queryKey: ['items', 'shopping-list'], queryFn: itemsApi.shoppingList });
   const cleaningQuery = useQuery({ queryKey: ['cleaning-tasks'], queryFn: cleaningApi.list });
-  const wasteSchedulesQuery = useQuery({ queryKey: ['waste-schedules'], queryFn: wasteApi.list });
+  // Stesso staleTime lungo applicato in waste.tsx: le date di raccolta
+  // cambiano solo per modifica manuale, e quella schermata invalida gia'
+  // esplicitamente questa query quando le tocca.
+  const wasteSchedulesQuery = useQuery({ queryKey: ['waste-schedules'], queryFn: wasteApi.list, staleTime: 5 * 60_000 });
   const allItemsQuery = useQuery({ queryKey: ['items', 'list', 'TUTTI', ''], queryFn: () => itemsApi.list({}) });
 
   const [collapsedCards, setCollapsedCards] = useState<Set<string>>(
@@ -161,16 +164,64 @@ export default function OverviewScreen() {
     router.push({ pathname: '/(app)/(tabs)/stock', params: { storageLocationId: zone.storageLocationId } });
   }
 
+  // Rimuove subito la riga dalle card della Home (In scadenza/Avanzi/Aperti)
+  // invece di aspettare il refetch dopo invalidateQueries: stessa logica gia'
+  // usata per l'eliminazione da Scorte/Pulizia, cosi' l'azione sembra
+  // altrettanto immediata anche quando fatta dalla Home. Il conteggio
+  // riassuntivo (summaryQuery) non viene toccato qui: e' uno stato derivato
+  // troppo rischioso da ricalcolare lato client, arriva comunque con
+  // l'invalidateQueries subito dopo.
+  function removeItemFromListCaches(id: string) {
+    queryClient.setQueryData<Item[]>(['items', 'expired'], (old) => old?.filter((i) => i.id !== id));
+    queryClient.setQueryData<Item[]>(['items', 'expiring', 3], (old) => old?.filter((i) => i.id !== id));
+    queryClient.setQueryData<Item[]>(['items', 'shopping-list'], (old) => old?.filter((i) => i.id !== id));
+    queryClient.setQueryData<Item[]>(['items', 'list', 'TUTTI', ''], (old) => old?.filter((i) => i.id !== id));
+  }
+
+  function snapshotItemListCaches() {
+    return {
+      previousExpired: queryClient.getQueryData<Item[]>(['items', 'expired']),
+      previousExpiring: queryClient.getQueryData<Item[]>(['items', 'expiring', 3]),
+      previousShopping: queryClient.getQueryData<Item[]>(['items', 'shopping-list']),
+      previousAll: queryClient.getQueryData<Item[]>(['items', 'list', 'TUTTI', '']),
+    };
+  }
+
+  function restoreItemListCaches(snapshot: ReturnType<typeof snapshotItemListCaches>) {
+    if (snapshot.previousExpired) queryClient.setQueryData(['items', 'expired'], snapshot.previousExpired);
+    if (snapshot.previousExpiring) queryClient.setQueryData(['items', 'expiring', 3], snapshot.previousExpiring);
+    if (snapshot.previousShopping) queryClient.setQueryData(['items', 'shopping-list'], snapshot.previousShopping);
+    if (snapshot.previousAll) queryClient.setQueryData(['items', 'list', 'TUTTI', ''], snapshot.previousAll);
+  }
+
   const removeItemMutation = useMutation({
     mutationFn: (id: string) => itemsApi.remove(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['items'] });
+      const snapshot = snapshotItemListCaches();
+      removeItemFromListCaches(id);
+      return snapshot;
+    },
+    onError: (e, _id, context) => {
+      if (context) restoreItemListCaches(context);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const removeItemAndAddToShoppingListMutation = useMutation({
     mutationFn: (item: Item) => itemsApi.adjustQuantity(item.id, { delta: -item.quantity, hideFromShoppingList: false }),
+    onMutate: async (item) => {
+      await queryClient.cancelQueries({ queryKey: ['items'] });
+      const snapshot = snapshotItemListCaches();
+      removeItemFromListCaches(item.id);
+      return snapshot;
+    },
+    onError: (e, _item, context) => {
+      if (context) restoreItemListCaches(context);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   // Stesso popup a tre opzioni del dettaglio prodotto e delle Scorte,
@@ -185,11 +236,25 @@ export default function OverviewScreen() {
 
   const markCleanedMutation = useMutation({
     mutationFn: (id: string) => cleaningApi.markCleaned(id),
+    // Stesso aggiornamento ottimistico gia' usato in cleaning.tsx: sposta
+    // subito il task da "da pulire" a "pulito" invece di aspettare il
+    // refetch dopo invalidateQueries.
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['cleaning-tasks'] });
+      const previous = queryClient.getQueryData<CleaningTask[]>(['cleaning-tasks']);
+      queryClient.setQueryData<CleaningTask[]>(['cleaning-tasks'], (old) =>
+        old?.map((task) => (task.id === id ? { ...task, daysSinceCleaned: 0, overdue: false } : task))
+      );
+      return { previous };
+    },
+    onError: (e, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['cleaning-tasks'], context.previous);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] });
       cancelCleaningReminder(id);
     },
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   function confirmSwipeMarkCleaned(taskId: string, taskName: string) {

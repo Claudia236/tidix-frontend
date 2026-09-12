@@ -9,7 +9,7 @@ import { ItemForm } from '../../../src/components/ItemForm';
 import { useI18n } from '../../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
-import type { ItemInput } from '../../../src/types';
+import type { Item, ItemInput } from '../../../src/types';
 
 export default function EditItemScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -19,7 +19,22 @@ export default function EditItemScreen() {
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const itemQuery = useQuery({ queryKey: ['items', id], queryFn: () => itemsApi.get(id), enabled: !!id });
+  const itemQuery = useQuery({
+    queryKey: ['items', id],
+    queryFn: () => itemsApi.get(id),
+    enabled: !!id,
+    // Il prodotto e' quasi sempre gia' presente in una delle liste appena
+    // lasciate (Scorte, Home, lista della spesa): usarlo come placeholder
+    // evita uno spinner a schermo intero mentre arriva la stessa identica
+    // risposta dalla rete, mostrando subito il form gia' popolato.
+    placeholderData: () => {
+      for (const [, data] of queryClient.getQueriesData<Item[]>({ queryKey: ['items'] })) {
+        const found = data?.find?.((i) => i.id === id);
+        if (found) return found;
+      }
+      return undefined;
+    },
+  });
 
   const updateMutation = useMutation({
     mutationFn: (input: ItemInput) => itemsApi.update(id, input),

@@ -14,6 +14,7 @@ import { EmptyState } from '../../../src/components/EmptyState';
 import { ItemCard } from '../../../src/components/ItemCard';
 import { RestockDialog } from '../../../src/components/RestockDialog';
 import { SectionTitle } from '../../../src/components/SectionTitle';
+import { useDebouncedValue } from '../../../src/hooks/useDebouncedValue';
 import { useModalBackHandler } from '../../../src/hooks/useModalBackHandler';
 import { useStorageLocations } from '../../../src/hooks/useStorageLocations';
 import { useI18n } from '../../../src/i18n/I18nContext';
@@ -38,6 +39,10 @@ export default function StockScreen() {
   const categories = useCategories();
   const [filterLocationId, setFilterLocationId] = useState<string>('TUTTI');
   const [search, setSearch] = useState('');
+  // Il campo di testo resta legato a `search` (reattivo ad ogni carattere),
+  // ma la query di rete usa la versione ritardata: senza questo, digitare
+  // "pomodoro" scatenava 8 richieste itemsApi.list, una per lettera.
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [onlyOpened, setOnlyOpened] = useState(false);
   const [groupByCategory, setGroupByCategory] = useState(true);
   const [dateSortBy, setDateSortBy] = useState<DateSortBy>('none');
@@ -110,11 +115,11 @@ export default function StockScreen() {
   }, [navigation, categories]);
 
   const itemsQuery = useQuery({
-    queryKey: ['items', 'list', filterLocationId, search],
+    queryKey: ['items', 'list', filterLocationId, debouncedSearch],
     queryFn: () =>
       itemsApi.list({
         storageLocationId: filterLocationId === 'TUTTI' ? undefined : filterLocationId,
-        search: search || undefined,
+        search: debouncedSearch || undefined,
       }),
   });
 
@@ -126,7 +131,7 @@ export default function StockScreen() {
   const allItemsQuery = useQuery({
     queryKey: ['items', 'list', 'TUTTI', ''],
     queryFn: () => itemsApi.list({}),
-    enabled: filterLocationId !== 'TUTTI' || search.length > 0,
+    enabled: filterLocationId !== 'TUTTI' || debouncedSearch.length > 0,
   });
 
   const adjustMutation = useMutation({

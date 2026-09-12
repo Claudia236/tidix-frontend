@@ -153,27 +153,35 @@ export default function ScanReceiptScreen() {
   // scorte una alla volta, con calma, invece di dover per forza scegliere
   // subito zona/categoria/scadenza per ognuna qui.
   async function saveLinesAsPurchased(toSave: ReceiptLine[]) {
-    // Se una riga a meta' elenco fallisce (rete/timeout), le righe gia'
-    // create vanno comunque rimosse subito: altrimenti un retry dopo
-    // l'errore le ricreerebbe una seconda volta come acquisti duplicati.
+    // Le righe vengono create e spuntate in parallelo invece che una alla
+    // volta: sono scritture indipendenti (il lock di famiglia lato backend le
+    // serializza comunque per la scrittura vera e propria), ma in sequenza
+    // ogni riga pagava un intero giro di rete a se', moltiplicando l'attesa
+    // percepita per il numero di prodotti selezionati. Con Promise.allSettled
+    // il giro di rete e' pagato una volta sola, e una riga fallita (rete/
+    // timeout) non blocca ne' fa perdere il risultato delle altre.
     const savedIds = new Set<string>();
-    try {
-      for (const line of toSave) {
+    const results = await Promise.allSettled(
+      toSave.map(async (line) => {
         const note = await shoppingNotesApi.create({ text: line.name });
         await shoppingNotesApi.check(note.id);
         savedIds.add(line.id);
-      }
-    } finally {
-      if (savedIds.size > 0) {
-        queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
-        setLines((prev) => prev.filter((l) => !savedIds.has(l.id)));
-        setSelectedIds((prev) => {
-          const next = new Set(prev);
-          savedIds.forEach((id) => next.delete(id));
-          return next;
-        });
-      }
+      })
+    );
+    if (savedIds.size > 0) {
+      queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
+      setLines((prev) => prev.filter((l) => !savedIds.has(l.id)));
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        savedIds.forEach((id) => next.delete(id));
+        return next;
+      });
     }
+    // Solo la prima riga fallita viene rilanciata (i chiamanti mostrano un
+    // singolo alert di errore): le righe gia' rimosse da "lines" sopra non
+    // verranno ricreate da un eventuale retry, quindi nessun duplicato.
+    const firstFailure = results.find((r): r is PromiseRejectedResult => r.status === 'rejected');
+    if (firstFailure) throw firstFailure.reason;
   }
 
   async function saveSelectedForLater() {

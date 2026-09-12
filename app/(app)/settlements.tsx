@@ -40,13 +40,26 @@ export default function SettlementsScreen() {
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
+  // Rimuove subito la riga dalla lista invece di aspettare il refetch, come
+  // gia' fatto per le spese in expenses.tsx (stesso dominio saldi/pagamenti).
+  // Il saldo derivato (['expenses'], ricalcolato lato server) non viene
+  // toccato qui: arriva con l'invalidateQueries subito dopo.
   const removeMutation = useMutation({
     mutationFn: (id: string) => settlementsApi.remove(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['settlements'] });
+      const previous = queryClient.getQueryData<Settlement[]>(['settlements']);
+      queryClient.setQueryData<Settlement[]>(['settlements'], (old) => old?.filter((s) => s.id !== id));
+      return { previous };
+    },
+    onError: (e, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['settlements'], context.previous);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settlements'] });
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
     },
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   function confirmDelete(id: string) {

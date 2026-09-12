@@ -9,6 +9,7 @@ import { ShoppingNoteForm, type ShoppingNoteFormInput } from '../../../src/compo
 import { useI18n } from '../../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
+import type { ShoppingNote } from '../../../src/types';
 
 export default function EditShoppingNoteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -18,7 +19,16 @@ export default function EditShoppingNoteScreen() {
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const noteQuery = useQuery({ queryKey: ['shopping-notes', id], queryFn: () => shoppingNotesApi.get(id), enabled: !!id });
+  const noteQuery = useQuery({
+    queryKey: ['shopping-notes', id],
+    queryFn: () => shoppingNotesApi.get(id),
+    enabled: !!id,
+    // La voce e' quasi sempre gia' nella lista ['shopping-notes'] appena
+    // lasciata (spesa o acquistati): usarla come placeholder evita uno
+    // spinner a schermo intero mentre arriva la stessa identica risposta.
+    placeholderData: () =>
+      queryClient.getQueryData<ShoppingNote[]>(['shopping-notes'])?.find((note) => note.id === id),
+  });
 
   const updateMutation = useMutation({
     mutationFn: (input: ShoppingNoteFormInput) =>

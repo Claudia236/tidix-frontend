@@ -77,11 +77,21 @@ export default function HouseholdScreen() {
 
   const renameMutation = useMutation({
     mutationFn: (name: string) => householdApi.rename(name),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['household', 'me'] });
+    // Patch di un singolo campo stringa, basso rischio: chiude subito il box
+    // di modifica mostrando il nuovo nome invece di lasciarlo aperto e in
+    // attesa per l'intero giro di rete.
+    onMutate: async (name) => {
+      await queryClient.cancelQueries({ queryKey: ['household', 'me'] });
+      const previous = queryClient.getQueryData<HouseholdResponse>(['household', 'me']);
+      queryClient.setQueryData<HouseholdResponse>(['household', 'me'], (old) => (old ? { ...old, name } : old));
       setEditingName(false);
+      return { previous };
     },
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+    onError: (e, _name, context) => {
+      if (context?.previous) queryClient.setQueryData(['household', 'me'], context.previous);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['household', 'me'] }),
   });
 
   const leaveMutation = useMutation({

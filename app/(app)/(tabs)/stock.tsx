@@ -185,16 +185,38 @@ export default function StockScreen() {
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
+  // Rimuove subito la riga da tutte le cache delle liste items (filtrate o
+  // no) invece di aspettare il refetch: stesso trattamento gia' riservato
+  // allo stepper +/- sopra, cosi' l'eliminazione (l'azione piu' comune fatta
+  // da questa schermata) sembra altrettanto immediata.
   const removeMutation = useMutation({
     mutationFn: (id: string) => itemsApi.remove(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['items', 'list'] });
+      const previous = queryClient.getQueriesData<Item[]>({ queryKey: ['items', 'list'] });
+      queryClient.setQueriesData<Item[]>({ queryKey: ['items', 'list'] }, (old) => old?.filter((item) => item.id !== id));
+      return { previous };
+    },
+    onError: (e, _id, context) => {
+      context?.previous.forEach(([key, data]) => queryClient.setQueryData(key, data));
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const removeAndAddToShoppingListMutation = useMutation({
     mutationFn: (item: Item) => itemsApi.adjustQuantity(item.id, { delta: -item.quantity, hideFromShoppingList: false }),
+    onMutate: async (item) => {
+      await queryClient.cancelQueries({ queryKey: ['items', 'list'] });
+      const previous = queryClient.getQueriesData<Item[]>({ queryKey: ['items', 'list'] });
+      queryClient.setQueriesData<Item[]>({ queryKey: ['items', 'list'] }, (old) => old?.filter((i) => i.id !== item.id));
+      return { previous };
+    },
+    onError: (e, _item, context) => {
+      context?.previous.forEach(([key, data]) => queryClient.setQueryData(key, data));
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   // Stesso popup a tre opzioni della schermata di dettaglio (item/[id].tsx),

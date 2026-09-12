@@ -17,7 +17,7 @@ import { useI18n, type TranslateFn } from '../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
-import type { UserBalance } from '../../src/types';
+import type { Expense, UserBalance } from '../../src/types';
 import { computeAllTimeNetBalances } from '../../src/utils/expenseSettlement';
 import { formatDashDate } from '../../src/utils/expiry';
 
@@ -56,8 +56,26 @@ export default function ExpensesScreen() {
 
   const removeMutation = useMutation({
     mutationFn: (id: string) => expensesApi.remove(id),
+    // Toglie subito la spesa dalle liste in cache invece di aspettare il
+    // refetch: i saldi/riepilogo (summaryQuery) restano affidati al refetch
+    // reale dopo il successo, perche' ricalcolarli lato client
+    // replicherebbe arrotondamenti e regole di compensazione del backend,
+    // con il rischio di mostrare per un istante un saldo leggermente
+    // sbagliato - la riga che sparisce subito e' gia' il segnale che conta.
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['expenses'] });
+      const previousMonth = queryClient.getQueryData<Expense[]>(['expenses', month]);
+      const previousAll = queryClient.getQueryData<Expense[]>(['expenses', 'all']);
+      queryClient.setQueryData<Expense[]>(['expenses', month], (old) => old?.filter((e) => e.id !== id));
+      queryClient.setQueryData<Expense[]>(['expenses', 'all'], (old) => old?.filter((e) => e.id !== id));
+      return { previousMonth, previousAll };
+    },
+    onError: (e, _id, context) => {
+      if (context?.previousMonth) queryClient.setQueryData(['expenses', month], context.previousMonth);
+      if (context?.previousAll) queryClient.setQueryData(['expenses', 'all'], context.previousAll);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expenses'] }),
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const settleMutation = useMutation({

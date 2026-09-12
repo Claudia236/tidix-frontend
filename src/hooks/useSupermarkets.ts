@@ -4,7 +4,9 @@ import { supermarketsApi } from '../api/supermarkets';
 import type { Supermarket } from '../types';
 
 export function useSupermarkets() {
-  const query = useQuery({ queryKey: ['supermarkets'], queryFn: supermarketsApi.list });
+  // Vedi lo stesso commento in useStorageLocations.ts: elenco quasi statico
+  // per sessione, le mutazioni che lo toccano invalidano gia' questa query.
+  const query = useQuery({ queryKey: ['supermarkets'], queryFn: supermarketsApi.list, staleTime: 5 * 60_000 });
 
   const supermarkets = useMemo(
     () => [...(query.data ?? [])].sort((a, b) => a.name.localeCompare(b.name)),

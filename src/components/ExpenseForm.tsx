@@ -69,7 +69,8 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { user } = useAuth();
 
-  const householdQuery = useQuery({ queryKey: ['household', 'me'], queryFn: householdApi.me });
+  // Vedi lo stesso commento in app/(app)/household.tsx.
+  const householdQuery = useQuery({ queryKey: ['household', 'me'], queryFn: householdApi.me, staleTime: 2 * 60_000 });
   const members = householdQuery.data?.members ?? [];
 
   const [description, setDescription] = useState(initial?.description ?? '');

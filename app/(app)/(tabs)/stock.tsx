@@ -139,11 +139,30 @@ export default function StockScreen() {
       hideFromShoppingList?: boolean;
       clearOpened?: boolean;
     }) => itemsApi.adjustQuantity(id, { delta, expirationDate: expirationDate ?? undefined, clearExpirationDate, hideFromShoppingList, clearOpened }),
+    // Aggiorna subito la quantita' mostrata invece di aspettare il refetch
+    // completo dopo invalidateQueries: lo stepper +/- e' l'azione piu'
+    // ripetuta di tutta l'app, e ogni tap restava "congelato" fino alla
+    // risposta del server. Tocca solo il campo quantity nelle cache delle
+    // liste items gia' in memoria (filtrate o no): gli altri effetti della
+    // richiesta reale (item esaurito che sparisce e diventa una nota nella
+    // lista della spesa, chiusura di "aperto"...) restano affidati al
+    // refetch dopo il successo, che qui arriva comunque quasi subito.
+    onMutate: async ({ id, delta }) => {
+      await queryClient.cancelQueries({ queryKey: ['items', 'list'] });
+      const previous = queryClient.getQueriesData<Item[]>({ queryKey: ['items', 'list'] });
+      queryClient.setQueriesData<Item[]>({ queryKey: ['items', 'list'] }, (old) =>
+        old?.map((item) => (item.id === id ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item))
+      );
+      return { previous };
+    },
+    onError: (e, _vars, context) => {
+      context?.previous.forEach(([key, data]) => queryClient.setQueryData(key, data));
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       setRestockTarget(null);
     },
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const newBatchMutation = useMutation({

@@ -86,22 +86,56 @@ export default function ShoppingScreen() {
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
+  // Le tre mutazioni sotto aggiornano subito la cache locale invece di
+  // aspettare il refetch dopo invalidateQueries: spuntare/eliminare una
+  // voce e' l'azione piu' comune di questa schermata, e ogni tap restava
+  // "congelato" per un intero giro di rete prima di sparire dalla lista.
+
   const checkNoteMutation = useMutation({
     mutationFn: (id: string) => shoppingNotesApi.check(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['shopping-notes'] });
+      const previous = queryClient.getQueryData<ShoppingNote[]>(['shopping-notes']);
+      queryClient.setQueryData<ShoppingNote[]>(['shopping-notes'], (old) =>
+        old?.map((note) => (note.id === id ? { ...note, checked: true } : note))
+      );
+      return { previous };
+    },
+    onError: (e, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['shopping-notes'], context.previous);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const removeNoteMutation = useMutation({
     mutationFn: (id: string) => shoppingNotesApi.remove(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['shopping-notes'] });
+      const previous = queryClient.getQueryData<ShoppingNote[]>(['shopping-notes']);
+      queryClient.setQueryData<ShoppingNote[]>(['shopping-notes'], (old) => old?.filter((note) => note.id !== id));
+      return { previous };
+    },
+    onError: (e, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['shopping-notes'], context.previous);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const removeItemMutation = useMutation({
     mutationFn: (id: string) => itemsApi.remove(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['items', 'shopping-list'] });
+      const previous = queryClient.getQueryData<Item[]>(['items', 'shopping-list']);
+      queryClient.setQueryData<Item[]>(['items', 'shopping-list'], (old) => old?.filter((item) => item.id !== id));
+      return { previous };
+    },
+    onError: (e, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['items', 'shopping-list'], context.previous);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   function confirmDeleteItem(item: Item) {

@@ -60,20 +60,46 @@ export default function CleaningScreen() {
 
   const markCleanedMutation = useMutation({
     mutationFn: (id: string) => cleaningApi.markCleaned(id),
+    // Sposta subito il task da "da pulire" a "pulito" invece di aspettare il
+    // refetch dopo invalidateQueries: appena pulito, daysSinceCleaned=0 e
+    // overdue=false sono sempre corretti a prescindere da frequencyDays,
+    // quindi bastano questi due campi per un aggiornamento ottimistico
+    // affidabile (lastCleanedDate/lastCleanedByUserId restano quelli reali
+    // dopo il refetch, che arriva comunque quasi subito).
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['cleaning-tasks'] });
+      const previous = queryClient.getQueryData<CleaningTask[]>(['cleaning-tasks']);
+      queryClient.setQueryData<CleaningTask[]>(['cleaning-tasks'], (old) =>
+        old?.map((task) => (task.id === id ? { ...task, daysSinceCleaned: 0, overdue: false } : task))
+      );
+      return { previous };
+    },
+    onError: (e, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['cleaning-tasks'], context.previous);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] });
       cancelCleaningReminder(id);
     },
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   const removeMutation = useMutation({
     mutationFn: (id: string) => cleaningApi.remove(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['cleaning-tasks'] });
+      const previous = queryClient.getQueryData<CleaningTask[]>(['cleaning-tasks']);
+      queryClient.setQueryData<CleaningTask[]>(['cleaning-tasks'], (old) => old?.filter((task) => task.id !== id));
+      return { previous };
+    },
+    onError: (e, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['cleaning-tasks'], context.previous);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['cleaning-tasks'] });
       cancelCleaningReminder(id);
     },
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
   function confirmDelete(task: CleaningTask) {

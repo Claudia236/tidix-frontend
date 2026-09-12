@@ -98,7 +98,8 @@ export function useCategoryInfo(key: Category): CategoryInfo {
  */
 export function useSelectableCategories(): CategoryInfo[] {
   const categories = useCategories();
-  const householdQuery = useQuery({ queryKey: ['household', 'me'], queryFn: householdApi.me });
+  // Vedi lo stesso commento in app/(app)/household.tsx.
+  const householdQuery = useQuery({ queryKey: ['household', 'me'], queryFn: householdApi.me, staleTime: 2 * 60_000 });
   const disabled = householdQuery.data?.disabledCategories;
   return useMemo(() => {
     if (!disabled || disabled.length === 0) return categories;

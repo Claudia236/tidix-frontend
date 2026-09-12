@@ -35,7 +35,10 @@ export default function HouseholdScreen() {
   const { t, language, setLanguage } = useI18n();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const householdQuery = useQuery({ queryKey: ['household', 'me'], queryFn: householdApi.me });
+  // Cambia solo per azioni esplicite (nome, membri, categorie...), tutte
+  // gia' seguite da un invalidateQueries mirato: uno staleTime lungo evita
+  // un refetch in background ad ogni cambio schermata.
+  const householdQuery = useQuery({ queryKey: ['household', 'me'], queryFn: householdApi.me, staleTime: 2 * 60_000 });
   const categories = useCategories();
 
   const [editingName, setEditingName] = useState(false);

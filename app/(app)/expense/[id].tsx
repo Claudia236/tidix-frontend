@@ -9,6 +9,7 @@ import { ExpenseForm, type ExpenseFormOutput } from '../../../src/components/Exp
 import { useI18n } from '../../../src/i18n/I18nContext';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
+import type { Expense } from '../../../src/types';
 
 export default function EditExpenseScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -23,7 +24,21 @@ export default function EditExpenseScreen() {
   // altre viste, e una di queste liste in cache-ma-non-in-fetch poteva far
   // scattare un falso "non piu' disponibile" per una spesa che esiste ancora
   // ma non e' (ancora) in QUELLA cache specifica.
-  const expenseQuery = useQuery({ queryKey: ['expenses', id], queryFn: () => expensesApi.get(id), enabled: !!id });
+  const expenseQuery = useQuery({
+    queryKey: ['expenses', id],
+    queryFn: () => expensesApi.get(id),
+    enabled: !!id,
+    // La spesa e' quasi sempre gia' nella lista appena lasciata (['expenses',
+    // month] o ['expenses', 'all']): usarla come placeholder evita uno
+    // spinner a schermo intero mentre arriva la stessa identica risposta.
+    placeholderData: () => {
+      for (const [, data] of queryClient.getQueriesData<Expense[]>({ queryKey: ['expenses'] })) {
+        const found = data?.find?.((e) => e.id === id);
+        if (found) return found;
+      }
+      return undefined;
+    },
+  });
   const expense = expenseQuery.data;
 
   const updateMutation = useMutation({

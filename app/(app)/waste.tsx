@@ -22,7 +22,11 @@ export default function WasteScreen() {
   const insets = useSafeAreaInsets();
   const wasteTypes = useWasteTypes();
   const daysOfWeek = useDaysOfWeek();
-  const schedulesQuery = useQuery({ queryKey: ['waste-schedules'], queryFn: wasteApi.list });
+  // Le date di raccolta cambiano di rado (modifica manuale): uno staleTime
+  // lungo evita un refetch in background ad ogni apertura schermata, come
+  // gia' fatto per zone/supermercati. Le mutazioni sotto invalidano
+  // esplicitamente questa query, quindi resta comunque aggiornata.
+  const schedulesQuery = useQuery({ queryKey: ['waste-schedules'], queryFn: wasteApi.list, staleTime: 5 * 60_000 });
 
   const daysByType = useMemo(() => {
     const map = new Map<WasteType, DayOfWeek[]>();

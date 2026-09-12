@@ -61,9 +61,13 @@ export default function ScanReceiptScreen() {
       const result = await TextRecognition.recognize(uri);
       if (scanRequestIdRef.current !== requestId) return;
       const candidates = parseReceiptLines(result.text);
-      const newLines = candidates.map((name, i) => ({ id: `${i}-${name}`, name }));
+      const newLines = candidates.map((c, i) => ({ id: `${i}-${c.text}`, name: c.text }));
       setLines(newLines);
-      setSelectedIds(new Set(newLines.map((l) => l.id)));
+      // Solo le righe con un prezzo associato (il segnale piu' affidabile che
+      // sia davvero un prodotto) partono pre-selezionate: le altre restano da
+      // rivedere manualmente, cosi' si tocca meno per scontrini rumorosi
+      // (es. una ricevuta di pagamento scansionata per errore).
+      setSelectedIds(new Set(newLines.filter((_, i) => candidates[i].confident).map((l) => l.id)));
       setHasRecognized(true);
     } catch {
       if (scanRequestIdRef.current !== requestId) return;

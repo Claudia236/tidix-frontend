@@ -61,7 +61,19 @@ const TIME_LIKE = /\b\d{1,2}:\d{2}(:\d{2})?\b/;
 // Valuta da sola su una riga (es. "EUR" isolato su una ricevuta di pagamento):
 // va confrontata sull'intera riga, non come sottostringa, per non escludere
 // un prodotto il cui nome contenga per caso quelle lettere.
-const CURRENCY_ONLY = /^(eur|usd|gbp|chf|jpy)$/i;
+const CURRENCY_ONLY = /^(eur|euro|usd|gbp|chf|jpy)$/i;
+// Riga di dettaglio peso/prezzo unitario per i prodotti venduti a peso o a
+// pezzo (es. "Net 1,522kg x 1,29 EUR/kg", "6 PZ x 0,01 EUR/PZ", talvolta
+// troncata dall'OCR in "Net 1,522kg x"): non e' mai un prodotto a se' stante,
+// ma l'annotazione del prodotto scritto sulla riga subito sopra. Contenendo
+// comunque un numero in formato prezzo, senza questo filtro l'euristica sul
+// prezzo la scambiava per un prodotto e la pre-selezionava al posto del vero
+// nome del prodotto (che spesso perde il prezzo sulla stessa riga a causa di
+// come l'OCR spezza lo scontrino in righe).
+const WEIGHT_OR_UNIT_DETAIL_LINE = /^(net\s+[\d.,]+\s*k?g\.?\s*x|\d+\s*pz\s*x\s*[\d.,]+)/i;
+// Frammento isolato di unita' di prezzo lasciato dall'OCR quando spezza la
+// riga di dettaglio sopra su piu' righe (es. "EUR/kg", "EUR/Kg", "EUR/ka").
+const CURRENCY_UNIT_ONLY = /^eur\s*\/\s*[a-z]{2,3}\.?$/i;
 // Codice/ID che mescola lettere e cifre (numeri terminale, codici
 // transazione, seriali carta: "D2290...", "88S25001909",
 // "P40OPTus-806821569"): un vero nome di prodotto scritto tutto attaccato è
@@ -101,6 +113,8 @@ function looksLikeProductLine(rawLine: string): boolean {
   if (line.length < 3) return false;
   if (ONLY_NUMBERS_OR_SYMBOLS.test(line)) return false;
   if (CURRENCY_ONLY.test(line)) return false;
+  if (WEIGHT_OR_UNIT_DETAIL_LINE.test(line)) return false;
+  if (CURRENCY_UNIT_ONLY.test(line)) return false;
   if (isAllCodeTokens(line)) return false;
   if (DATE_LIKE.test(line) && line.replace(DATE_LIKE, '').trim().length < 3) return false;
   if (TIME_LIKE.test(line) && line.replace(TIME_LIKE, '').trim().length < 3) return false;

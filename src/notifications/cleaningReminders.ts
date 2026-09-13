@@ -52,17 +52,25 @@ export async function syncCleaningReminders(tasks: CleaningTask[], t: TranslateF
 
     if (reminderDate.getTime() <= now.getTime()) continue; // gia' scaduto, non ha senso schedularlo nel passato
 
-    await Notifications.scheduleNotificationAsync({
-      identifier: `${PREFIX}${task.id}`,
-      content: {
-        title: t('notif.cleaningReminder.title'),
-        body: t('notif.cleaningReminder.body', { name: task.name }),
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: reminderDate,
-        channelId: CHANNEL_ID,
-      },
-    });
+    // Un fallimento su un singolo task (es. trigger non valido) non deve
+    // impedire di programmare i promemoria per tutti gli altri task del
+    // ciclo: senza il try/catch qui, un errore interrompeva il for-loop
+    // lasciando silenziosamente non programmati tutti i task successivi.
+    try {
+      await Notifications.scheduleNotificationAsync({
+        identifier: `${PREFIX}${task.id}`,
+        content: {
+          title: t('notif.cleaningReminder.title'),
+          body: t('notif.cleaningReminder.body', { name: task.name }),
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: reminderDate,
+          channelId: CHANNEL_ID,
+        },
+      });
+    } catch {
+      // best-effort: si prosegue con gli altri task
+    }
   }
 }

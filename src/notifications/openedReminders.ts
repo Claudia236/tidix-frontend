@@ -35,17 +35,24 @@ export async function syncOpenedReminders(items: Item[], t: TranslateFn): Promis
 
     if (reminderDate.getTime() <= now.getTime()) continue;
 
-    await Notifications.scheduleNotificationAsync({
-      identifier: `${PREFIX}${item.id}`,
-      content: {
-        title: t('notif.openedReminder.title'),
-        body: t('notif.openedReminder.body', { name: item.name, days: item.openedReminderDays || 3 }),
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: reminderDate,
-        channelId: CHANNEL_ID,
-      },
-    });
+    // Un fallimento su un singolo prodotto non deve impedire di programmare
+    // i promemoria per tutti gli altri del ciclo (vedi stesso pattern in
+    // cleaningReminders.ts).
+    try {
+      await Notifications.scheduleNotificationAsync({
+        identifier: `${PREFIX}${item.id}`,
+        content: {
+          title: t('notif.openedReminder.title'),
+          body: t('notif.openedReminder.body', { name: item.name, days: item.openedReminderDays || 3 }),
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: reminderDate,
+          channelId: CHANNEL_ID,
+        },
+      });
+    } catch {
+      // best-effort: si prosegue con gli altri prodotti
+    }
   }
 }

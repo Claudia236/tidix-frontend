@@ -52,7 +52,13 @@ export function useSyncQueue<T>(
       }
     }
 
-    runLoop();
+    // syncFn (notifiche locali) puo' rigettare per motivi fuori dal nostro
+    // controllo (permesso revocato a runtime, errore nativo): senza questo
+    // .catch(), un fallimento diventava una unhandled promise rejection
+    // invece di essere semplicemente ignorato (i promemoria sono un
+    // extra best-effort, non devono far rumore se non si riescono a
+    // programmare).
+    runLoop().catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input, ...extraDeps]);
 }

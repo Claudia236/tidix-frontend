@@ -33,17 +33,24 @@ export async function syncExpiryReminders(items: Item[], t: TranslateFn): Promis
 
     if (reminderDate.getTime() <= now.getTime()) continue; // gia' scaduto, non ha senso schedularlo nel passato
 
-    await Notifications.scheduleNotificationAsync({
-      identifier: `${PREFIX}${item.id}`,
-      content: {
-        title: t('notif.expiryReminder.title'),
-        body: t('notif.expiryReminder.body', { name: item.name }),
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: reminderDate,
-        channelId: CHANNEL_ID,
-      },
-    });
+    // Un fallimento su un singolo prodotto non deve impedire di programmare
+    // i promemoria per tutti gli altri del ciclo (vedi stesso pattern in
+    // cleaningReminders.ts).
+    try {
+      await Notifications.scheduleNotificationAsync({
+        identifier: `${PREFIX}${item.id}`,
+        content: {
+          title: t('notif.expiryReminder.title'),
+          body: t('notif.expiryReminder.body', { name: item.name }),
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: reminderDate,
+          channelId: CHANNEL_ID,
+        },
+      });
+    } catch {
+      // best-effort: si prosegue con gli altri prodotti
+    }
   }
 }

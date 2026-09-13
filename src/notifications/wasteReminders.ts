@@ -47,19 +47,26 @@ export async function syncWasteReminders(schedules: WasteSchedule[], t: Translat
     const collectionJsWeekday = dayToJsWeekday(day);
     const reminderJsWeekday = (collectionJsWeekday + 6) % 7; // il giorno prima
 
-    await Notifications.scheduleNotificationAsync({
-      identifier: `${PREFIX}${day}`,
-      content: {
-        title: t('notif.wasteReminder.title'),
-        body: t('overview.wasteTomorrow', { types: wasteTypesLabel(types, t, language) }),
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
-        weekday: toTriggerWeekday(reminderJsWeekday),
-        hour: REMINDER_HOUR,
-        minute: REMINDER_MINUTE,
-        channelId: CHANNEL_ID,
-      },
-    });
+    // Un fallimento su un singolo giorno non deve impedire di programmare i
+    // promemoria per tutti gli altri giorni del ciclo (vedi stesso pattern
+    // in cleaningReminders.ts).
+    try {
+      await Notifications.scheduleNotificationAsync({
+        identifier: `${PREFIX}${day}`,
+        content: {
+          title: t('notif.wasteReminder.title'),
+          body: t('overview.wasteTomorrow', { types: wasteTypesLabel(types, t, language) }),
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+          weekday: toTriggerWeekday(reminderJsWeekday),
+          hour: REMINDER_HOUR,
+          minute: REMINDER_MINUTE,
+          channelId: CHANNEL_ID,
+        },
+      });
+    } catch {
+      // best-effort: si prosegue con gli altri giorni
+    }
   }
 }

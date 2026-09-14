@@ -146,6 +146,21 @@ export default function OverviewScreen() {
     [t]
   );
 
+  // Lo spinner del pull-to-refresh deve restare visibile finche' TUTTE le
+  // query che alimentano le card della schermata sono in corso, non solo
+  // summaryQuery (che e' una piccola aggregazione di conteggi e risponde
+  // molto prima delle altre): altrimenti lo spinner spariva subito mentre
+  // scadenze/aperti/avanzi/pulizie potevano ancora aggiornarsi un istante
+  // dopo, dando l'impressione (falsa) che il refresh fosse gia' finito.
+  const isRefreshing =
+    summaryQuery.isFetching ||
+    expiredQuery.isFetching ||
+    expiringQuery.isFetching ||
+    shoppingQuery.isFetching ||
+    cleaningQuery.isFetching ||
+    wasteSchedulesQuery.isFetching ||
+    allItemsQuery.isFetching;
+
   function refresh() {
     summaryQuery.refetch();
     expiredQuery.refetch();
@@ -271,7 +286,7 @@ export default function OverviewScreen() {
       <KeyboardAvoidingView style={styles.flex} behavior="padding">
       <ScrollView
         contentContainerStyle={styles.container}
-        refreshControl={<RefreshControl refreshing={summaryQuery.isFetching} onRefresh={refresh} />}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} />}
       >
         <View style={styles.header}>
           <View style={styles.brandRow}>

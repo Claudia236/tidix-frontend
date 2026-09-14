@@ -8,6 +8,7 @@ import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, Vi
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../../src/api/client';
 import { itemsApi } from '../../../src/api/items';
+import { shoppingNotesApi } from '../../../src/api/shoppingNotes';
 import { showAlert } from '../../../src/components/AppAlert';
 import { useCategories, findCategoryInfo } from '../../../src/constants/domain';
 import { EmptyState } from '../../../src/components/EmptyState';
@@ -230,6 +231,23 @@ export default function StockScreen() {
     ]);
   }
 
+  // A differenza di removeAndAddToShoppingListMutation, qui la scorta resta
+  // esattamente com'era (nessuna variazione di quantita'): si aggiunge solo
+  // una nota alla lista della spesa, per un prodotto che sta per finire ma
+  // non e' ancora esaurito.
+  const addToShoppingListMutation = useMutation({
+    mutationFn: (item: Item) => shoppingNotesApi.create({ text: item.name, category: item.category, supermarketId: item.supermarketId }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+  });
+
+  function confirmSwipeAddToShoppingList(item: Item) {
+    showAlert(t('stock.confirmAddToShoppingListTitle'), t('stock.confirmAddToShoppingListMessage', { name: item.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.confirm'), onPress: () => addToShoppingListMutation.mutate(item) },
+    ]);
+  }
+
   function handleAdjust(item: Item, delta: number) {
     if (delta > 0) {
       setRestockTarget(item);
@@ -402,6 +420,7 @@ export default function StockScreen() {
                 onAdjust={(delta) => handleAdjust(item, delta)}
                 onPress={() => router.push({ pathname: '/(app)/item/[id]', params: { id: item.id } })}
                 onSwipeDelete={() => confirmSwipeDelete(item)}
+                onSwipeAddToShoppingList={() => confirmSwipeAddToShoppingList(item)}
               />
             );
           }}

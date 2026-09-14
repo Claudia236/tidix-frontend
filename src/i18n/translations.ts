@@ -760,6 +760,12 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: (v) => `"${v.name}" ran out. Do you want to add it to the shopping list?`,
     es: (v) => `"${v.name}" se ha acabado. ¿Quieres añadirlo a la lista de la compra?`,
   },
+  'stock.confirmAddToShoppingListTitle': { it: 'Aggiungi a lista spesa', en: 'Add to shopping list', es: 'Añadir a la lista' },
+  'stock.confirmAddToShoppingListMessage': {
+    it: (v) => `Aggiungere "${v.name}" alla lista della spesa? La scorta resta invariata.`,
+    en: (v) => `Add "${v.name}" to the shopping list? Stock stays unchanged.`,
+    es: (v) => `¿Añadir "${v.name}" a la lista de la compra? El inventario no cambia.`,
+  },
   'stock.removeOpenedTitle': { it: 'Confezione aperta', en: 'Opened package', es: 'Envase abierto' },
   'stock.removeOpenedMessage': {
     it: (v) => `"${v.name}" è segnato come aperto. Stai togliendo proprio la confezione aperta?`,

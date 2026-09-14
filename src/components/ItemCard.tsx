@@ -15,9 +15,10 @@ interface Props {
   onAdjust: (delta: number) => void;
   onPress: () => void;
   onSwipeDelete: () => void;
+  onSwipeAddToShoppingList: () => void;
 }
 
-export function ItemCard({ item, location, onAdjust, onPress, onSwipeDelete }: Props) {
+export function ItemCard({ item, location, onAdjust, onPress, onSwipeDelete, onSwipeAddToShoppingList }: Props) {
   const { colors } = useTheme();
   const { t, language } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -46,7 +47,12 @@ export function ItemCard({ item, location, onAdjust, onPress, onSwipeDelete }: P
   }
 
   return (
-    <SwipeableRow rightAction={deleteAction(colors, onSwipeDelete)} borderRadius={14} marginBottom={8}>
+    <SwipeableRow
+      leftAction={{ onTrigger: onSwipeAddToShoppingList, icon: 'cart-outline', color: colors.brand }}
+      rightAction={deleteAction(colors, onSwipeDelete)}
+      borderRadius={14}
+      marginBottom={8}
+    >
       <View style={styles.card}>
       <View style={[styles.stripe, { backgroundColor: stripeColor }]} />
       <View style={styles.body}>

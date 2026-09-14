@@ -39,3 +39,7 @@ yarn-error.*
 
 # generated native folders
 /ios
+
+# Claude Code agent worktree scaffolding (isolated working copies for
+# background subagents, not project source)
+.claude/worktrees/

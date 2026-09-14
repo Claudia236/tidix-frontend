@@ -28,6 +28,8 @@ const NOISE_KEYWORDS = [
   'carta di credito',
   'bancomat',
   'pagamento',
+  'importo pagato',
+  'ticket',
   'n. ric',
   'reso',
   'punti',
@@ -74,6 +76,11 @@ const WEIGHT_OR_UNIT_DETAIL_LINE = /^(net\s+[\d.,]+\s*k?g\.?\s*x|\d+\s*pz\s*x\s*
 // Frammento isolato di unita' di prezzo lasciato dall'OCR quando spezza la
 // riga di dettaglio sopra su piu' righe (es. "EUR/kg", "EUR/Kg", "EUR/ka").
 const CURRENCY_UNIT_ONLY = /^eur\s*\/\s*[a-z]{2,3}\.?$/i;
+// Riga che termina con un importo negativo (es. "APP CIOCC.85% -0,56"): e'
+// uno sconto/abbuono applicato al prodotto sulla riga sopra, mai un prodotto
+// a se' stante - non sempre riconoscibile dalla sola parola "sconto" (es.
+// gli sconti automatici da app fedelta').
+const NEGATIVE_PRICE_LINE = /-\s*\d+[.,]\d{2}\s*[€$]?\s*$/;
 // Codice/ID che mescola lettere e cifre (numeri terminale, codici
 // transazione, seriali carta: "D2290...", "88S25001909",
 // "P40OPTus-806821569"): un vero nome di prodotto scritto tutto attaccato è
@@ -115,6 +122,7 @@ function looksLikeProductLine(rawLine: string): boolean {
   if (CURRENCY_ONLY.test(line)) return false;
   if (WEIGHT_OR_UNIT_DETAIL_LINE.test(line)) return false;
   if (CURRENCY_UNIT_ONLY.test(line)) return false;
+  if (NEGATIVE_PRICE_LINE.test(line)) return false;
   if (isAllCodeTokens(line)) return false;
   if (DATE_LIKE.test(line) && line.replace(DATE_LIKE, '').trim().length < 3) return false;
   if (TIME_LIKE.test(line) && line.replace(TIME_LIKE, '').trim().length < 3) return false;

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { shoppingNotesApi } from '../../src/api/shoppingNotes';
@@ -23,9 +23,17 @@ export default function ShoppingPurchasedScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState('');
 
   const notesQuery = useQuery({ queryKey: ['shopping-notes'], queryFn: shoppingNotesApi.list });
   const checkedNotes = useMemo(() => (notesQuery.data ?? []).filter((n) => n.checked), [notesQuery.data]);
+  const filteredNotes = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return checkedNotes;
+    return checkedNotes.filter(
+      (n) => n.text.toLowerCase().includes(q) || (n.detail ?? '').toLowerCase().includes(q)
+    );
+  }, [checkedNotes, search]);
 
   // Stesso aggiornamento ottimistico gia' usato per la gemella in
   // shopping.tsx (stessa risorsa shopping-notes): la riga sparisce subito
@@ -77,8 +85,18 @@ export default function ShoppingPurchasedScreen() {
     });
   }
 
+  // "Seleziona tutti" agisce solo sugli elementi attualmente visibili (in
+  // base alla ricerca), lasciando invariate eventuali selezioni fatte prima
+  // di cercare: altrimenti cercare "farro" dopo aver gia' selezionato altri
+  // prodotti li avrebbe deselezionati "gratis".
+  const allFilteredSelected = filteredNotes.length > 0 && filteredNotes.every((n) => selectedIds.has(n.id));
+
   function toggleSelectAll() {
-    setSelectedIds((prev) => (prev.size === checkedNotes.length ? new Set() : new Set(checkedNotes.map((n) => n.id))));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      filteredNotes.forEach((n) => (allFilteredSelected ? next.delete(n.id) : next.add(n.id)));
+      return next;
+    });
   }
 
   function confirmDeleteSelected() {
@@ -109,12 +127,30 @@ export default function ShoppingPurchasedScreen() {
     ]);
   }
 
-  const allSelected = checkedNotes.length > 0 && selectedIds.size === checkedNotes.length;
-
   return (
     <View style={styles.container}>
+      {checkedNotes.length > 0 ? (
+        <View style={[styles.topSection, webCentered]}>
+          <View style={styles.searchBox}>
+            <Ionicons name="search" size={16} color={colors.inkSoft} />
+            <TextInput
+              value={search}
+              onChangeText={setSearch}
+              placeholder={t('purchased.searchPlaceholder')}
+              placeholderTextColor={colors.inkSoft}
+              style={styles.searchInput}
+            />
+            {search.length > 0 ? (
+              <Pressable onPress={() => setSearch('')} hitSlop={8}>
+                <Ionicons name="close-circle" size={18} color={colors.inkSoft} />
+              </Pressable>
+            ) : null}
+          </View>
+        </View>
+      ) : null}
+
       <FlatList
-        data={checkedNotes}
+        data={filteredNotes}
         keyExtractor={(n) => n.id}
         contentContainerStyle={[styles.list, webCentered, { paddingBottom: 20 + insets.bottom }]}
         ListHeaderComponent={
@@ -122,11 +158,11 @@ export default function ShoppingPurchasedScreen() {
             <View style={styles.selectionBar}>
               <Pressable style={styles.selectAllRow} onPress={toggleSelectAll} hitSlop={6}>
                 <Ionicons
-                  name={allSelected ? 'checkbox' : 'square-outline'}
+                  name={allFilteredSelected ? 'checkbox' : 'square-outline'}
                   size={20}
-                  color={allSelected ? colors.brand : colors.inkSoft}
+                  color={allFilteredSelected ? colors.brand : colors.inkSoft}
                 />
-                <Text style={styles.selectAllText}>{allSelected ? t('purchased.deselectAll') : t('purchased.selectAll')}</Text>
+                <Text style={styles.selectAllText}>{allFilteredSelected ? t('purchased.deselectAll') : t('purchased.selectAll')}</Text>
               </Pressable>
               {selectedIds.size > 0 ? (
                 <Pressable style={styles.deleteSelectedButton} onPress={confirmDeleteSelected} hitSlop={6}>
@@ -176,8 +212,21 @@ export default function ShoppingPurchasedScreen() {
 
 function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: COLORS.bg },
-    list: { padding: 20, gap: 8 },
+    container: { flex: 1, backgroundColor: COLORS.bg, paddingTop: 16 },
+    topSection: { paddingHorizontal: 20 },
+    searchBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: COLORS.card,
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+    searchInput: { flex: 1, fontSize: 14, color: COLORS.ink },
+    list: { padding: 20, paddingTop: 16, gap: 8 },
     selectionBar: {
       flexDirection: 'row',
       alignItems: 'center',

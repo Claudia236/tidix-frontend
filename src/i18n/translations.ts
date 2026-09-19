@@ -646,6 +646,7 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
 
   'purchased.title': { it: 'Acquistati', en: 'Purchased', es: 'Comprados' },
+  'purchased.searchPlaceholder': { it: 'Cerca un prodotto...', en: 'Search a product...', es: 'Buscar un producto...' },
   'purchased.confirmDeleteTitle': { it: 'Rimuovi dagli acquistati', en: 'Remove from purchased', es: 'Eliminar de comprados' },
   'purchased.confirmDeleteMessage': {
     it: 'Rimuovere questo prodotto dagli acquistati?',

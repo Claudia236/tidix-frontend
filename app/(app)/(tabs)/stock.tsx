@@ -474,12 +474,11 @@ export default function StockScreen() {
                         <Text style={styles.filterOptionTextGrow}>{opt.label}</Text>
                       </Pressable>
                       {active ? (
-                        <Pressable onPress={opt.toggleDirection} hitSlop={8}>
-                          <Ionicons
-                            name={opt.direction === 'oldestFirst' ? 'arrow-down' : 'arrow-up'}
-                            size={14}
-                            color={colors.brand}
-                          />
+                        <Pressable style={styles.directionToggle} onPress={opt.toggleDirection} hitSlop={8}>
+                          <Text style={styles.directionToggleText}>
+                            {opt.direction === 'oldestFirst' ? t('stock.sortOldestFirst') : t('stock.sortNewestFirst')}
+                          </Text>
+                          <Ionicons name="swap-vertical" size={14} color={colors.brand} />
                         </Pressable>
                       ) : null}
                     </View>
@@ -564,6 +563,8 @@ function createStyles(COLORS: ColorPalette) {
     filterOptionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
     filterDateOptionRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
     filterDateOptionPressable: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
+    directionToggle: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    directionToggleText: { fontSize: 12, fontWeight: '600', color: COLORS.brand },
     filterOptionEmoji: { fontSize: 15 },
     filterOptionText: { fontSize: 14, color: COLORS.ink },
     filterOptionTextGrow: { flex: 1, fontSize: 14, color: COLORS.ink },

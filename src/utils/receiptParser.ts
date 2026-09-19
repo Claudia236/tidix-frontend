@@ -130,9 +130,6 @@ function looksLikeProductLine(rawLine: string): boolean {
   return true;
 }
 
-const PRICE_ON_LINE = /[€$]?\s*\d+[.,]\d{2}\s*[€$]?/;
-const PRICE_ONLY_LINE = /^[€$]?\s*\d+[.,]\d{2}\s*[€$]?$/;
-
 // Ripulisce una riga candidata togliendo il prezzo finale, l'aliquota IVA
 // (colonna che precede il prezzo, es. "4%"/"10%"/"22%") e i codici a barre
 // numerici lasciati in coda (es. "POMODORI RAMATO 4% 2,49" -> "POMODORI RAMATO").
@@ -147,30 +144,20 @@ function cleanProductLine(rawLine: string): string {
 
 export interface ParsedReceiptLine {
   text: string;
-  // Un prezzo accanto alla riga (sulla stessa riga o su quella successiva,
-  // per gli scontrini in cui l'OCR separa nome e prezzo su righe diverse) è
-  // il segnale piu' affidabile che la riga sia davvero un prodotto: usato per
-  // pre-selezionare solo le righe piu' probabili e lasciare le altre da
-  // rivedere manualmente.
-  confident: boolean;
 }
 
 export function parseReceiptLines(rawText: string): ParsedReceiptLine[] {
   const rawLines = rawText.split('\n');
   const seen = new Set<string>();
   const results: ParsedReceiptLine[] = [];
-  for (let i = 0; i < rawLines.length; i++) {
-    const rawLine = rawLines[i];
+  for (const rawLine of rawLines) {
     if (!looksLikeProductLine(rawLine)) continue;
     const cleaned = cleanProductLine(rawLine);
     if (cleaned.length < 3) continue;
     const key = cleaned.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    const hasPriceSameLine = PRICE_ON_LINE.test(rawLine);
-    const nextLine = rawLines[i + 1]?.trim();
-    const hasPriceNextLine = !!nextLine && PRICE_ONLY_LINE.test(nextLine);
-    results.push({ text: cleaned, confident: hasPriceSameLine || hasPriceNextLine });
+    results.push({ text: cleaned });
   }
   return results;
 }

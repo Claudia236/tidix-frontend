@@ -70,11 +70,12 @@ export default function ScanReceiptScreen() {
       const candidates = parseReceiptLines(result.text);
       const newLines = candidates.map((c, i) => ({ id: `${i}-${c.text}`, name: c.text }));
       setLines(newLines);
-      // Solo le righe con un prezzo associato (il segnale piu' affidabile che
-      // sia davvero un prodotto) partono pre-selezionate: le altre restano da
-      // rivedere manualmente, cosi' si tocca meno per scontrini rumorosi
-      // (es. una ricevuta di pagamento scansionata per errore).
-      setSelectedIds(new Set(newLines.filter((_, i) => candidates[i].confident).map((l) => l.id)));
+      // Nessuna riga parte pre-selezionata: l'OCR su scontrini reali (foto
+      // riflettenti, stampe sbiadite) puo' restituire testo irriconoscibile
+      // scambiato per un prodotto plausibile, ed e' piu' sicuro che l'utente
+      // scelga sempre a mano cosa salvare piuttosto che rischiare di
+      // confermare righe spazzatura senza accorgersene.
+      setSelectedIds(new Set());
       setHasRecognized(true);
     } catch {
       if (scanRequestIdRef.current !== requestId) return;

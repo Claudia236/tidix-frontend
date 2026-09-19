@@ -749,6 +749,8 @@ const ENTRIES: Record<string, EntryTriple> = {
   'stock.sortByName': { it: 'Categoria', en: 'Category', es: 'Categoría' },
   'stock.sortByPurchaseDate': { it: 'Data di acquisto', en: 'Purchase date', es: 'Fecha de compra' },
   'stock.sortByExpirationDate': { it: 'Data di scadenza', en: 'Expiry date', es: 'Fecha de caducidad' },
+  'stock.sortOldestFirst': { it: 'più vecchi prima', en: 'oldest first', es: 'más antiguos primero' },
+  'stock.sortNewestFirst': { it: 'più recenti prima', en: 'newest first', es: 'más recientes primero' },
   'stock.emptyTitle': { it: 'Nessun prodotto trovato', en: 'No products found', es: 'No se encontraron productos' },
   'stock.emptySubtitle': {
     it: 'Prova a modificare la ricerca o aggiungi un nuovo prodotto.',

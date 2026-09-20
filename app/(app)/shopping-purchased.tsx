@@ -226,7 +226,7 @@ function createStyles(COLORS: ColorPalette) {
       paddingHorizontal: 12,
       paddingVertical: 10,
     },
-    searchInput: { flex: 1, fontSize: 14, color: COLORS.ink, paddingVertical: 0, includeFontPadding: false },
+    searchInput: { flex: 1, height: 20, fontSize: 14, color: COLORS.ink, paddingVertical: 0, includeFontPadding: false },
     list: { padding: 20, paddingTop: 16, gap: 8 },
     selectionBar: {
       flexDirection: 'row',

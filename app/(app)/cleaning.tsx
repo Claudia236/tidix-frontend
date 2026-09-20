@@ -162,6 +162,7 @@ export default function CleaningScreen() {
             placeholder={t('cleaning.searchPlaceholder')}
             placeholderTextColor={colors.inkSoft}
             style={styles.searchInput}
+            underlineColorAndroid="transparent"
           />
           {search.length > 0 ? (
             <Pressable onPress={() => setSearch('')} hitSlop={8}>

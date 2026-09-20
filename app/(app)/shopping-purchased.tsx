@@ -139,6 +139,7 @@ export default function ShoppingPurchasedScreen() {
               placeholder={t('purchased.searchPlaceholder')}
               placeholderTextColor={colors.inkSoft}
               style={styles.searchInput}
+              underlineColorAndroid="transparent"
             />
             {search.length > 0 ? (
               <Pressable onPress={() => setSearch('')} hitSlop={8}>

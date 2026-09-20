@@ -141,6 +141,7 @@ export function SupermarketPicker({ value, onChange, label }: Props) {
                     placeholder="🛒"
                     placeholderTextColor={colors.inkSoft}
                     style={styles.newEmojiInput}
+                    underlineColorAndroid="transparent"
                   />
                   <TextInput
                     value={newName}
@@ -150,6 +151,7 @@ export function SupermarketPicker({ value, onChange, label }: Props) {
                     style={styles.newNameInput}
                     autoFocus
                     onSubmitEditing={handleCreate}
+                    underlineColorAndroid="transparent"
                   />
                   <Pressable onPress={handleCreate} style={styles.newConfirmButton} hitSlop={8}>
                     <Ionicons name="checkmark" size={16} color={colors.white} />

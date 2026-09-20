@@ -47,6 +47,7 @@ export function ZoneForm({ initial, submitLabel, submitting, onSubmit, onDelete,
             placeholder="📦"
             placeholderTextColor={colors.inkSoft}
             style={styles.emojiInput}
+            underlineColorAndroid="transparent"
           />
           <TextInput
             value={name}
@@ -55,6 +56,7 @@ export function ZoneForm({ initial, submitLabel, submitting, onSubmit, onDelete,
             placeholderTextColor={colors.inkSoft}
             style={styles.nameInput}
             autoFocus
+            underlineColorAndroid="transparent"
           />
         </View>
         <Text style={styles.hint}>{t('zone.emojiHint')}</Text>

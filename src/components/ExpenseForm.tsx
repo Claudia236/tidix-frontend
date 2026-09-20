@@ -238,6 +238,7 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
                     placeholder="0"
                     placeholderTextColor={colors.inkSoft}
                     style={styles.percentInput}
+                    underlineColorAndroid="transparent"
                   />
                   <Text style={styles.percentSign}>%</Text>
                 </View>
@@ -269,6 +270,7 @@ export function ExpenseForm({ initial, submitLabel, submitting, onSubmit, onDele
                       placeholder="0.00"
                       placeholderTextColor={colors.inkSoft}
                       style={[styles.percentInput, full && styles.percentInputDisabled]}
+                      underlineColorAndroid="transparent"
                     />
                     <Text style={styles.percentSign}>€</Text>
                   </View>

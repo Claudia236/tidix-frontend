@@ -320,6 +320,7 @@ export default function ScanReceiptScreen() {
                             onChangeText={(v) => updateLineName(line.id, v)}
                             style={styles.lineInput}
                             placeholderTextColor={colors.inkSoft}
+                            underlineColorAndroid="transparent"
                           />
                           <Pressable onPress={() => setEditingLine(line)} style={styles.lineIconButton} hitSlop={8}>
                             <Ionicons name="pencil-outline" size={18} color={colors.brand} />

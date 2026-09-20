@@ -22,6 +22,7 @@ export function TextField({ label, error, labelExtra, style, ...rest }: Props) {
       <TextInput
         placeholderTextColor={colors.inkSoft}
         style={[styles.input, error ? styles.inputError : null, style]}
+        underlineColorAndroid="transparent"
         {...rest}
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}

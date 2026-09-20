@@ -22,6 +22,7 @@ export function PasswordField({ label, error, style, ...rest }: Props) {
           placeholderTextColor={colors.inkSoft}
           secureTextEntry={!visible}
           style={[styles.input, error ? styles.inputError : null, style]}
+          underlineColorAndroid="transparent"
           {...rest}
         />
         <Pressable onPress={() => setVisible((v) => !v)} hitSlop={8} style={styles.toggle}>

@@ -229,6 +229,7 @@ export default function HouseholdScreen() {
             style={styles.nameInput}
             autoFocus
             onSubmitEditing={saveName}
+            underlineColorAndroid="transparent"
           />
           <Pressable onPress={saveName} style={styles.nameSaveButton} hitSlop={8}>
             <Ionicons name="checkmark" size={18} color={colors.white} />

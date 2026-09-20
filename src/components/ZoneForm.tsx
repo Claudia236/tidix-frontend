@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LOCATION_PALETTE } from '../constants/domain';
 import { useI18n } from '../i18n/I18nContext';
@@ -35,7 +35,7 @@ export function ZoneForm({ initial, submitLabel, submitting, onSubmit, onDelete,
   const [colorIndex, setColorIndex] = useState<number | null>(initial?.colorIndex ?? null);
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior="padding">
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: 48 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"

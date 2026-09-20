@@ -283,7 +283,7 @@ export default function OverviewScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <KeyboardAvoidingView style={styles.flex} behavior="padding">
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} />}

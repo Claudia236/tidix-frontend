@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelectableCategories } from '../constants/domain';
 import { useModalBackHandler } from '../hooks/useModalBackHandler';
@@ -56,7 +56,7 @@ export function ShoppingNoteForm({ initial, submitLabel, submitting, onSubmit, o
   useModalBackHandler(categoryModalVisible, () => setCategoryModalVisible(false));
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior="padding">
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: 48 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"

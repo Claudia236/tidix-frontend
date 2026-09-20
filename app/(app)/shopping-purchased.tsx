@@ -59,6 +59,34 @@ export default function ShoppingPurchasedScreen() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
   });
 
+  // Rimette una nota tra le "da comprare": nessuna conferma richiesta, per lo
+  // stesso motivo per cui segnarla come acquistata (in shopping.tsx) non ne
+  // chiede una - le due azioni sono simmetriche e a costo zero da annullare
+  // l'una con l'altra, quindi non serve un popup per proteggersi da un errore
+  // che si corregge con un secondo tocco.
+  const uncheckMutation = useMutation({
+    mutationFn: (id: string) => shoppingNotesApi.uncheck(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['shopping-notes'] });
+      const previous = queryClient.getQueryData<ShoppingNote[]>(['shopping-notes']);
+      queryClient.setQueryData<ShoppingNote[]>(['shopping-notes'], (old) =>
+        old?.map((note) => (note.id === id ? { ...note, checked: false } : note))
+      );
+      setSelectedIds((prev) => {
+        if (!prev.has(id)) return prev;
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      return { previous };
+    },
+    onError: (e, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['shopping-notes'], context.previous);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
+  });
+
   const removeSelectedMutation = useMutation({
     mutationFn: (ids: string[]) => Promise.all(ids.map((id) => shoppingNotesApi.remove(id))),
     onMutate: async (ids) => {
@@ -198,6 +226,14 @@ export default function ShoppingPurchasedScreen() {
                 </View>
                 <Pressable onPress={() => goAddToStock(note)} style={styles.addToStockButton} hitSlop={6}>
                   <Text style={styles.addToStockText}>{t('shopping.addToStock')}</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => uncheckMutation.mutate(note.id)}
+                  style={styles.deleteButton}
+                  hitSlop={6}
+                  accessibilityLabel={t('purchased.moveBackToList')}
+                >
+                  <Ionicons name="arrow-undo-outline" size={18} color={colors.inkSoft} />
                 </Pressable>
                 <Pressable onPress={() => confirmDeleteNote(note)} style={styles.deleteButton} hitSlop={6}>
                   <Ionicons name="trash-outline" size={18} color={colors.inkSoft} />

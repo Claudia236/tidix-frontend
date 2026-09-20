@@ -623,13 +623,6 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: (v) => `Delete "${v.name}" from stock?`,
     es: (v) => `¿Eliminar "${v.name}" del inventario?`,
   },
-  'shopping.confirmMarkPurchasedTitle': { it: 'Segna come acquistato', en: 'Mark as purchased', es: 'Marcar como comprado' },
-  'shopping.confirmMarkPurchasedMessage': {
-    it: (v) => `Spostare "${v.name}" tra gli acquistati?`,
-    en: (v) => `Move "${v.name}" to purchased?`,
-    es: (v) => `¿Mover "${v.name}" a comprados?`,
-  },
-
   'shoppingNote.new.title': { it: 'Nuovo prodotto', en: 'New product', es: 'Nuevo producto' },
   'shoppingNote.edit.title': { it: 'Modifica prodotto', en: 'Edit product', es: 'Editar producto' },
   'shoppingNote.new.nameLabel': { it: 'Nome', en: 'Name', es: 'Nombre' },
@@ -647,6 +640,7 @@ const ENTRIES: Record<string, EntryTriple> = {
 
   'purchased.title': { it: 'Acquistati', en: 'Purchased', es: 'Comprados' },
   'purchased.searchPlaceholder': { it: 'Cerca un prodotto...', en: 'Search a product...', es: 'Buscar un producto...' },
+  'purchased.moveBackToList': { it: 'Rimetti in lista della spesa', en: 'Move back to shopping list', es: 'Volver a poner en la lista' },
   'purchased.confirmDeleteTitle': { it: 'Rimuovi dagli acquistati', en: 'Remove from purchased', es: 'Eliminar de comprados' },
   'purchased.confirmDeleteMessage': {
     it: 'Rimuovere questo prodotto dagli acquistati?',

@@ -166,13 +166,6 @@ export default function ShoppingScreen() {
     ]);
   }
 
-  function confirmMarkPurchased(note: ShoppingNote) {
-    showAlert(t('shopping.confirmMarkPurchasedTitle'), t('shopping.confirmMarkPurchasedMessage', { name: note.text }), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.confirm'), onPress: () => checkNoteMutation.mutate(note.id) },
-    ]);
-  }
-
   const toBuyRows: ToBuyRow[] = useMemo(() => {
     const items = shoppingQuery.data ?? [];
     const notes = (notesQuery.data ?? []).filter((n) => !n.checked);
@@ -332,11 +325,15 @@ export default function ShoppingScreen() {
             const supermarket = groupBy === 'category' && note.supermarketId ? supermarketById.get(note.supermarketId) : null;
             return (
               <SwipeableRow
-                leftAction={{ onTrigger: () => confirmMarkPurchased(note), icon: 'checkmark-done', color: colors.brand }}
+                // Segnare come acquistato non chiede conferma: l'azione e'
+                // a due vie e a costo zero da annullare (basta rimetterla in
+                // lista dagli Acquistati, vedi shopping-purchased.tsx), a
+                // differenza delle altre azioni "immediate" della lista.
+                leftAction={{ onTrigger: () => checkNoteMutation.mutate(note.id), icon: 'checkmark-done', color: colors.brand }}
                 rightAction={deleteAction(colors, () => confirmDeleteNote(note))}
               >
                 <View style={styles.row}>
-                  <Pressable onPress={() => confirmMarkPurchased(note)} style={styles.checkbox} hitSlop={8} />
+                  <Pressable onPress={() => checkNoteMutation.mutate(note.id)} style={styles.checkbox} hitSlop={8} />
                   <Pressable
                     style={styles.rowTextInfo}
                     onPress={() => router.push({ pathname: '/(app)/shopping-note/[id]', params: { id: note.id } })}

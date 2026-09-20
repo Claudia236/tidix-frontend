@@ -541,7 +541,7 @@ function createStyles(COLORS: ColorPalette) {
       paddingHorizontal: 12,
       paddingVertical: 8,
     },
-    searchInput: { flex: 1, fontSize: 13, color: COLORS.ink },
+    searchInput: { flex: 1, fontSize: 13, color: COLORS.ink, paddingVertical: 0, includeFontPadding: false },
     titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     filterBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center', padding: 24 },
     filterCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, paddingTop: 16, gap: 12, width: '100%', maxWidth: 360, maxHeight: '80%' },

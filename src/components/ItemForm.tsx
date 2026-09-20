@@ -777,6 +777,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
                     placeholder="📦"
                     placeholderTextColor={colors.inkSoft}
                     style={styles.newLocationEmojiInput}
+                    underlineColorAndroid="transparent"
                   />
                   <TextInput
                     value={newLocationName}
@@ -786,6 +787,7 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
                     style={styles.newLocationInput}
                     autoFocus
                     onSubmitEditing={handleCreateLocation}
+                    underlineColorAndroid="transparent"
                   />
                   <Pressable onPress={handleCreateLocation} style={styles.newLocationButton} hitSlop={8}>
                     <Ionicons name="checkmark" size={16} color={colors.white} />

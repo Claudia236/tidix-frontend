@@ -904,11 +904,6 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: "I couldn't recognize a name or expiry date in these photos. Try with more light, framing the label and date well.",
     es: 'No he podido reconocer nombre o caducidad en estas fotos. Prueba con más luz, encuadrando bien la etiqueta y la fecha.',
   },
-  'scanProduct.recognizeError': {
-    it: "Non sono riuscito a leggere queste immagini. Riprova con un'altra foto.",
-    en: "I couldn't read these images. Please try another photo.",
-    es: 'No he podido leer estas imágenes. Prueba con otra foto.',
-  },
   'scanProduct.cameraPermissionDenied': {
     it: 'Permesso fotocamera negato. Abilitalo dalle impostazioni del telefono per fotografare il prodotto.',
     en: 'Camera permission denied. Enable it from your phone settings to photograph the product.',

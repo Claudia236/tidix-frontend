@@ -123,7 +123,7 @@ cd - && git worktree remove /tmp/gh-pages-worktree --force
 
 Se cambi il nome del repo, aggiorna anche `EXPO_PUBLIC_BASE_PATH` nello script `deploy:web` in `package.json`.
 
-⚠️ Sul web non funzionano le notifiche locali (promemoria scadenze/pulizie/rifiuti, disattivate di proposito in `Platform.OS === 'web'`) né "Scansiona prodotto" nel form di un singolo articolo (usa un modulo nativo, ML Kit, disponibile solo su iOS/Android, quindi nascosto sul web). La scansione dello scontrino invece funziona anche da browser: non usa più OCR on-device ma un endpoint del backend che analizza la foto con un modello IA. È quindi una versione più leggera dell'app pensata come accesso rapido, non un sostituto dell'APK.
+⚠️ Sul web non funzionano le notifiche locali (promemoria scadenze/pulizie/rifiuti, disattivate di proposito in `Platform.OS === 'web'`). La scansione di scontrini e prodotti invece funziona anche da browser: non usa più OCR on-device (ML Kit, solo iOS/Android) ma due endpoint del backend che analizzano le foto con un modello IA. È quindi una versione più leggera dell'app pensata come accesso rapido, non un sostituto dell'APK.
 
 ## Struttura
 

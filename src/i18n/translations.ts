@@ -885,11 +885,6 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: 'Gallery permission denied. Enable it from your phone settings to pick a photo.',
     es: 'Permiso de galería denegado. Actívalo desde los ajustes del teléfono para elegir una foto.',
   },
-  'scanReceipt.recognizeError': {
-    it: "Non sono riuscito a leggere questa immagine. Riprova con un'altra foto.",
-    en: "I couldn't read this image. Please try another photo.",
-    es: 'No he podido leer esta imagen. Prueba con otra foto.',
-  },
   'scanProduct.title': { it: 'Scansiona prodotto', en: 'Scan product', es: 'Escanear producto' },
   'scanProduct.hint': {
     it: "Fotografa il prodotto (fino a 2 foto, es. fronte confezione e data di scadenza): nome e scadenza verranno compilati automaticamente.",

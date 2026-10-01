@@ -5,9 +5,9 @@ import { useRouter } from 'expo-router';
 import React, { useMemo, useRef, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { getErrorMessage } from '../../src/api/client';
 import { itemsApi } from '../../src/api/items';
+import { receiptsApi } from '../../src/api/receipts';
 import { shoppingNotesApi } from '../../src/api/shoppingNotes';
 import { showAlert } from '../../src/components/AppAlert';
 import { ItemForm } from '../../src/components/ItemForm';
@@ -19,7 +19,6 @@ import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
 import type { Category, ItemInput } from '../../src/types';
 import { resizeForRecognition } from '../../src/utils/imageResize';
-import { parseReceiptLines } from '../../src/utils/receiptParser';
 
 interface ReceiptLine {
   id: string;
@@ -59,27 +58,25 @@ export default function ScanReceiptScreen() {
     setLines([]);
     setHasRecognized(false);
     try {
-      // L'OCR gira su una copia ridimensionata (la foto a schermo resta
-      // quella originale): una foto scattata dalla fotocamera e' molto piu'
-      // grande di quanto serva per leggere il testo di uno scontrino, e
-      // ridurla prima velocizza sensibilmente il riconoscimento.
-      const recognitionUri = await resizeForRecognition(uri, width, height);
+      // La scansione gira lato server (un modello con visione): la foto
+      // caricata e' una copia ridimensionata (la foto a schermo resta quella
+      // originale), per velocizzare l'upload e contenere il costo della
+      // chiamata - una foto scattata dalla fotocamera e' molto piu' grande
+      // di quanto serva per leggere il testo di uno scontrino.
+      const uploadUri = await resizeForRecognition(uri, width, height);
       if (scanRequestIdRef.current !== requestId) return;
-      const result = await TextRecognition.recognize(recognitionUri);
+      const items = await receiptsApi.scan(uploadUri);
       if (scanRequestIdRef.current !== requestId) return;
-      const candidates = parseReceiptLines(result.text);
-      const newLines = candidates.map((c, i) => ({ id: `${i}-${c.text}`, name: c.text }));
+      const newLines = items.map((text, i) => ({ id: `${i}-${text}`, name: text }));
       setLines(newLines);
-      // Nessuna riga parte pre-selezionata: l'OCR su scontrini reali (foto
-      // riflettenti, stampe sbiadite) puo' restituire testo irriconoscibile
-      // scambiato per un prodotto plausibile, ed e' piu' sicuro che l'utente
-      // scelga sempre a mano cosa salvare piuttosto che rischiare di
-      // confermare righe spazzatura senza accorgersene.
+      // Nessuna riga parte pre-selezionata: l'utente sceglie sempre a mano
+      // cosa salvare, cosi' una svista del modello (riga non riconosciuta
+      // bene) non viene confermata senza accorgersene.
       setSelectedIds(new Set());
       setHasRecognized(true);
-    } catch {
+    } catch (e) {
       if (scanRequestIdRef.current !== requestId) return;
-      showAlert(t('common.error'), t('scanReceipt.recognizeError'));
+      showAlert(t('common.error'), getErrorMessage(e, t));
     } finally {
       if (scanRequestIdRef.current === requestId) setRecognizing(false);
     }

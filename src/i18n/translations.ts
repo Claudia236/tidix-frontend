@@ -1111,9 +1111,21 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'household.guide.stock.title': { it: 'Scorte', en: 'Stock', es: 'Existencias' },
   'household.guide.stock.body': {
-    it: "L'inventario di casa diviso per zona (Frigo, Freezer, Dispensa...): aggiungi prodotti, regola le quantità con un tocco e tieni traccia di scadenze e apertura. Scorri un prodotto verso destra per aggiungerlo alla lista della spesa. Con l'icona in alto a destra ordini per categoria, data di acquisto o di scadenza, e filtri per zona o solo i prodotti aperti.",
-    en: 'Your home inventory split by zone (Fridge, Freezer, Pantry...): add products, adjust quantities with a tap, and track expiry and opened dates. Swipe a product right to add it to the shopping list. Use the icon top-right to sort by category, purchase date or expiry date, and filter by zone or only opened products.',
-    es: 'El inventario de casa dividido por zona (Nevera, Congelador, Despensa...): añade productos, ajusta cantidades con un toque y controla caducidad y apertura. Desliza un producto hacia la derecha para añadirlo a la lista de la compra. Con el icono arriba a la derecha ordenas por categoría, fecha de compra o de caducidad, y filtras por zona o solo los productos abiertos.',
+    it: "L'inventario di casa diviso per zona (Frigo, Freezer, Dispensa...): aggiungi prodotti, regola le quantità con un tocco e tieni traccia di scadenze e apertura. Scorri un prodotto verso destra per aggiungerlo alla lista della spesa.",
+    en: 'Your home inventory split by zone (Fridge, Freezer, Pantry...): add products, adjust quantities with a tap, and track expiry and opened dates. Swipe a product right to add it to the shopping list.',
+    es: 'El inventario de casa dividido por zona (Nevera, Congelador, Despensa...): añade productos, ajusta cantidades con un toque y controla caducidad y apertura. Desliza un producto hacia la derecha para añadirlo a la lista de la compra.',
+  },
+  'household.guide.addProduct.title': { it: 'Aggiungi prodotto', en: 'Add product', es: 'Añadir producto' },
+  'household.guide.addProduct.body': {
+    it: 'Per aggiungere un prodotto scegli nome, zona, categoria e quantità; imposta la scadenza (o "Consumare entro" per i piatti pronti) e, se vuoi, segna "Prodotto aperto" per un promemoria di quando consumarlo. L\'icona fotocamera in alto compila tutto da una foto.',
+    en: 'To add a product, pick its name, zone, category and quantity; set the expiry date (or "Consume within" for ready meals) and, if you like, tick "Opened" for a reminder of when to use it. The camera icon at the top fills it all in from a photo.',
+    es: 'Para añadir un producto elige nombre, zona, categoría y cantidad; pon la fecha de caducidad (o "Consumir en" para platos preparados) y, si quieres, marca "Abierto" para un recordatorio de cuándo consumirlo. El icono de la cámara arriba lo rellena todo a partir de una foto.',
+  },
+  'household.guide.filters.title': { it: 'Filtri e ordinamento', en: 'Filters and sorting', es: 'Filtros y orden' },
+  'household.guide.filters.body': {
+    it: "Nelle Scorte, l'icona in alto a destra apre il menu per ordinare per categoria, data di acquisto o di scadenza, e per filtrare per zona o solo i prodotti aperti.",
+    en: 'In Stock, the icon top-right opens the menu to sort by category, purchase date or expiry date, and to filter by zone or only opened products.',
+    es: 'En Existencias, el icono arriba a la derecha abre el menú para ordenar por categoría, fecha de compra o de caducidad, y para filtrar por zona o solo los productos abiertos.',
   },
   'household.guide.shopping.title': { it: 'Lista della spesa', en: 'Shopping list', es: 'Lista de la compra' },
   'household.guide.shopping.body': {

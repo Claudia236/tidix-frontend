@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
+  ImageSourcePropType,
   KeyboardAvoidingView,
   Linking,
   Modal,
@@ -47,13 +49,43 @@ const LANGUAGE_NATIVE_LABELS: Record<Language, string> = { it: 'Italiano', en: '
 
 type GuideIcon = keyof typeof Ionicons.glyphMap;
 
+interface GuideSlideDef {
+  key: string;
+  icon: GuideIcon;
+  badgeIcon: GuideIcon;
+  titleKey: string;
+  bodyKey: string;
+  // Screenshot reale della schermata, quando disponibile: una coppia per
+  // tema (chiaro/scuro), scelta in base al tema corrente dell'app. Finche'
+  // non e' disponibile per una slide si mostra l'icona+badge come fallback.
+  imageLight?: ImageSourcePropType;
+  imageDark?: ImageSourcePropType;
+}
+
 // Ogni slide ha un'icona principale piu' una piccola "badge" in basso a
 // destra, cosi' da comporre un'illustrazione un po' piu' ricca di una sola
 // icona senza dover disegnare grafiche custom: stessa libreria di icone usata
 // in tutto il resto dell'app (vedi tabs/_layout.tsx per le stesse icone
 // principali di Panoramica/Scorte/Lista spesa), quindi coerente a colpo d'occhio.
-const GUIDE_SLIDES: { key: string; icon: GuideIcon; badgeIcon: GuideIcon; titleKey: string; bodyKey: string }[] = [
-  { key: 'overview', icon: 'grid-outline', badgeIcon: 'alert-circle-outline', titleKey: 'household.guide.overview.title', bodyKey: 'household.guide.overview.body' },
+const GUIDE_SLIDES: GuideSlideDef[] = [
+  {
+    key: 'overview',
+    icon: 'grid-outline',
+    badgeIcon: 'alert-circle-outline',
+    titleKey: 'household.guide.overview.title',
+    bodyKey: 'household.guide.overview.body',
+    imageLight: require('../../assets/guide/overview-light.jpg'),
+    imageDark: require('../../assets/guide/overview-dark.jpg'),
+  },
+  {
+    key: 'quickAdd',
+    icon: 'add-circle-outline',
+    badgeIcon: 'flash-outline',
+    titleKey: 'household.guide.quickAdd.title',
+    bodyKey: 'household.guide.quickAdd.body',
+    imageLight: require('../../assets/guide/quick-add-light.jpg'),
+    imageDark: require('../../assets/guide/quick-add-dark.jpg'),
+  },
   { key: 'swipe', icon: 'swap-horizontal-outline', badgeIcon: 'checkmark-circle-outline', titleKey: 'household.guide.swipe.title', bodyKey: 'household.guide.swipe.body' },
   { key: 'stock', icon: 'cube-outline', badgeIcon: 'add-circle-outline', titleKey: 'household.guide.stock.title', bodyKey: 'household.guide.stock.body' },
   { key: 'shopping', icon: 'cart-outline', badgeIcon: 'checkmark-done-outline', titleKey: 'household.guide.shopping.title', bodyKey: 'household.guide.shopping.body' },
@@ -505,18 +537,27 @@ export default function HouseholdScreen() {
               onScrollEndDrag={handleGuideScrollSettle}
               style={{ flex: 1 }}
             >
-              {GUIDE_SLIDES.map((slide) => (
-                <View key={slide.key} style={[styles.guideSlide, { width: guideSlideWidth }]}>
-                  <View style={styles.guideSlideIconWrap}>
-                    <Ionicons name={slide.icon} size={40} color={colors.brand} />
-                    <View style={styles.guideSlideBadge}>
-                      <Ionicons name={slide.badgeIcon} size={16} color={colors.ink} />
-                    </View>
+              {GUIDE_SLIDES.map((slide) => {
+                const image = mode === 'dark' ? slide.imageDark : slide.imageLight;
+                return (
+                  <View key={slide.key} style={[styles.guideSlide, { width: guideSlideWidth }]}>
+                    {image ? (
+                      <View style={styles.guideSlideImageWrap}>
+                        <Image source={image} style={styles.guideSlideImage} resizeMode="contain" />
+                      </View>
+                    ) : (
+                      <View style={styles.guideSlideIconWrap}>
+                        <Ionicons name={slide.icon} size={40} color={colors.brand} />
+                        <View style={styles.guideSlideBadge}>
+                          <Ionicons name={slide.badgeIcon} size={16} color={colors.ink} />
+                        </View>
+                      </View>
+                    )}
+                    <Text style={styles.guideSlideTitle}>{t(slide.titleKey)}</Text>
+                    <Text style={styles.guideSlideBody}>{t(slide.bodyKey)}</Text>
                   </View>
-                  <Text style={styles.guideSlideTitle}>{t(slide.titleKey)}</Text>
-                  <Text style={styles.guideSlideBody}>{t(slide.bodyKey)}</Text>
-                </View>
-              ))}
+                );
+              })}
             </ScrollView>
 
             <View style={styles.guideDots}>
@@ -640,6 +681,18 @@ function createStyles(COLORS: ColorPalette) {
     },
     guideHeaderTitle: { fontSize: 16, fontWeight: '700', color: COLORS.ink },
     guideSlide: { padding: 32, alignItems: 'center', justifyContent: 'center', gap: 16 },
+    // Stesso rapporto d'aspetto degli screenshot originali (1080x2340): a
+    // larghezza fissa evita che l'immagine venga tagliata o deformata.
+    guideSlideImageWrap: {
+      width: 150,
+      height: 325,
+      borderRadius: 20,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      backgroundColor: COLORS.card,
+    },
+    guideSlideImage: { width: '100%', height: '100%' },
     guideSlideIconWrap: {
       width: 88,
       height: 88,

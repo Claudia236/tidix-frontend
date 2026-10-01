@@ -1097,6 +1097,12 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: 'The first screen sums everything up at a glance: zones, opened products, expiring items and cleaning to do.',
     es: 'La primera pantalla lo resume todo de un vistazo: zonas, productos abiertos, por caducar y limpiezas pendientes.',
   },
+  'household.guide.swipe.title': { it: 'Gesti rapidi', en: 'Quick gestures', es: 'Gestos rápidos' },
+  'household.guide.swipe.body': {
+    it: "In molte liste (Scorte, Lista della spesa, Pulizie, Rifiuti...) puoi scorrere una riga verso sinistra o destra per azioni rapide, come eliminare o segnare qualcosa come fatto, senza aprire il dettaglio. Se l'azione cambia subito qualcosa ti viene chiesta conferma prima di eseguirla.",
+    en: "In many lists (Stock, Shopping list, Cleaning, Waste...) you can swipe a row left or right for quick actions, like deleting or marking something as done, without opening its details. If the action changes something right away, you'll be asked to confirm first.",
+    es: 'En muchas listas (Existencias, Lista de la compra, Limpieza, Residuos...) puedes deslizar una fila hacia la izquierda o la derecha para acciones rápidas, como eliminar o marcar algo como hecho, sin abrir el detalle. Si la acción cambia algo de inmediato, se te pedirá confirmación antes.',
+  },
   'household.guide.stock.title': { it: 'Scorte', en: 'Stock', es: 'Existencias' },
   'household.guide.stock.body': {
     it: "L'inventario di casa diviso per zona (Frigo, Freezer, Dispensa...): aggiungi prodotti, regola le quantità con un tocco e tieni traccia di scadenze e apertura.",
@@ -1105,9 +1111,9 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'household.guide.shopping.title': { it: 'Lista della spesa', en: 'Shopping list', es: 'Lista de la compra' },
   'household.guide.shopping.body': {
-    it: 'Raccoglie sia i prodotti finiti sia promemoria liberi (es. "detersivo"): spunta ciò che hai comprato e torna automaticamente tra le scorte.',
-    en: 'Collects both items you ran out of and free-text reminders (e.g. "detergent"): tick what you bought and it goes back into stock automatically.',
-    es: 'Reúne tanto los productos agotados como recordatorios libres (ej. "detergente"): marca lo comprado y vuelve automáticamente a las existencias.',
+    it: 'Raccoglie sia i prodotti finiti sia promemoria liberi (es. "detersivo"): spunta ciò che hai comprato e finisce tra gli Acquistati, pronto per essere aggiunto alle scorte con calma, un prodotto alla volta e con tutti i dettagli (zona, categoria, scadenza).',
+    en: 'Collects both items you ran out of and free-text reminders (e.g. "detergent"): tick what you bought and it lands in Purchased, ready to be added back into stock at your own pace, one product at a time with all its details (zone, category, expiry).',
+    es: 'Reúne tanto los productos agotados como recordatorios libres (ej. "detergente"): marca lo comprado y pasa a Comprados, listo para añadirlo de nuevo a las existencias con calma, uno a uno y con todos los detalles (zona, categoría, caducidad).',
   },
   'household.guide.receiptScan.title': { it: 'Scansione scontrino', en: 'Receipt scan', es: 'Escaneo de recibo' },
   'household.guide.receiptScan.body': {

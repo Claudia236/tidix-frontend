@@ -1117,9 +1117,15 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'household.guide.shopping.title': { it: 'Lista della spesa', en: 'Shopping list', es: 'Lista de la compra' },
   'household.guide.shopping.body': {
-    it: 'Raccoglie sia i prodotti finiti sia promemoria liberi (es. "detersivo"): spunta ciò che hai comprato e finisce tra gli Acquistati, pronto per essere aggiunto alle scorte con calma, un prodotto alla volta e con tutti i dettagli (zona, categoria, scadenza).',
-    en: 'Collects both items you ran out of and free-text reminders (e.g. "detergent"): tick what you bought and it lands in Purchased, ready to be added back into stock at your own pace, one product at a time with all its details (zone, category, expiry).',
-    es: 'Reúne tanto los productos agotados como recordatorios libres (ej. "detergente"): marca lo comprado y pasa a Comprados, listo para añadirlo de nuevo a las existencias con calma, uno a uno y con todos los detalles (zona, categoría, caducidad).',
+    it: 'Raccoglie sia i prodotti delle scorte finiti sia promemoria liberi (es. "detersivo"): spunta ciò che hai comprato e passa agli Acquistati.',
+    en: 'Collects both items you ran out of in stock and free-text reminders (e.g. "detergent"): tick what you bought and it moves to Purchased.',
+    es: 'Reúne tanto los productos agotados en existencias como recordatorios libres (ej. "detergente"): marca lo comprado y pasa a Comprados.',
+  },
+  'household.guide.purchased.title': { it: 'Acquistati', en: 'Purchased', es: 'Comprados' },
+  'household.guide.purchased.body': {
+    it: 'I prodotti spuntati dalla lista della spesa restano qui in attesa: aggiungili alle scorte con calma, uno alla volta e con tutti i dettagli (zona, categoria, scadenza) - oppure rimettili in lista con la freccia se li avevi spuntati per sbaglio.',
+    en: "Products you ticked off the shopping list wait here: add them back to stock at your own pace, one at a time with all their details (zone, category, expiry) - or move them back to the list with the undo arrow if you ticked one by mistake.",
+    es: 'Los productos marcados en la lista de la compra esperan aquí: añádelos a las existencias con calma, uno a uno y con todos los detalles (zona, categoría, caducidad), o devuélvelos a la lista con la flecha si los marcaste por error.',
   },
   'household.guide.receiptScan.title': { it: 'Scansione scontrino', en: 'Receipt scan', es: 'Escaneo de recibo' },
   'household.guide.receiptScan.body': {

@@ -1105,9 +1105,9 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'household.guide.swipe.title': { it: 'Gesti rapidi', en: 'Quick gestures', es: 'Gestos rápidos' },
   'household.guide.swipe.body': {
-    it: "In molte liste (Scorte, Lista della spesa, Pulizie, Rifiuti...) puoi scorrere una riga verso sinistra o destra per azioni rapide, come eliminare o segnare qualcosa come fatto, senza aprire il dettaglio. Se l'azione cambia subito qualcosa ti viene chiesta conferma prima di eseguirla.",
-    en: "In many lists (Stock, Shopping list, Cleaning, Waste...) you can swipe a row left or right for quick actions, like deleting or marking something as done, without opening its details. If the action changes something right away, you'll be asked to confirm first.",
-    es: 'En muchas listas (Existencias, Lista de la compra, Limpieza, Residuos...) puedes deslizar una fila hacia la izquierda o la derecha para acciones rápidas, como eliminar o marcar algo como hecho, sin abrir el detalle. Si la acción cambia algo de inmediato, se te pedirá confirmación antes.',
+    it: 'Lo swipe verso sinistra elimina sempre la riga (con conferma). Quello verso destra invece varia per schermata: in Panoramica apre il dettaglio del prodotto o segna una pulizia come fatta; in Scorte aggiunge alla lista della spesa; in Lista della spesa e nella scansione scontrino segna come acquistato; in Acquistati aggiunge alle scorte; in Pulizie segna come fatta; in Spese apre il dettaglio; nei Saldi modifica; in Famiglia rende amministratore.',
+    en: "Swiping left always deletes the row (with confirmation). Swiping right varies by screen instead: in Overview it opens the product's details or marks a cleaning task as done; in Stock it adds to the shopping list; in Shopping list and receipt scan it marks as purchased; in Purchased it adds to stock; in Cleaning it marks as done; in Expenses it opens the details; in Settlements it edits; in Household it makes someone an admin.",
+    es: 'Deslizar hacia la izquierda siempre elimina la fila (con confirmación). Deslizar hacia la derecha varía según la pantalla: en Panorama abre el detalle del producto o marca una limpieza como hecha; en Existencias añade a la lista de la compra; en Lista de la compra y en el escaneo de recibo marca como comprado; en Comprados añade a las existencias; en Limpieza marca como hecha; en Gastos abre el detalle; en Saldos edita; en Familia hace administrador.',
   },
   'household.guide.stock.title': { it: 'Scorte', en: 'Stock', es: 'Existencias' },
   'household.guide.stock.body': {

@@ -255,7 +255,7 @@ export default function ScanReceiptScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={[styles.container, { paddingBottom: 40 + insets.bottom }]}>
         {!photoUri ? (
           <>
@@ -370,6 +370,7 @@ export default function ScanReceiptScreen() {
 
 function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
+    root: { flex: 1, backgroundColor: COLORS.bg },
     container: { padding: 20, gap: 16 },
     intro: { fontSize: 14, color: COLORS.inkSoft, lineHeight: 20 },
     preview: { width: '100%', height: 220, borderRadius: 14, backgroundColor: COLORS.card },

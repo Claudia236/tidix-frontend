@@ -1111,9 +1111,9 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'household.guide.stock.title': { it: 'Scorte', en: 'Stock', es: 'Existencias' },
   'household.guide.stock.body': {
-    it: "L'inventario di casa diviso per zona (Frigo, Freezer, Dispensa...): aggiungi prodotti, regola le quantità con un tocco e tieni traccia di scadenze e apertura. Scorri un prodotto verso destra per aggiungerlo alla lista della spesa.",
-    en: 'Your home inventory split by zone (Fridge, Freezer, Pantry...): add products, adjust quantities with a tap, and track expiry and opened dates. Swipe a product right to add it to the shopping list.',
-    es: 'El inventario de casa dividido por zona (Nevera, Congelador, Despensa...): añade productos, ajusta cantidades con un toque y controla caducidad y apertura. Desliza un producto hacia la derecha para añadirlo a la lista de la compra.',
+    it: "L'inventario di casa diviso per zona (Frigo, Freezer, Dispensa...): aggiungi prodotti, regola le quantità con un tocco e tieni traccia di scadenze e apertura. Scorri un prodotto verso destra per aggiungerlo alla lista della spesa. Con l'icona in alto a destra ordini per categoria, data di acquisto o di scadenza, e filtri per zona o solo i prodotti aperti.",
+    en: 'Your home inventory split by zone (Fridge, Freezer, Pantry...): add products, adjust quantities with a tap, and track expiry and opened dates. Swipe a product right to add it to the shopping list. Use the icon top-right to sort by category, purchase date or expiry date, and filter by zone or only opened products.',
+    es: 'El inventario de casa dividido por zona (Nevera, Congelador, Despensa...): añade productos, ajusta cantidades con un toque y controla caducidad y apertura. Desliza un producto hacia la derecha para añadirlo a la lista de la compra. Con el icono arriba a la derecha ordenas por categoría, fecha de compra o de caducidad, y filtras por zona o solo los productos abiertos.',
   },
   'household.guide.shopping.title': { it: 'Lista della spesa', en: 'Shopping list', es: 'Lista de la compra' },
   'household.guide.shopping.body': {

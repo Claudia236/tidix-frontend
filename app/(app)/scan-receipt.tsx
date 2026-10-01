@@ -400,14 +400,10 @@ function createStyles(COLORS: ColorPalette) {
     lineIconButton: { padding: 2 },
     lineInput: {
       flex: 1,
-      borderWidth: 1,
-      borderColor: COLORS.line,
-      borderRadius: 10,
-      paddingHorizontal: 12,
+      paddingHorizontal: 6,
       paddingVertical: 8,
       fontSize: 13,
       color: COLORS.ink,
-      backgroundColor: COLORS.card,
     },
     modalSafeArea: { flex: 1, backgroundColor: COLORS.bg },
     modalHeader: {

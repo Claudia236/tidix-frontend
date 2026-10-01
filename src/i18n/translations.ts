@@ -1083,11 +1083,6 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'household.makeAdminButton': { it: 'Rendi amministratore', en: 'Make admin', es: 'Hacer administrador' },
   'household.guideLabel': { it: 'Guida', en: 'Guide', es: 'Guía' },
-  'household.guideHint': {
-    it: "Una panoramica veloce di cosa puoi fare con l'app.",
-    en: 'A quick overview of what you can do with the app.',
-    es: 'Un vistazo rápido a lo que puedes hacer con la app.',
-  },
   'household.guideTitle': { it: 'Come funziona Tidix', en: 'How Tidix works', es: 'Cómo funciona Tidix' },
   'household.guideNext': { it: 'Avanti', en: 'Next', es: 'Siguiente' },
   'household.guideBack': { it: 'Indietro', en: 'Back', es: 'Atrás' },

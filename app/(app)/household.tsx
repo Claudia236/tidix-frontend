@@ -45,17 +45,24 @@ import type { Category, HouseholdResponse } from '../../src/types';
 const LANGUAGES: Language[] = ['it', 'en', 'es'];
 const LANGUAGE_NATIVE_LABELS: Record<Language, string> = { it: 'Italiano', en: 'English', es: 'Español' };
 
-const GUIDE_SLIDES: { key: string; icon: keyof typeof Ionicons.glyphMap; titleKey: string; bodyKey: string }[] = [
-  { key: 'overview', icon: 'grid-outline', titleKey: 'household.guide.overview.title', bodyKey: 'household.guide.overview.body' },
-  { key: 'swipe', icon: 'swap-horizontal-outline', titleKey: 'household.guide.swipe.title', bodyKey: 'household.guide.swipe.body' },
-  { key: 'stock', icon: 'cube-outline', titleKey: 'household.guide.stock.title', bodyKey: 'household.guide.stock.body' },
-  { key: 'shopping', icon: 'cart-outline', titleKey: 'household.guide.shopping.title', bodyKey: 'household.guide.shopping.body' },
-  { key: 'receiptScan', icon: 'receipt-outline', titleKey: 'household.guide.receiptScan.title', bodyKey: 'household.guide.receiptScan.body' },
-  { key: 'productScan', icon: 'camera-outline', titleKey: 'household.guide.productScan.title', bodyKey: 'household.guide.productScan.body' },
-  { key: 'cleaning', icon: 'sparkles-outline', titleKey: 'household.guide.cleaning.title', bodyKey: 'household.guide.cleaning.body' },
-  { key: 'waste', icon: 'trash-outline', titleKey: 'household.guide.waste.title', bodyKey: 'household.guide.waste.body' },
-  { key: 'expenses', icon: 'cash-outline', titleKey: 'household.guide.expenses.title', bodyKey: 'household.guide.expenses.body' },
-  { key: 'household', icon: 'people-outline', titleKey: 'household.guide.household.title', bodyKey: 'household.guide.household.body' },
+type GuideIcon = keyof typeof Ionicons.glyphMap;
+
+// Ogni slide ha un'icona principale piu' una piccola "badge" in basso a
+// destra, cosi' da comporre un'illustrazione un po' piu' ricca di una sola
+// icona senza dover disegnare grafiche custom: stessa libreria di icone usata
+// in tutto il resto dell'app (vedi tabs/_layout.tsx per le stesse icone
+// principali di Panoramica/Scorte/Lista spesa), quindi coerente a colpo d'occhio.
+const GUIDE_SLIDES: { key: string; icon: GuideIcon; badgeIcon: GuideIcon; titleKey: string; bodyKey: string }[] = [
+  { key: 'overview', icon: 'grid-outline', badgeIcon: 'alert-circle-outline', titleKey: 'household.guide.overview.title', bodyKey: 'household.guide.overview.body' },
+  { key: 'swipe', icon: 'swap-horizontal-outline', badgeIcon: 'checkmark-circle-outline', titleKey: 'household.guide.swipe.title', bodyKey: 'household.guide.swipe.body' },
+  { key: 'stock', icon: 'cube-outline', badgeIcon: 'add-circle-outline', titleKey: 'household.guide.stock.title', bodyKey: 'household.guide.stock.body' },
+  { key: 'shopping', icon: 'cart-outline', badgeIcon: 'checkmark-done-outline', titleKey: 'household.guide.shopping.title', bodyKey: 'household.guide.shopping.body' },
+  { key: 'receiptScan', icon: 'receipt-outline', badgeIcon: 'camera-outline', titleKey: 'household.guide.receiptScan.title', bodyKey: 'household.guide.receiptScan.body' },
+  { key: 'productScan', icon: 'pricetag-outline', badgeIcon: 'camera-outline', titleKey: 'household.guide.productScan.title', bodyKey: 'household.guide.productScan.body' },
+  { key: 'cleaning', icon: 'sparkles-outline', badgeIcon: 'calendar-outline', titleKey: 'household.guide.cleaning.title', bodyKey: 'household.guide.cleaning.body' },
+  { key: 'waste', icon: 'trash-outline', badgeIcon: 'refresh-outline', titleKey: 'household.guide.waste.title', bodyKey: 'household.guide.waste.body' },
+  { key: 'expenses', icon: 'cash-outline', badgeIcon: 'people-outline', titleKey: 'household.guide.expenses.title', bodyKey: 'household.guide.expenses.body' },
+  { key: 'household', icon: 'people-outline', badgeIcon: 'key-outline', titleKey: 'household.guide.household.title', bodyKey: 'household.guide.household.body' },
 ];
 
 export default function HouseholdScreen() {
@@ -502,6 +509,9 @@ export default function HouseholdScreen() {
                 <View key={slide.key} style={[styles.guideSlide, { width: guideSlideWidth }]}>
                   <View style={styles.guideSlideIconWrap}>
                     <Ionicons name={slide.icon} size={40} color={colors.brand} />
+                    <View style={styles.guideSlideBadge}>
+                      <Ionicons name={slide.badgeIcon} size={16} color={colors.ink} />
+                    </View>
                   </View>
                   <Text style={styles.guideSlideTitle}>{t(slide.titleKey)}</Text>
                   <Text style={styles.guideSlideBody}>{t(slide.bodyKey)}</Text>
@@ -635,6 +645,20 @@ function createStyles(COLORS: ColorPalette) {
       height: 88,
       borderRadius: 44,
       backgroundColor: COLORS.brandBg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+    },
+    guideSlideBadge: {
+      position: 'absolute',
+      bottom: -2,
+      right: -2,
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: COLORS.card,
+      borderWidth: 2,
+      borderColor: COLORS.bg,
       alignItems: 'center',
       justifyContent: 'center',
     },

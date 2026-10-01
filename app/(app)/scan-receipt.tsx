@@ -76,15 +76,7 @@ export default function ScanReceiptScreen() {
       setHasRecognized(true);
     } catch (e) {
       if (scanRequestIdRef.current !== requestId) return;
-      // Dettaglio tecnico temporaneo in coda al messaggio: il messaggio
-      // "pulito" di getErrorMessage ricade su un generico quando l'errore
-      // non e' nella forma che sa riconoscere (es. un errore di rete non
-      // standard sollevato prima ancora di arrivare alla chiamata axios),
-      // e senza questo dettaglio non c'e' modo di capire cosa sta fallendo
-      // davvero sul dispositivo di chi lo usa.
-      const raw = e instanceof Error ? e.message : String(e);
-      const code = typeof e === 'object' && e !== null && 'code' in e ? ` [${(e as { code?: string }).code}]` : '';
-      showAlert(t('common.error'), `${getErrorMessage(e, t)}\n\n(debug: ${raw}${code})`);
+      showAlert(t('common.error'), getErrorMessage(e, t));
     } finally {
       if (scanRequestIdRef.current === requestId) setRecognizing(false);
     }
@@ -400,6 +392,8 @@ function createStyles(COLORS: ColorPalette) {
       alignItems: 'center',
       gap: 8,
       backgroundColor: COLORS.card,
+      borderWidth: 1,
+      borderColor: COLORS.line,
       borderRadius: 10,
       padding: 6,
     },

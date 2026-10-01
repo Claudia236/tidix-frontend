@@ -561,13 +561,14 @@ export default function HouseholdScreen() {
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
-              onMomentumScrollEnd={handleGuideScrollSettle}
-              // Con pagingEnabled uno swipe che "scatta" subito sulla pagina
-              // successiva a volte non genera una vera fase di momentum (ne'
-              // quindi l'evento onMomentumScrollEnd, specialmente su
-              // Android): senza questo i puntini restavano fermi al primo
-              // nonostante lo swipe avesse gia' cambiato slide.
-              onScrollEndDrag={handleGuideScrollSettle}
+              // Aggiornamento continuo invece di affidarsi solo a un evento di
+              // "fine scroll": onMomentumScrollEnd/onScrollEndDrag non sempre
+              // scattano in modo affidabile con pagingEnabled (uno swipe lento
+              // puo' far leggere la posizione prima che lo snap sia finito),
+              // lasciando i puntini fermi finche' non si usa "Avanti"/"Indietro".
+              // onScroll invece segue la posizione reale in tempo reale.
+              onScroll={handleGuideScrollSettle}
+              scrollEventThrottle={16}
               style={{ flex: 1 }}
             >
               {GUIDE_SLIDES.map((slide) => {
@@ -713,14 +714,18 @@ function createStyles(COLORS: ColorPalette) {
       borderBottomColor: COLORS.line,
     },
     guideHeaderTitle: { fontSize: 16, fontWeight: '700', color: COLORS.ink },
-    guideSlide: { padding: 32, alignItems: 'center', justifyContent: 'center', gap: 16 },
-    // Stesso rapporto d'aspetto degli screenshot dopo il ritaglio di barra di
-    // stato e di navigazione (1080x2142, non piu' il 1080x2340 originale): se
-    // non combacia esattamente, "contain" lascia uno spicchio di sfondo
-    // (COLORS.card) visibile a un bordo, che sembra una riga indesiderata.
+    guideSlide: { padding: 24, alignItems: 'center', gap: 12 },
+    // flex:1 fa crescere l'immagine fino a riempire tutto lo spazio verticale
+    // rimasto nella slide (dopo titolo e testo), invece di una misura fissa
+    // indovinata a mano. aspectRatio (= screenshot ritagliato 1080x2142, senza
+    // piu' barra di stato/navigazione) fa si' che la larghezza derivi sempre
+    // da quell'altezza nel rapporto esatto: l'immagine riempie il riquadro
+    // esattamente, senza spicchi di sfondo residui su nessun bordo.
     guideSlideImageWrap: {
-      width: 150,
-      height: 298,
+      flex: 1,
+      alignSelf: 'center',
+      maxWidth: 280,
+      aspectRatio: 1080 / 2142,
       borderRadius: 20,
       overflow: 'hidden',
       borderWidth: 1,

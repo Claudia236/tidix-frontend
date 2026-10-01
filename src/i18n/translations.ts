@@ -1097,6 +1097,12 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: 'The first screen sums everything up at a glance: zones, opened products, expiring items and cleaning to do.',
     es: 'La primera pantalla lo resume todo de un vistazo: zonas, productos abiertos, por caducar y limpiezas pendientes.',
   },
+  'household.guide.quickAdd.title': { it: 'Aggiungi al volo', en: 'Quick add', es: 'Añadir al vuelo' },
+  'household.guide.quickAdd.body': {
+    it: 'Da qualsiasi schermata, il pulsante + in basso apre un menu per aggiungere al volo una spesa condivisa, un promemoria nella lista della spesa, prodotti da uno scontrino o un prodotto diretto alle scorte.',
+    en: 'From any screen, the + button at the bottom opens a menu to quickly add a shared expense, a shopping list reminder, products from a receipt, or a product straight into stock.',
+    es: 'Desde cualquier pantalla, el botón + de abajo abre un menú para añadir al vuelo un gasto compartido, un recordatorio a la lista de la compra, productos de un recibo o un producto directamente a las existencias.',
+  },
   'household.guide.swipe.title': { it: 'Gesti rapidi', en: 'Quick gestures', es: 'Gestos rápidos' },
   'household.guide.swipe.body': {
     it: "In molte liste (Scorte, Lista della spesa, Pulizie, Rifiuti...) puoi scorrere una riga verso sinistra o destra per azioni rapide, come eliminare o segnare qualcosa come fatto, senza aprire il dettaglio. Se l'azione cambia subito qualcosa ti viene chiesta conferma prima di eseguirla.",

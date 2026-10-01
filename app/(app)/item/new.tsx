@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo, useRef } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { getErrorMessage } from '../../../src/api/client';
 import { itemsApi } from '../../../src/api/items';
 import { shoppingNotesApi } from '../../../src/api/shoppingNotes';
@@ -46,11 +46,17 @@ export default function NewItemScreen() {
     <View style={styles.container}>
       <Stack.Screen
         options={{
-          headerRight: () => (
-            <Pressable onPress={() => formRef.current?.openScan()} hitSlop={8} style={{ paddingRight: 16 }}>
-              <Ionicons name="camera-outline" size={22} color={colors.inkSoft} />
-            </Pressable>
-          ),
+          // Il riconoscimento testo di ML Kit e' solo nativo (iOS/Android):
+          // sul web il modulo non esiste e la scansione fallirebbe sempre,
+          // quindi la scorciatoia non si mostra proprio in quel caso.
+          headerRight:
+            Platform.OS === 'web'
+              ? undefined
+              : () => (
+                  <Pressable onPress={() => formRef.current?.openScan()} hitSlop={8} style={{ paddingRight: 16 }}>
+                    <Ionicons name="camera-outline" size={22} color={colors.inkSoft} />
+                  </Pressable>
+                ),
         }}
       />
       <ItemForm
@@ -65,7 +71,7 @@ export default function NewItemScreen() {
         submitLabel={t('common.save')}
         submitting={createMutation.isPending}
         onSubmit={(input) => createMutation.mutate(input)}
-        enableScan
+        enableScan={Platform.OS !== 'web'}
       />
     </View>
   );

@@ -2,8 +2,24 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Linking,
+  Modal,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+  Platform,
+  Pressable,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { householdApi } from '../../src/api/household';
 import { showAlert } from '../../src/components/AppAlert';
@@ -12,6 +28,7 @@ import { deleteAction, SwipeableRow } from '../../src/components/SwipeableRow';
 import { ToggleSwitch } from '../../src/components/ToggleSwitch';
 import { useCategories } from '../../src/constants/domain';
 import { useAuth } from '../../src/context/AuthContext';
+import { useModalBackHandler } from '../../src/hooks/useModalBackHandler';
 import { useI18n } from '../../src/i18n/I18nContext';
 import type { Language } from '../../src/i18n/translations';
 import {
@@ -22,11 +39,23 @@ import {
 } from '../../src/notifications/core';
 import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme, type ThemeMode } from '../../src/theme/ThemeContext';
-import { webCentered } from '../../src/theme/responsive';
+import { WEB_MAX_WIDTH, webCentered } from '../../src/theme/responsive';
 import type { Category, HouseholdResponse } from '../../src/types';
 
 const LANGUAGES: Language[] = ['it', 'en', 'es'];
 const LANGUAGE_NATIVE_LABELS: Record<Language, string> = { it: 'Italiano', en: 'English', es: 'Español' };
+
+const GUIDE_SLIDES: { key: string; icon: keyof typeof Ionicons.glyphMap; titleKey: string; bodyKey: string }[] = [
+  { key: 'overview', icon: 'grid-outline', titleKey: 'household.guide.overview.title', bodyKey: 'household.guide.overview.body' },
+  { key: 'stock', icon: 'cube-outline', titleKey: 'household.guide.stock.title', bodyKey: 'household.guide.stock.body' },
+  { key: 'shopping', icon: 'cart-outline', titleKey: 'household.guide.shopping.title', bodyKey: 'household.guide.shopping.body' },
+  { key: 'receiptScan', icon: 'receipt-outline', titleKey: 'household.guide.receiptScan.title', bodyKey: 'household.guide.receiptScan.body' },
+  { key: 'productScan', icon: 'camera-outline', titleKey: 'household.guide.productScan.title', bodyKey: 'household.guide.productScan.body' },
+  { key: 'cleaning', icon: 'sparkles-outline', titleKey: 'household.guide.cleaning.title', bodyKey: 'household.guide.cleaning.body' },
+  { key: 'waste', icon: 'trash-outline', titleKey: 'household.guide.waste.title', bodyKey: 'household.guide.waste.body' },
+  { key: 'expenses', icon: 'cash-outline', titleKey: 'household.guide.expenses.title', bodyKey: 'household.guide.expenses.body' },
+  { key: 'household', icon: 'people-outline', titleKey: 'household.guide.household.title', bodyKey: 'household.guide.household.body' },
+];
 
 export default function HouseholdScreen() {
   const { user, logout, refreshUser } = useAuth();
@@ -34,6 +63,12 @@ export default function HouseholdScreen() {
   const { colors, mode, setMode } = useTheme();
   const { t, language, setLanguage } = useI18n();
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
+  // Sul web il contenuto e' comunque limitato a WEB_MAX_WIDTH (vedi
+  // webCentered): usare la larghezza intera della finestra per le slide
+  // della guida le farebbe scorrere/allinearsi su una colonna molto piu'
+  // larga di quella effettivamente visibile su desktop.
+  const guideSlideWidth = Platform.OS === 'web' ? Math.min(windowWidth, WEB_MAX_WIDTH) : windowWidth;
   const styles = useMemo(() => createStyles(colors), [colors]);
   // Cambia solo per azioni esplicite (nome, membri, categorie...), tutte
   // gia' seguite da un invalidateQueries mirato: uno staleTime lungo evita
@@ -44,6 +79,9 @@ export default function HouseholdScreen() {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [notifStatus, setNotifStatus] = useState<NotificationPermissionStatus>('undetermined');
+  const [guideVisible, setGuideVisible] = useState(false);
+  const [guideIndex, setGuideIndex] = useState(0);
+  const guideScrollRef = useRef<ScrollView>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -205,6 +243,28 @@ export default function HouseholdScreen() {
     ]);
   }
 
+  function openGuide() {
+    setGuideIndex(0);
+    setGuideVisible(true);
+  }
+
+  function closeGuide() {
+    setGuideVisible(false);
+  }
+
+  useModalBackHandler(guideVisible, closeGuide);
+
+  function scrollToGuideSlide(index: number) {
+    const clamped = Math.max(0, Math.min(index, GUIDE_SLIDES.length - 1));
+    guideScrollRef.current?.scrollTo({ x: clamped * guideSlideWidth, animated: true });
+    setGuideIndex(clamped);
+  }
+
+  function handleGuideMomentumEnd(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    const index = Math.round(event.nativeEvent.contentOffset.x / guideSlideWidth);
+    setGuideIndex(Math.max(0, Math.min(index, GUIDE_SLIDES.length - 1)));
+  }
+
   if (householdQuery.isLoading || !householdQuery.data) {
     return (
       <View style={styles.loading}>
@@ -307,6 +367,19 @@ export default function HouseholdScreen() {
         })}
       </View>
 
+      <Pressable style={styles.card} onPress={openGuide}>
+        <View style={styles.guideCardRow}>
+          <View style={styles.guideCardIconWrap}>
+            <Ionicons name="help-circle-outline" size={20} color={colors.brand} />
+          </View>
+          <View style={styles.guideCardInfo}>
+            <Text style={styles.cardLabel}>{t('household.guideLabel')}</Text>
+            <Text style={styles.cardHint}>{t('household.guideHint')}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
+        </View>
+      </Pressable>
+
       <View style={styles.card}>
         <Text style={styles.cardLabel}>{t('household.settingsTitle')}</Text>
 
@@ -399,6 +472,59 @@ export default function HouseholdScreen() {
       <PrimaryButton label={t('household.leaveFamily')} variant="secondary" onPress={handleLeavePress} />
       <PrimaryButton label={t('household.leaveAccount')} variant="danger" onPress={logout} />
       </ScrollView>
+
+      <Modal visible={guideVisible} animationType="slide" onRequestClose={closeGuide}>
+        <SafeAreaView style={styles.guideSafeArea}>
+          <View style={[styles.guideBody, webCentered]}>
+            <View style={styles.guideHeader}>
+              <Text style={styles.guideHeaderTitle}>{t('household.guideTitle')}</Text>
+              <Pressable onPress={closeGuide} hitSlop={8}>
+                <Ionicons name="close" size={22} color={colors.ink} />
+              </Pressable>
+            </View>
+
+            <ScrollView
+              ref={guideScrollRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={handleGuideMomentumEnd}
+              style={{ flex: 1 }}
+            >
+              {GUIDE_SLIDES.map((slide) => (
+                <View key={slide.key} style={[styles.guideSlide, { width: guideSlideWidth }]}>
+                  <View style={styles.guideSlideIconWrap}>
+                    <Ionicons name={slide.icon} size={40} color={colors.brand} />
+                  </View>
+                  <Text style={styles.guideSlideTitle}>{t(slide.titleKey)}</Text>
+                  <Text style={styles.guideSlideBody}>{t(slide.bodyKey)}</Text>
+                </View>
+              ))}
+            </ScrollView>
+
+            <View style={styles.guideDots}>
+              {GUIDE_SLIDES.map((slide, i) => (
+                <View key={slide.key} style={[styles.guideDot, i === guideIndex && styles.guideDotActive]} />
+              ))}
+            </View>
+
+            <View style={[styles.guideNav, { paddingBottom: 16 + insets.bottom }]}>
+              {guideIndex > 0 ? (
+                <Pressable onPress={() => scrollToGuideSlide(guideIndex - 1)} hitSlop={8} style={styles.guideNavBack}>
+                  <Text style={styles.guideNavBackText}>{t('household.guideBack')}</Text>
+                </Pressable>
+              ) : (
+                <View style={styles.guideNavBack} />
+              )}
+              {guideIndex < GUIDE_SLIDES.length - 1 ? (
+                <PrimaryButton label={t('household.guideNext')} onPress={() => scrollToGuideSlide(guideIndex + 1)} style={styles.guideNavButton} />
+              ) : (
+                <PrimaryButton label={t('common.close')} onPress={closeGuide} style={styles.guideNavButton} />
+              )}
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -474,5 +600,52 @@ function createStyles(COLORS: ColorPalette) {
     chipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
     chipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
     chipTextActive: { color: COLORS.white },
+    guideCardRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    guideCardIconWrap: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: COLORS.brandBg,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    guideCardInfo: { flex: 1, gap: 2 },
+    guideSafeArea: { flex: 1, backgroundColor: COLORS.bg },
+    guideBody: { flex: 1 },
+    guideHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingVertical: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.line,
+    },
+    guideHeaderTitle: { fontSize: 16, fontWeight: '700', color: COLORS.ink },
+    guideSlide: { padding: 32, alignItems: 'center', justifyContent: 'center', gap: 16 },
+    guideSlideIconWrap: {
+      width: 88,
+      height: 88,
+      borderRadius: 44,
+      backgroundColor: COLORS.brandBg,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    guideSlideTitle: { fontSize: 20, fontWeight: '800', color: COLORS.ink, textAlign: 'center' },
+    guideSlideBody: { fontSize: 14, color: COLORS.inkSoft, textAlign: 'center', lineHeight: 21 },
+    guideDots: { flexDirection: 'row', justifyContent: 'center', gap: 8, paddingVertical: 8 },
+    guideDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: COLORS.line },
+    guideDotActive: { backgroundColor: COLORS.brand, width: 18 },
+    guideNav: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      gap: 12,
+    },
+    guideNavBack: { minWidth: 60, paddingVertical: 11 },
+    guideNavBackText: { fontSize: 14, fontWeight: '700', color: COLORS.inkSoft },
+    guideNavButton: { flex: 0, paddingHorizontal: 28 },
   });
 }

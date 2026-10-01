@@ -2,18 +2,25 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { secureStorage } from '../src/api/secureStorage';
 import { queryClient } from '../src/api/queryClient';
 import { AppAlertHost } from '../src/components/AppAlert';
+import { AppGuideModal } from '../src/components/AppGuideModal';
 import { PrimaryButton } from '../src/components/PrimaryButton';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { I18nProvider, useI18n } from '../src/i18n/I18nContext';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
+
+// Una volta sola per installazione: non deve ripresentarsi ai login
+// successivi, ne' riproporsi a ogni riapertura dell'app con una sessione
+// gia' attiva.
+const GUIDE_AUTO_SHOWN_KEY = 'ld_guide_auto_shown';
 
 export default function RootLayout() {
   return (
@@ -82,16 +89,44 @@ function RootNavigator() {
   const hasHousehold = !!user?.householdId;
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Protected guard={!isLoggedIn}>
-        <Stack.Screen name="(auth)" />
-      </Stack.Protected>
-      <Stack.Protected guard={isLoggedIn && !hasHousehold}>
-        <Stack.Screen name="(household-setup)" />
-      </Stack.Protected>
-      <Stack.Protected guard={isLoggedIn && hasHousehold}>
-        <Stack.Screen name="(app)" />
-      </Stack.Protected>
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Protected guard={!isLoggedIn}>
+          <Stack.Screen name="(auth)" />
+        </Stack.Protected>
+        <Stack.Protected guard={isLoggedIn && !hasHousehold}>
+          <Stack.Screen name="(household-setup)" />
+        </Stack.Protected>
+        <Stack.Protected guard={isLoggedIn && hasHousehold}>
+          <Stack.Screen name="(app)" />
+        </Stack.Protected>
+      </Stack>
+      {isLoggedIn && hasHousehold ? <AutoGuide /> : null}
+    </>
   );
+}
+
+// Mostra la guida automaticamente al primo ingresso nell'app vero e proprio
+// (dopo login/registrazione e dopo aver creato/unito una famiglia), una sola
+// volta per installazione: ai login successivi resta raggiungibile a mano da
+// Famiglia, ma non si ripresenta da sola.
+function AutoGuide() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    secureStorage.getItemAsync(GUIDE_AUTO_SHOWN_KEY).then((seen) => {
+      if (!cancelled && !seen) setVisible(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function handleClose() {
+    setVisible(false);
+    secureStorage.setItemAsync(GUIDE_AUTO_SHOWN_KEY, '1').catch(() => {});
+  }
+
+  return <AppGuideModal visible={visible} onClose={handleClose} />;
 }

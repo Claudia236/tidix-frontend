@@ -114,12 +114,20 @@ export function AppGuideModal({ visible, onClose }: Props) {
   const { colors, mode } = useTheme();
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
-  const { width: windowWidth } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   // Sul web il contenuto e' comunque limitato a WEB_MAX_WIDTH (vedi
   // webCentered): usare la larghezza intera della finestra per le slide
   // della guida le farebbe scorrere/allinearsi su una colonna molto piu'
   // larga di quella effettivamente visibile su desktop.
   const guideSlideWidth = Platform.OS === 'web' ? Math.min(windowWidth, WEB_MAX_WIDTH) : windowWidth;
+  // Dimensione calcolata esplicitamente dall'altezza della finestra invece di
+  // lasciar crescere l'immagine con flex dentro lo ScrollView orizzontale
+  // della guida: in pratica quell'approccio non riempiva lo spazio come
+  // previsto (l'immagine restava quasi invisibile). Il rapporto d'aspetto e'
+  // quello reale degli screenshot ritagliati (1080x2142, senza piu' barra di
+  // stato/navigazione).
+  const guideImageHeight = Math.min(windowHeight * 0.5, 420);
+  const guideImageWidth = guideImageHeight * (1080 / 2142);
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [guideIndex, setGuideIndex] = useState(0);
@@ -174,7 +182,7 @@ export function AppGuideModal({ visible, onClose }: Props) {
               return (
                 <View key={slide.key} style={[styles.guideSlide, { width: guideSlideWidth }]}>
                   {image ? (
-                    <View style={styles.guideSlideImageWrap}>
+                    <View style={[styles.guideSlideImageWrap, { width: guideImageWidth, height: guideImageHeight }]}>
                       <Image source={image} style={styles.guideSlideImage} resizeMode="contain" />
                     </View>
                   ) : (
@@ -232,18 +240,11 @@ function createStyles(COLORS: ColorPalette) {
       borderBottomColor: COLORS.line,
     },
     guideHeaderTitle: { fontSize: 16, fontWeight: '700', color: COLORS.ink },
-    guideSlide: { padding: 24, alignItems: 'center', gap: 12 },
-    // flex:1 fa crescere l'immagine fino a riempire tutto lo spazio verticale
-    // rimasto nella slide (dopo titolo e testo), invece di una misura fissa
-    // indovinata a mano. aspectRatio (= screenshot ritagliato 1080x2142, senza
-    // piu' barra di stato/navigazione) fa si' che la larghezza derivi sempre
-    // da quell'altezza nel rapporto esatto: l'immagine riempie il riquadro
-    // esattamente, senza spicchi di sfondo residui su nessun bordo.
+    guideSlide: { padding: 24, alignItems: 'center', justifyContent: 'center', gap: 12 },
+    // Larghezza/altezza passate inline (vedi guideImageWidth/guideImageHeight
+    // sopra, calcolate dall'altezza della finestra): qui restano solo gli
+    // stili che non dipendono dalla dimensione.
     guideSlideImageWrap: {
-      flex: 1,
-      alignSelf: 'center',
-      maxWidth: 280,
-      aspectRatio: 1080 / 2142,
       borderRadius: 20,
       overflow: 'hidden',
       borderWidth: 1,

@@ -47,6 +47,7 @@ const LANGUAGE_NATIVE_LABELS: Record<Language, string> = { it: 'Italiano', en: '
 
 const GUIDE_SLIDES: { key: string; icon: keyof typeof Ionicons.glyphMap; titleKey: string; bodyKey: string }[] = [
   { key: 'overview', icon: 'grid-outline', titleKey: 'household.guide.overview.title', bodyKey: 'household.guide.overview.body' },
+  { key: 'swipe', icon: 'swap-horizontal-outline', titleKey: 'household.guide.swipe.title', bodyKey: 'household.guide.swipe.body' },
   { key: 'stock', icon: 'cube-outline', titleKey: 'household.guide.stock.title', bodyKey: 'household.guide.stock.body' },
   { key: 'shopping', icon: 'cart-outline', titleKey: 'household.guide.shopping.title', bodyKey: 'household.guide.shopping.body' },
   { key: 'receiptScan', icon: 'receipt-outline', titleKey: 'household.guide.receiptScan.title', bodyKey: 'household.guide.receiptScan.body' },
@@ -260,7 +261,7 @@ export default function HouseholdScreen() {
     setGuideIndex(clamped);
   }
 
-  function handleGuideMomentumEnd(event: NativeSyntheticEvent<NativeScrollEvent>) {
+  function handleGuideScrollSettle(event: NativeSyntheticEvent<NativeScrollEvent>) {
     const index = Math.round(event.nativeEvent.contentOffset.x / guideSlideWidth);
     setGuideIndex(Math.max(0, Math.min(index, GUIDE_SLIDES.length - 1)));
   }
@@ -488,7 +489,13 @@ export default function HouseholdScreen() {
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
-              onMomentumScrollEnd={handleGuideMomentumEnd}
+              onMomentumScrollEnd={handleGuideScrollSettle}
+              // Con pagingEnabled uno swipe che "scatta" subito sulla pagina
+              // successiva a volte non genera una vera fase di momentum (ne'
+              // quindi l'evento onMomentumScrollEnd, specialmente su
+              // Android): senza questo i puntini restavano fermi al primo
+              // nonostante lo swipe avesse gia' cambiato slide.
+              onScrollEndDrag={handleGuideScrollSettle}
               style={{ flex: 1 }}
             >
               {GUIDE_SLIDES.map((slide) => (

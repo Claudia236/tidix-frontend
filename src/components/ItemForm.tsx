@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import TextRecognition from '@react-native-ml-kit/text-recognition';
 import * as ImagePicker from 'expo-image-picker';
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../api/client';
+import { itemsApi } from '../api/items';
 import { storageLocationsApi } from '../api/storageLocations';
 import { CONSUME_WITHIN_DAYS_CATEGORIES, useSelectableCategories, useLocationColor, useUnitLabel, UNITS } from '../constants/domain';
 import { useModalBackHandler } from '../hooks/useModalBackHandler';
@@ -19,7 +19,6 @@ import { webCentered } from '../theme/responsive';
 import type { Category, ItemInput, Unit } from '../types';
 import { daysUntil, toLocalISODate, todayLocalISODate } from '../utils/expiry';
 import { resizeForRecognition } from '../utils/imageResize';
-import { parseExpirationDate, parseProductName } from '../utils/productLabelParser';
 import { parseSpokenDateIT } from '../utils/voiceDate';
 import { showAlert } from './AppAlert';
 import { DatePickerField } from './DatePickerField';
@@ -437,15 +436,11 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
     const requestId = ++scanRequestIdRef.current;
     setScanRecognizing(true);
     try {
-      const texts = await Promise.all(scanPhotos.map((uri) => TextRecognition.recognize(uri)));
+      const { name: recognizedName, expirationDate: recognizedDate } = await itemsApi.scan(scanPhotos);
       // La scansione e' stata annullata (o superata da una piu' recente)
       // mentre il riconoscimento era in corso: il risultato e' ormai stantio,
       // non deve toccare cio' che l'utente ha fatto nel frattempo.
       if (scanRequestIdRef.current !== requestId) return;
-
-      const combinedText = texts.map((r) => r.text).join('\n');
-      const recognizedName = parseProductName(combinedText);
-      const recognizedDate = parseExpirationDate(combinedText);
 
       if (!recognizedName && !recognizedDate) {
         showAlert(t('common.error'), t('scanProduct.noDataFound'));
@@ -464,9 +459,9 @@ export const ItemForm = forwardRef<ItemFormHandle, Props>(function ItemForm(
       }
       closeScanModal();
       showAlert(t('scanProduct.resultTitle'), t('scanProduct.resultMessage'));
-    } catch {
+    } catch (e) {
       if (scanRequestIdRef.current !== requestId) return;
-      showAlert(t('common.error'), t('scanProduct.recognizeError'));
+      showAlert(t('common.error'), getErrorMessage(e, t));
     } finally {
       if (scanRequestIdRef.current === requestId) setScanRecognizing(false);
     }

@@ -336,6 +336,7 @@ export default function HouseholdScreen() {
           </View>
           <View style={styles.guideCardInfo}>
             <Text style={styles.cardLabel}>{t('household.guideLabel')}</Text>
+            <Text style={styles.cardHint}>{t('household.guideHint')}</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
         </View>

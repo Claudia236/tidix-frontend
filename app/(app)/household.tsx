@@ -714,11 +714,13 @@ function createStyles(COLORS: ColorPalette) {
     },
     guideHeaderTitle: { fontSize: 16, fontWeight: '700', color: COLORS.ink },
     guideSlide: { padding: 32, alignItems: 'center', justifyContent: 'center', gap: 16 },
-    // Stesso rapporto d'aspetto degli screenshot originali (1080x2340): a
-    // larghezza fissa evita che l'immagine venga tagliata o deformata.
+    // Stesso rapporto d'aspetto degli screenshot dopo il ritaglio di barra di
+    // stato e di navigazione (1080x2142, non piu' il 1080x2340 originale): se
+    // non combacia esattamente, "contain" lascia uno spicchio di sfondo
+    // (COLORS.card) visibile a un bordo, che sembra una riga indesiderata.
     guideSlideImageWrap: {
       width: 150,
-      height: 325,
+      height: 298,
       borderRadius: 20,
       overflow: 'hidden',
       borderWidth: 1,

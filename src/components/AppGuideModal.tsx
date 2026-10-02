@@ -35,6 +35,11 @@ interface GuideSlideDef {
   // non e' disponibile per una slide si mostra l'icona+badge come fallback.
   imageLight?: ImageSourcePropType;
   imageDark?: ImageSourcePropType;
+  // Seconda immagine opzionale, per schermate/form troppo lunghi da catturare
+  // in un solo screenshot: se presente, le due immagini vengono mostrate
+  // impilate (non affiancate, per restare leggibili su screenshot con testo).
+  imageLight2?: ImageSourcePropType;
+  imageDark2?: ImageSourcePropType;
 }
 
 // Ogni slide ha un'icona principale piu' una piccola "badge" in basso a
@@ -87,6 +92,8 @@ const GUIDE_SLIDES: GuideSlideDef[] = [
     bodyKey: 'household.guide.addProduct.body',
     imageLight: require('../../assets/guide/add-product-light.jpg'),
     imageDark: require('../../assets/guide/add-product-dark.jpg'),
+    imageLight2: require('../../assets/guide/add-product-light-2.jpg'),
+    imageDark2: require('../../assets/guide/add-product-dark-2.jpg'),
   },
   {
     key: 'filters',
@@ -154,6 +161,13 @@ export function AppGuideModal({ visible, onClose }: Props) {
   // stato/navigazione).
   const guideImageHeight = Math.min(windowHeight * 0.5, 420);
   const guideImageWidth = guideImageHeight * (1080 / 2142);
+  // Quando una slide ha una seconda immagine (form/schermate troppo lunghi
+  // per un solo screenshot), lo stesso budget verticale viene diviso in due
+  // riquadri impilati con un piccolo spazio in mezzo, mantenendo lo stesso
+  // rapporto d'aspetto per calcolare la larghezza di ciascuno.
+  const guideImageGap = 8;
+  const guideImageHeightHalf = (guideImageHeight - guideImageGap) / 2;
+  const guideImageWidthHalf = guideImageHeightHalf * (1080 / 2142);
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [guideIndex, setGuideIndex] = useState(0);
@@ -205,9 +219,19 @@ export function AppGuideModal({ visible, onClose }: Props) {
           >
             {GUIDE_SLIDES.map((slide) => {
               const image = mode === 'dark' ? slide.imageDark : slide.imageLight;
+              const image2 = mode === 'dark' ? slide.imageDark2 : slide.imageLight2;
               return (
                 <View key={slide.key} style={[styles.guideSlide, { width: guideSlideWidth }]}>
-                  {image ? (
+                  {image && image2 ? (
+                    <View style={{ gap: guideImageGap }}>
+                      <View style={[styles.guideSlideImageWrap, { width: guideImageWidthHalf, height: guideImageHeightHalf }]}>
+                        <Image source={image} style={styles.guideSlideImage} resizeMode="cover" />
+                      </View>
+                      <View style={[styles.guideSlideImageWrap, { width: guideImageWidthHalf, height: guideImageHeightHalf }]}>
+                        <Image source={image2} style={styles.guideSlideImage} resizeMode="cover" />
+                      </View>
+                    </View>
+                  ) : image ? (
                     <View style={[styles.guideSlideImageWrap, { width: guideImageWidth, height: guideImageHeight }]}>
                       <Image source={image} style={styles.guideSlideImage} resizeMode="cover" />
                     </View>

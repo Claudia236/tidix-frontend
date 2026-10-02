@@ -209,7 +209,7 @@ export function AppGuideModal({ visible, onClose }: Props) {
                 <View key={slide.key} style={[styles.guideSlide, { width: guideSlideWidth }]}>
                   {image ? (
                     <View style={[styles.guideSlideImageWrap, { width: guideImageWidth, height: guideImageHeight }]}>
-                      <Image source={image} style={styles.guideSlideImage} resizeMode="contain" />
+                      <Image source={image} style={styles.guideSlideImage} resizeMode="cover" />
                     </View>
                   ) : (
                     <View style={styles.guideSlideIconWrap}>
@@ -273,8 +273,6 @@ function createStyles(COLORS: ColorPalette) {
     guideSlideImageWrap: {
       borderRadius: 20,
       overflow: 'hidden',
-      borderWidth: 1,
-      borderColor: COLORS.line,
       backgroundColor: COLORS.card,
     },
     guideSlideImage: { width: '100%', height: '100%' },

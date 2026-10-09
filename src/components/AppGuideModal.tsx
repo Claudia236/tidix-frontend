@@ -164,12 +164,17 @@ export function AppGuideModal({ visible, onClose }: Props) {
   const guideImageHeight = Math.min(windowHeight * 0.5, 420);
   const guideImageWidth = guideImageHeight * (1080 / 2142);
   // Quando una slide ha una seconda immagine (form/schermate troppo lunghi
-  // per un solo screenshot), lo stesso budget verticale viene diviso in due
-  // riquadri impilati con un piccolo spazio in mezzo, mantenendo lo stesso
-  // rapporto d'aspetto per calcolare la larghezza di ciascuno.
+  // per un solo screenshot), le due vengono affiancate invece che impilate:
+  // la larghezza disponibile (slide meno il padding orizzontale, meno lo
+  // spazio tra le due) viene divisa a meta', e l'altezza di ciascuna segue
+  // lo stesso rapporto d'aspetto degli screenshot. Math.min con
+  // guideImageHeight evita che su schermi larghi (es. web) le due meta'
+  // diventino piu' alte dell'altezza prevista per le slide a una sola
+  // immagine.
   const guideImageGap = 8;
-  const guideImageHeightHalf = (guideImageHeight - guideImageGap) / 2;
-  const guideImageWidthHalf = guideImageHeightHalf * (1080 / 2142);
+  const guideSlideHorizontalPadding = 48; // 24px di padding su ogni lato (vedi guideSlide)
+  const guideImageWidthHalf = (guideSlideWidth - guideSlideHorizontalPadding - guideImageGap) / 2;
+  const guideImageHeightHalf = Math.min(guideImageWidthHalf * (2142 / 1080), guideImageHeight);
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [guideIndex, setGuideIndex] = useState(0);
@@ -225,7 +230,7 @@ export function AppGuideModal({ visible, onClose }: Props) {
               return (
                 <View key={slide.key} style={[styles.guideSlide, { width: guideSlideWidth }]}>
                   {image && image2 ? (
-                    <View style={{ gap: guideImageGap }}>
+                    <View style={{ flexDirection: 'row', gap: guideImageGap }}>
                       <View style={[styles.guideSlideImageWrap, { width: guideImageWidthHalf, height: guideImageHeightHalf }]}>
                         <Image source={image} style={styles.guideSlideImage} resizeMode="cover" />
                       </View>

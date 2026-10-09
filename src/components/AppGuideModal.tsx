@@ -74,6 +74,8 @@ const GUIDE_SLIDES: GuideSlideDef[] = [
     bodyKey: 'household.guide.swipe.body',
     imageLight: require('../../assets/guide/swipe-light.jpg'),
     imageDark: require('../../assets/guide/swipe-dark.jpg'),
+    imageLight2: require('../../assets/guide/swipe-light-2.jpg'),
+    imageDark2: require('../../assets/guide/swipe-dark-2.jpg'),
   },
   {
     key: 'stock',

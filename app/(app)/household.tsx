@@ -19,7 +19,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../src/api/client';
 import { householdApi } from '../../src/api/household';
 import { showAlert } from '../../src/components/AppAlert';
-import { AppGuideModal } from '../../src/components/AppGuideModal';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { deleteAction, SwipeableRow } from '../../src/components/SwipeableRow';
 import { ToggleSwitch } from '../../src/components/ToggleSwitch';
@@ -57,7 +56,6 @@ export default function HouseholdScreen() {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [notifStatus, setNotifStatus] = useState<NotificationPermissionStatus>('undetermined');
-  const [guideVisible, setGuideVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -219,14 +217,6 @@ export default function HouseholdScreen() {
     ]);
   }
 
-  function openGuide() {
-    setGuideVisible(true);
-  }
-
-  function closeGuide() {
-    setGuideVisible(false);
-  }
-
   if (householdQuery.isLoading || !householdQuery.data) {
     return (
       <View style={styles.loading}>
@@ -329,19 +319,6 @@ export default function HouseholdScreen() {
         })}
       </View>
 
-      <Pressable style={styles.card} onPress={openGuide}>
-        <View style={styles.guideCardRow}>
-          <View style={styles.guideCardIconWrap}>
-            <Ionicons name="help-circle-outline" size={20} color={colors.brand} />
-          </View>
-          <View style={styles.guideCardInfo}>
-            <Text style={styles.cardLabel}>{t('household.guideLabel')}</Text>
-            <Text style={styles.cardHint}>{t('household.guideHint')}</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
-        </View>
-      </Pressable>
-
       <View style={styles.card}>
         <Text style={styles.cardLabel}>{t('household.settingsTitle')}</Text>
 
@@ -434,8 +411,6 @@ export default function HouseholdScreen() {
       <PrimaryButton label={t('household.leaveFamily')} variant="secondary" onPress={handleLeavePress} />
       <PrimaryButton label={t('household.leaveAccount')} variant="danger" onPress={logout} />
       </ScrollView>
-
-      <AppGuideModal visible={guideVisible} onClose={closeGuide} />
     </KeyboardAvoidingView>
   );
 }
@@ -511,15 +486,5 @@ function createStyles(COLORS: ColorPalette) {
     chipActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
     chipText: { fontSize: 12, fontWeight: '600', color: COLORS.ink },
     chipTextActive: { color: COLORS.white },
-    guideCardRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-    guideCardIconWrap: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: COLORS.brandBg,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    guideCardInfo: { flex: 1, gap: 2 },
   });
 }

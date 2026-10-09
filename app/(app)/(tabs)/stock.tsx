@@ -382,7 +382,13 @@ export default function StockScreen() {
             underlineColorAndroid="transparent"
           />
           {search.length > 0 ? (
-            <Pressable onPress={() => setSearch('')} hitSlop={8}>
+            <Pressable
+              onPress={() => {
+                setSearch('');
+                setCollapsedCategories(new Set(categories.map((c) => c.key)));
+              }}
+              hitSlop={8}
+            >
               <Ionicons name="close-circle" size={18} color={colors.inkSoft} />
             </Pressable>
           ) : null}

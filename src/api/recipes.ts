@@ -2,6 +2,8 @@ import { apiClient } from './client';
 import type { RecipeSuggestion } from '../types';
 
 export const recipesApi = {
-  suggest: () =>
-    apiClient.post<{ recipes: RecipeSuggestion[] }>('/api/recipes/suggest').then((r) => r.data.recipes),
+  suggest: (extraIngredients?: string[]) =>
+    apiClient
+      .post<{ recipes: RecipeSuggestion[] }>('/api/recipes/suggest', { extraIngredients })
+      .then((r) => r.data.recipes),
 };

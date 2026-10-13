@@ -1,7 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import React, { useMemo } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../api/client';
 import { recipesApi } from '../api/recipes';
@@ -13,6 +24,7 @@ import { webCentered } from '../theme/responsive';
 import type { RecipeSuggestion } from '../types';
 import { showAlert } from './AppAlert';
 import { PrimaryButton } from './PrimaryButton';
+import { StockIngredientPickerModal } from './StockIngredientPickerModal';
 
 interface Props {
   visible: boolean;
@@ -29,16 +41,30 @@ export function RecipeSuggestionsModal({ visible, onClose, ingredientsKey }: Pro
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
+  // Ingredienti aggiunti a mano dall'utente (dalle scorte o a testo libero),
+  // oltre a quelli rilevati automaticamente: non si azzerano alla chiusura,
+  // cosi' si ritrovano ancora li' se si riapre la modale nella stessa
+  // sessione di Panoramica.
+  const [extraIngredients, setExtraIngredients] = useState<string[]>([]);
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [draftIngredient, setDraftIngredient] = useState('');
+
   useModalBackHandler(visible, onClose);
 
+  // Fa parte della queryKey insieme a ingredientsKey: cambia solo quando
+  // l'utente aggiunge/rimuove davvero un ingrediente, non ad ogni carattere
+  // digitato nel campo di testo libero (che resta un suo stato separato
+  // finche' non viene confermato con "+" o invio).
+  const extraIngredientsKey = useMemo(() => [...extraIngredients].sort().join(','), [extraIngredients]);
+
   const recipesQuery = useQuery({
-    queryKey: ['recipes', 'suggest', ingredientsKey],
-    queryFn: recipesApi.suggest,
-    enabled: visible && ingredientsKey.length > 0,
+    queryKey: ['recipes', 'suggest', ingredientsKey, extraIngredientsKey],
+    queryFn: () => recipesApi.suggest(extraIngredients),
+    enabled: visible && (ingredientsKey.length > 0 || extraIngredients.length > 0),
     // Nessun refetch automatico per tempo/focus: deve ripartire da sola solo
-    // quando la queryKey cambia (ingredienti diversi) o su refetch esplicito
-    // (pulsante "Altre idee"), mai perche' sono passati 30s o la finestra ha
-    // ripreso il focus.
+    // quando la queryKey cambia (ingredienti diversi, auto o aggiunti a
+    // mano) o su refetch esplicito (pulsante "Altre idee"), mai perche' sono
+    // passati 30s o la finestra ha ripreso il focus.
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
@@ -57,51 +83,117 @@ export function RecipeSuggestionsModal({ visible, onClose, ingredientsKey }: Pro
     }
   }
 
+  function addIngredient(name: string) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setExtraIngredients((prev) =>
+      prev.some((n) => n.toLowerCase() === trimmed.toLowerCase()) ? prev : [...prev, trimmed]
+    );
+  }
+
+  function removeIngredient(name: string) {
+    setExtraIngredients((prev) => prev.filter((n) => n !== name));
+  }
+
+  function handleAddFreeText() {
+    addIngredient(draftIngredient);
+    setDraftIngredient('');
+  }
+
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={[styles.body, webCentered]}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>{t('recipeModal.title')}</Text>
-            <Pressable onPress={onClose} hitSlop={8}>
-              <Ionicons name="close" size={22} color={colors.ink} />
-            </Pressable>
-          </View>
+        <KeyboardAvoidingView style={styles.body} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={[styles.flex, webCentered]}>
+            <View style={styles.header}>
+              <Text style={styles.headerTitle}>{t('recipeModal.title')}</Text>
+              <Pressable onPress={onClose} hitSlop={8}>
+                <Ionicons name="close" size={22} color={colors.ink} />
+              </Pressable>
+            </View>
 
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            {recipesQuery.isLoading ? (
-              <View style={styles.centerState}>
-                <ActivityIndicator color={colors.brand} />
-                <Text style={styles.centerStateText}>{t('recipeModal.loading')}</Text>
-              </View>
-            ) : recipes.length === 0 && recipesQuery.isError ? (
-              <View style={styles.centerState}>
-                <Ionicons name="alert-circle-outline" size={32} color={colors.inkSoft} />
-                <Text style={styles.centerStateText}>{getErrorMessage(recipesQuery.error, t)}</Text>
-              </View>
-            ) : recipes.length === 0 ? (
-              <View style={styles.centerState}>
-                <Text style={styles.centerStateText}>{t('recipeModal.empty')}</Text>
-              </View>
-            ) : (
-              <View style={styles.recipeList}>
-                {recipes.map((recipe, index) => (
-                  <RecipeCard key={`${recipe.title}-${index}`} recipe={recipe} styles={styles} colors={colors} />
-                ))}
-              </View>
-            )}
-          </ScrollView>
+            <View style={styles.ingredientsBar}>
+              {extraIngredients.length > 0 ? (
+                <View style={styles.chipRow}>
+                  {extraIngredients.map((name) => (
+                    <View key={name} style={styles.ingredientChip}>
+                      <Text style={styles.ingredientChipText}>{name}</Text>
+                      <Pressable onPress={() => removeIngredient(name)} hitSlop={6}>
+                        <Ionicons name="close-circle" size={15} color={colors.inkSoft} />
+                      </Pressable>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
 
-          <View style={styles.footer}>
-            <PrimaryButton
-              label={t('recipeModal.regenerate')}
-              onPress={handleRegenerate}
-              loading={recipesQuery.isFetching}
-              variant="secondary"
-            />
+              <Pressable style={styles.addFromStockButton} onPress={() => setPickerVisible(true)}>
+                <Ionicons name="basket-outline" size={16} color={colors.brand} />
+                <Text style={styles.addFromStockText}>{t('recipeModal.addFromStock')}</Text>
+              </Pressable>
+
+              <View style={styles.freeTextRow}>
+                <TextInput
+                  value={draftIngredient}
+                  onChangeText={setDraftIngredient}
+                  placeholder={t('recipeModal.otherIngredientPlaceholder')}
+                  placeholderTextColor={colors.inkSoft}
+                  style={styles.freeTextInput}
+                  underlineColorAndroid="transparent"
+                  onSubmitEditing={handleAddFreeText}
+                  returnKeyType="done"
+                />
+                <Pressable onPress={handleAddFreeText} hitSlop={8} disabled={!draftIngredient.trim()}>
+                  <Ionicons
+                    name="add-circle"
+                    size={24}
+                    color={draftIngredient.trim() ? colors.brand : colors.inkSoft}
+                  />
+                </Pressable>
+              </View>
+            </View>
+
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+              {recipesQuery.isLoading ? (
+                <View style={styles.centerState}>
+                  <ActivityIndicator color={colors.brand} />
+                  <Text style={styles.centerStateText}>{t('recipeModal.loading')}</Text>
+                </View>
+              ) : recipes.length === 0 && recipesQuery.isError ? (
+                <View style={styles.centerState}>
+                  <Ionicons name="alert-circle-outline" size={32} color={colors.inkSoft} />
+                  <Text style={styles.centerStateText}>{getErrorMessage(recipesQuery.error, t)}</Text>
+                </View>
+              ) : recipes.length === 0 ? (
+                <View style={styles.centerState}>
+                  <Text style={styles.centerStateText}>{t('recipeModal.empty')}</Text>
+                </View>
+              ) : (
+                <View style={styles.recipeList}>
+                  {recipes.map((recipe, index) => (
+                    <RecipeCard key={`${recipe.title}-${index}`} recipe={recipe} styles={styles} colors={colors} />
+                  ))}
+                </View>
+              )}
+            </ScrollView>
+
+            <View style={styles.footer}>
+              <PrimaryButton
+                label={t('recipeModal.regenerate')}
+                onPress={handleRegenerate}
+                loading={recipesQuery.isFetching}
+                variant="secondary"
+              />
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
+
+      <StockIngredientPickerModal
+        visible={pickerVisible}
+        onClose={() => setPickerVisible(false)}
+        onSelect={addIngredient}
+        excludeNames={extraIngredients}
+      />
     </Modal>
   );
 }
@@ -152,6 +244,7 @@ function createStyles(COLORS: ColorPalette) {
   return StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: COLORS.bg },
     body: { flex: 1 },
+    flex: { flex: 1 },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -162,6 +255,50 @@ function createStyles(COLORS: ColorPalette) {
       borderBottomColor: COLORS.line,
     },
     headerTitle: { fontSize: 16, fontWeight: '700', color: COLORS.ink },
+    ingredientsBar: {
+      paddingHorizontal: 20,
+      paddingTop: 12,
+      paddingBottom: 4,
+      gap: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.line,
+    },
+    chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+    ingredientChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: COLORS.brandBg,
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+    },
+    ingredientChipText: { fontSize: 12, fontWeight: '600', color: COLORS.brand },
+    addFromStockButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      alignSelf: 'flex-start',
+      borderWidth: 1,
+      borderColor: COLORS.brand,
+      borderRadius: 8,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+    },
+    addFromStockText: { fontSize: 12, fontWeight: '700', color: COLORS.brand },
+    freeTextRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: COLORS.card,
+      borderWidth: 1,
+      borderColor: COLORS.line,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      marginBottom: 8,
+    },
+    freeTextInput: { flex: 1, height: 20, fontSize: 13, color: COLORS.ink, paddingVertical: 0, includeFontPadding: false },
     scrollContent: { padding: 20, gap: 14, flexGrow: 1 },
     centerState: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 60 },
     centerStateText: { fontSize: 13, color: COLORS.inkSoft, textAlign: 'center' },

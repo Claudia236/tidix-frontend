@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMutation } from '@tanstack/react-query';
-import React, { useEffect, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import React, { useMemo } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../api/client';
@@ -11,31 +11,51 @@ import type { ColorPalette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
 import { webCentered } from '../theme/responsive';
 import type { RecipeSuggestion } from '../types';
+import { showAlert } from './AppAlert';
 import { PrimaryButton } from './PrimaryButton';
 
 interface Props {
   visible: boolean;
   onClose: () => void;
+  // Firma dell'insieme di prodotti in scadenza/aperti al momento
+  // dell'apertura (vedi recipeIngredientsKey in index.tsx): fa parte della
+  // chiave della query, cosi' una nuova chiamata parte da sola solo quando
+  // gli ingredienti disponibili cambiano davvero, non ad ogni apertura.
+  ingredientsKey: string;
 }
 
-export function RecipeSuggestionsModal({ visible, onClose }: Props) {
+export function RecipeSuggestionsModal({ visible, onClose, ingredientsKey }: Props) {
   const { colors } = useTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const suggestMutation = useMutation({ mutationFn: recipesApi.suggest });
-
   useModalBackHandler(visible, onClose);
 
-  // Genera i suggerimenti alla prima apertura, non ad ogni render: l'utente
-  // puo' comunque richiederne di nuovi con "Altre idee" senza dover
-  // richiudere e riaprire la modale.
-  useEffect(() => {
-    if (visible) suggestMutation.mutate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
+  const recipesQuery = useQuery({
+    queryKey: ['recipes', 'suggest', ingredientsKey],
+    queryFn: recipesApi.suggest,
+    enabled: visible && ingredientsKey.length > 0,
+    // Nessun refetch automatico per tempo/focus: deve ripartire da sola solo
+    // quando la queryKey cambia (ingredienti diversi) o su refetch esplicito
+    // (pulsante "Altre idee"), mai perche' sono passati 30s o la finestra ha
+    // ripreso il focus.
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
-  const recipes = suggestMutation.data ?? [];
+  const recipes = recipesQuery.data ?? [];
+
+  async function handleRegenerate() {
+    const result = await recipesQuery.refetch();
+    // Un refetch fallito con ricette gia' in cache non svuota "data" (resta
+    // l'ultimo risultato valido): senza questo avviso esplicito, l'errore
+    // passerebbe inosservato e l'utente penserebbe che "Altre idee" non
+    // abbia fatto nulla.
+    if (result.isError) {
+      showAlert(t('common.error'), getErrorMessage(result.error, t));
+    }
+  }
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -49,15 +69,15 @@ export function RecipeSuggestionsModal({ visible, onClose }: Props) {
           </View>
 
           <ScrollView contentContainerStyle={styles.scrollContent}>
-            {suggestMutation.isPending ? (
+            {recipesQuery.isLoading ? (
               <View style={styles.centerState}>
                 <ActivityIndicator color={colors.brand} />
                 <Text style={styles.centerStateText}>{t('recipeModal.loading')}</Text>
               </View>
-            ) : suggestMutation.isError ? (
+            ) : recipes.length === 0 && recipesQuery.isError ? (
               <View style={styles.centerState}>
                 <Ionicons name="alert-circle-outline" size={32} color={colors.inkSoft} />
-                <Text style={styles.centerStateText}>{getErrorMessage(suggestMutation.error, t)}</Text>
+                <Text style={styles.centerStateText}>{getErrorMessage(recipesQuery.error, t)}</Text>
               </View>
             ) : recipes.length === 0 ? (
               <View style={styles.centerState}>
@@ -75,8 +95,8 @@ export function RecipeSuggestionsModal({ visible, onClose }: Props) {
           <View style={styles.footer}>
             <PrimaryButton
               label={t('recipeModal.regenerate')}
-              onPress={() => suggestMutation.mutate()}
-              loading={suggestMutation.isPending}
+              onPress={handleRegenerate}
+              loading={recipesQuery.isFetching}
               variant="secondary"
             />
           </View>

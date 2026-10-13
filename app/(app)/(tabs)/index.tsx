@@ -103,6 +103,19 @@ export default function OverviewScreen() {
 
   const avanziItems = useMemo(() => (allItemsQuery.data ?? []).filter((i) => i.category === 'AVANZI'), [allItemsQuery.data]);
 
+  // Firma dell'insieme di prodotti in scadenza/aperti (quelli potenzialmente
+  // usati come ingredienti): passata alla modale ricette come parte della
+  // chiave della query, cosi' una nuova chiamata all'IA parte da sola solo
+  // quando questo insieme cambia davvero, non ad ogni apertura della modale.
+  const recipeIngredientsKey = useMemo(
+    () =>
+      [...expiringItems, ...openedItems]
+        .map((i) => i.id)
+        .sort()
+        .join(','),
+    [expiringItems, openedItems]
+  );
+
   // Forza il ricalcolo di wasteTomorrow allo scoccare delle 20:00: senza
   // questo, se lo schermo restava aperto a cavallo di quell'orario senza che
   // nient'altro innescasse un refetch di wasteSchedulesQuery, il banner
@@ -546,7 +559,11 @@ export default function OverviewScreen() {
       </ScrollView>
       </KeyboardAvoidingView>
 
-      <RecipeSuggestionsModal visible={recipesVisible} onClose={() => setRecipesVisible(false)} />
+      <RecipeSuggestionsModal
+        visible={recipesVisible}
+        onClose={() => setRecipesVisible(false)}
+        ingredientsKey={recipeIngredientsKey}
+      />
     </SafeAreaView>
   );
 }

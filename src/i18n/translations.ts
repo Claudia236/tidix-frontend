@@ -926,6 +926,19 @@ const ENTRIES: Record<string, EntryTriple> = {
   },
   'recipeModal.regenerate': { it: 'Altre idee', en: 'More ideas', es: 'Más ideas' },
   'recipeModal.extraIngredients': { it: 'Ti servono anche', en: 'You also need', es: 'También necesitas' },
+  'recipeModal.pickerTitle': { it: 'Aggiungi dalle scorte', en: 'Add from stock', es: 'Añadir de las provisiones' },
+  'recipeModal.pickerLoading': { it: 'Carico le scorte...', en: 'Loading stock...', es: 'Cargando provisiones...' },
+  'recipeModal.pickerEmpty': {
+    it: 'Nessun prodotto trovato.',
+    en: 'No products found.',
+    es: 'No se han encontrado productos.',
+  },
+  'recipeModal.addFromStock': { it: 'Dalle scorte', en: 'From stock', es: 'De las provisiones' },
+  'recipeModal.otherIngredientPlaceholder': {
+    it: 'Altro ingrediente...',
+    en: 'Other ingredient...',
+    es: 'Otro ingrediente...',
+  },
 
   // Expenses
   'month.1': { it: 'Gennaio', en: 'January', es: 'Enero' },

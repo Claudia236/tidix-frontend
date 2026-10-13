@@ -35,9 +35,10 @@ import {
 import type { ColorPalette } from '../../src/theme/colors';
 import { useTheme, type ThemeMode } from '../../src/theme/ThemeContext';
 import { webCentered } from '../../src/theme/responsive';
-import type { Category, HouseholdResponse } from '../../src/types';
+import type { Category, DietType, HouseholdResponse } from '../../src/types';
 
 const LANGUAGES: Language[] = ['it', 'en', 'es'];
+const DIET_TYPES: DietType[] = ['ONNIVORO', 'VEGETARIANO', 'VEGANO'];
 const LANGUAGE_NATIVE_LABELS: Record<Language, string> = { it: 'Italiano', en: 'English', es: 'Español' };
 
 export default function HouseholdScreen() {
@@ -133,6 +134,15 @@ export default function HouseholdScreen() {
     // Anche su errore si invalida (non solo su successo): senza questo, se
     // proprio l'ULTIMO toggle di una serie di tap rapidi falliva, la cache
     // locale restava ottimisticamente "salvata" ma il server no.
+    onError: (e) => {
+      showAlert(t('common.error'), getErrorMessage(e, t));
+      queryClient.invalidateQueries({ queryKey: ['household', 'me'] });
+    },
+  });
+
+  const updateDietMutation = useMutation({
+    mutationFn: (dietType: DietType) => householdApi.updateDietType(dietType),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['household', 'me'] }),
     onError: (e) => {
       showAlert(t('common.error'), getErrorMessage(e, t));
       queryClient.invalidateQueries({ queryKey: ['household', 'me'] });
@@ -349,6 +359,25 @@ export default function HouseholdScreen() {
               return (
                 <Pressable key={m} onPress={() => setMode(m)} style={[styles.chip, active && styles.chipActive]}>
                   <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={styles.settingsField}>
+          <Text style={styles.settingsFieldLabel}>{t('household.dietLabel')}</Text>
+          <Text style={styles.cardHint}>{t('household.dietHint')}</Text>
+          <View style={styles.chipRow}>
+            {DIET_TYPES.map((diet) => {
+              const active = householdQuery.data.dietType === diet;
+              return (
+                <Pressable
+                  key={diet}
+                  onPress={() => updateDietMutation.mutate(diet)}
+                  style={[styles.chip, active && styles.chipActive]}
+                >
+                  <Text style={[styles.chipText, active && styles.chipTextActive]}>{t(`household.diet.${diet}`)}</Text>
                 </Pressable>
               );
             })}

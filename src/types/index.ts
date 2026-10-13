@@ -27,6 +27,8 @@ export type Category =
 
 export type Unit = 'PZ' | 'KG' | 'G' | 'L' | 'ML' | 'CONF';
 
+export type DietType = 'ONNIVORO' | 'VEGETARIANO' | 'VEGANO';
+
 export type WasteType = 'ORGANICO' | 'PLASTICA' | 'CARTA_CARTONE' | 'VETRO' | 'INDIFFERENZIATO' | 'ALTRO';
 
 export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
@@ -56,6 +58,14 @@ export interface HouseholdResponse {
   ownerId: string;
   members: HouseholdMember[];
   disabledCategories: Category[];
+  dietType: DietType;
+}
+
+export interface RecipeSuggestion {
+  title: string;
+  usesItems: string[];
+  extraIngredients: string[];
+  steps: string[];
 }
 
 export interface StorageLocation {

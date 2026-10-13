@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { Category, HouseholdResponse } from '../types';
+import type { Category, DietType, HouseholdResponse } from '../types';
 
 export const householdApi = {
   create: (name: string) =>
@@ -23,4 +23,7 @@ export const householdApi = {
 
   updateDisabledCategories: (disabledCategories: Category[]) =>
     apiClient.put<HouseholdResponse>('/api/households/categories', { disabledCategories }).then((r) => r.data),
+
+  updateDietType: (dietType: DietType) =>
+    apiClient.put<HouseholdResponse>('/api/households/diet', { dietType }).then((r) => r.data),
 };

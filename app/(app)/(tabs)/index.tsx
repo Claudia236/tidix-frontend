@@ -9,6 +9,7 @@ import { cleaningApi } from '../../../src/api/cleaning';
 import { itemsApi } from '../../../src/api/items';
 import { wasteApi } from '../../../src/api/waste';
 import { showAlert } from '../../../src/components/AppAlert';
+import { RecipeSuggestionsModal } from '../../../src/components/RecipeSuggestionsModal';
 import { SectionTitle } from '../../../src/components/SectionTitle';
 import { deleteAction, SwipeableRow } from '../../../src/components/SwipeableRow';
 import { findCategoryInfo, HOUSEHOLD_CATEGORIES, jsWeekdayToDay, useCategories, wasteTypesCollectedOn, wasteTypesLabel } from '../../../src/constants/domain';
@@ -46,6 +47,7 @@ export default function OverviewScreen() {
   const [collapsedCards, setCollapsedCards] = useState<Set<string>>(
     () => new Set(['avanzi', 'opened', 'expiring', 'cleaning'])
   );
+  const [recipesVisible, setRecipesVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -498,6 +500,16 @@ export default function OverviewScreen() {
           </Pressable>
         )}
 
+        {(expiringItems.length > 0 || openedItems.length > 0) && (
+          <Pressable style={styles.shoppingLink} onPress={() => setRecipesVisible(true)}>
+            <View style={styles.shoppingLinkLeft}>
+              <Ionicons name="restaurant-outline" size={18} color={colors.brand} />
+              <Text style={styles.shoppingLinkText}>{t('overview.recipesLink')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
+          </Pressable>
+        )}
+
         <SectionTitle small>{t('zone.title')}</SectionTitle>
 
         <View style={styles.zonesGrid}>
@@ -533,6 +545,8 @@ export default function OverviewScreen() {
         </View>
       </ScrollView>
       </KeyboardAvoidingView>
+
+      <RecipeSuggestionsModal visible={recipesVisible} onClose={() => setRecipesVisible(false)} />
     </SafeAreaView>
   );
 }

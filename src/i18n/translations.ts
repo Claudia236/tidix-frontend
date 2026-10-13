@@ -566,6 +566,7 @@ const ENTRIES: Record<string, EntryTriple> = {
     en: (v) => (v.n === 1 ? `${v.n} product to buy` : `${v.n} products to buy`),
     es: (v) => (v.n === 1 ? `${v.n} producto para comprar` : `${v.n} productos para comprar`),
   },
+  'overview.recipesLink': { it: 'Idee ricette con quello che hai', en: 'Recipe ideas with what you have', es: 'Ideas de recetas con lo que tienes' },
   'overview.wasteTomorrow': {
     it: (v) => `Ehi! Non dimenticare di mettere fuori il secchio ${v.types}`,
     en: (v) => `Hey! Don't forget to put out the bin for ${v.types}`,
@@ -915,6 +916,17 @@ const ENTRIES: Record<string, EntryTriple> = {
     es: 'Permiso de galería denegado. Actívalo desde los ajustes del teléfono para elegir una foto.',
   },
 
+  // Recipe suggestions
+  'recipeModal.title': { it: 'Idee ricette', en: 'Recipe ideas', es: 'Ideas de recetas' },
+  'recipeModal.loading': { it: 'Sto pensando a qualche ricetta...', en: 'Thinking of some recipes...', es: 'Pensando en algunas recetas...' },
+  'recipeModal.empty': {
+    it: 'Non sono riuscito a trovare ricette adatte, riprova tra poco.',
+    en: "I couldn't find any suitable recipes, try again shortly.",
+    es: 'No he podido encontrar recetas adecuadas, inténtalo de nuevo en un momento.',
+  },
+  'recipeModal.regenerate': { it: 'Altre idee', en: 'More ideas', es: 'Más ideas' },
+  'recipeModal.extraIngredients': { it: 'Ti servono anche', en: 'You also need', es: 'También necesitas' },
+
   // Expenses
   'month.1': { it: 'Gennaio', en: 'January', es: 'Enero' },
   'month.2': { it: 'Febbraio', en: 'February', es: 'Febrero' },
@@ -1180,6 +1192,15 @@ const ENTRIES: Record<string, EntryTriple> = {
   'household.themeLabel': { it: 'Aspetto', en: 'Appearance', es: 'Apariencia' },
   'household.themeLight': { it: 'Chiaro', en: 'Light', es: 'Claro' },
   'household.themeDark': { it: 'Scuro', en: 'Dark', es: 'Oscuro' },
+  'household.dietLabel': { it: 'Alimentazione', en: 'Diet', es: 'Alimentación' },
+  'household.dietHint': {
+    it: 'Usata per adattare i suggerimenti di ricette.',
+    en: 'Used to tailor recipe suggestions.',
+    es: 'Se usa para adaptar las sugerencias de recetas.',
+  },
+  'household.diet.ONNIVORO': { it: 'Onnivoro', en: 'Omnivore', es: 'Omnívoro' },
+  'household.diet.VEGETARIANO': { it: 'Vegetariano', en: 'Vegetarian', es: 'Vegetariano' },
+  'household.diet.VEGANO': { it: 'Vegano', en: 'Vegan', es: 'Vegano' },
   'household.notificationsLabel': { it: 'Notifiche', en: 'Notifications', es: 'Notificaciones' },
   'household.notificationsHint': {
     it: 'Per ricevere notifiche su prodotti scaduti, pulizie da fare, raccolta rifiuti e altro, vai nelle impostazioni del telefono e attiva le notifiche per Tidix.',

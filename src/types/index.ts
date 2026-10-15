@@ -137,6 +137,9 @@ export interface AdjustQuantityInput {
   clearExpirationDate?: boolean;
   hideFromShoppingList?: boolean;
   clearOpened?: boolean;
+  // Descrizione opzionale riportata sulla nota della lista della spesa
+  // creata quando la quantita' risultante e' 0 (vedi hideFromShoppingList).
+  detail?: string;
 }
 
 export interface ShoppingNote {

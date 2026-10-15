@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getErrorMessage } from '../../../src/api/client';
 import { itemsApi } from '../../../src/api/items';
+import { AddToShoppingListModal } from '../../../src/components/AddToShoppingListModal';
 import { showAlert } from '../../../src/components/AppAlert';
 import { ItemForm } from '../../../src/components/ItemForm';
 import { useI18n } from '../../../src/i18n/I18nContext';
@@ -61,9 +62,9 @@ export default function EditItemScreen() {
   });
 
   const deleteAndAddToShoppingListMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: (detail: string) => {
       const quantity = itemQuery.data?.quantity ?? 0;
-      return itemsApi.adjustQuantity(id, { delta: -quantity, hideFromShoppingList: false });
+      return itemsApi.adjustQuantity(id, { delta: -quantity, hideFromShoppingList: false, detail });
     },
     onSuccess: () => {
       // Stesso motivo di deleteMutation: questa azione esaurisce il
@@ -76,10 +77,15 @@ export default function EditItemScreen() {
     onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
   });
 
+  // La modale AddToShoppingListModal (con il campo "Quantita' / dettagli")
+  // si apre dopo la scelta "Aggiungi a lista spesa" nel popup sotto, invece
+  // di mutare subito.
+  const [addToShoppingPending, setAddToShoppingPending] = useState(false);
+
   function confirmDelete() {
     showAlert(t('item.confirmDeleteTitle'), t('item.confirmDeleteMessage'), [
       { text: t('common.cancel'), style: 'cancel' },
-      { text: t('item.deleteAndAddToShoppingList'), onPress: () => deleteAndAddToShoppingListMutation.mutate() },
+      { text: t('item.deleteAndAddToShoppingList'), onPress: () => setAddToShoppingPending(true) },
       { text: t('item.deleteOnly'), style: 'destructive', onPress: () => deleteMutation.mutate() },
     ]);
   }
@@ -126,6 +132,14 @@ export default function EditItemScreen() {
         onSubmit={(input) => updateMutation.mutate(input)}
         onDelete={confirmDelete}
         deleting={deleteMutation.isPending || deleteAndAddToShoppingListMutation.isPending}
+      />
+
+      <AddToShoppingListModal
+        visible={addToShoppingPending}
+        itemName={item.name}
+        confirming={deleteAndAddToShoppingListMutation.isPending}
+        onCancel={() => setAddToShoppingPending(false)}
+        onConfirm={(detail) => deleteAndAddToShoppingListMutation.mutate(detail)}
       />
     </View>
   );

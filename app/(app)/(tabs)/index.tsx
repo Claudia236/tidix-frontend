@@ -8,6 +8,7 @@ import { getErrorMessage } from '../../../src/api/client';
 import { cleaningApi } from '../../../src/api/cleaning';
 import { itemsApi } from '../../../src/api/items';
 import { wasteApi } from '../../../src/api/waste';
+import { AddToShoppingListModal } from '../../../src/components/AddToShoppingListModal';
 import { showAlert } from '../../../src/components/AppAlert';
 import { RecipeSuggestionsModal } from '../../../src/components/RecipeSuggestionsModal';
 import { SectionTitle } from '../../../src/components/SectionTitle';
@@ -240,26 +241,35 @@ export default function OverviewScreen() {
   });
 
   const removeItemAndAddToShoppingListMutation = useMutation({
-    mutationFn: (item: Item) => itemsApi.adjustQuantity(item.id, { delta: -item.quantity, hideFromShoppingList: false }),
-    onMutate: async (item) => {
+    mutationFn: ({ item, detail }: { item: Item; detail: string }) =>
+      itemsApi.adjustQuantity(item.id, { delta: -item.quantity, hideFromShoppingList: false, detail }),
+    onMutate: async ({ item }) => {
       await queryClient.cancelQueries({ queryKey: ['items'] });
       const snapshot = snapshotItemListCaches();
       removeItemFromListCaches(item.id);
       return snapshot;
     },
-    onError: (e, _item, context) => {
+    onError: (e, _vars, context) => {
       if (context) restoreItemListCaches(context);
       showAlert(t('common.error'), getErrorMessage(e, t));
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+      setAddToShoppingPending(null);
+    },
   });
+
+  // La modale AddToShoppingListModal (con il campo "Quantita' / dettagli") si
+  // apre dopo la scelta "Aggiungi a lista spesa" nel popup sotto, invece di
+  // mutare subito.
+  const [addToShoppingPending, setAddToShoppingPending] = useState<Item | null>(null);
 
   // Stesso popup a tre opzioni del dettaglio prodotto e delle Scorte,
   // raggiungibile qui trascinando la riga verso sinistra.
   function confirmSwipeDeleteItem(item: Item) {
     showAlert(t('item.confirmDeleteTitle'), t('item.confirmDeleteMessage'), [
       { text: t('common.cancel'), style: 'cancel' },
-      { text: t('item.deleteAndAddToShoppingList'), onPress: () => removeItemAndAddToShoppingListMutation.mutate(item) },
+      { text: t('item.deleteAndAddToShoppingList'), onPress: () => setAddToShoppingPending(item) },
       { text: t('item.deleteOnly'), style: 'destructive', onPress: () => removeItemMutation.mutate(item.id) },
     ]);
   }
@@ -563,6 +573,16 @@ export default function OverviewScreen() {
         visible={recipesVisible}
         onClose={() => setRecipesVisible(false)}
         ingredientsKey={recipeIngredientsKey}
+      />
+
+      <AddToShoppingListModal
+        visible={addToShoppingPending !== null}
+        itemName={addToShoppingPending?.name ?? ''}
+        confirming={removeItemAndAddToShoppingListMutation.isPending}
+        onCancel={() => setAddToShoppingPending(null)}
+        onConfirm={(detail) => {
+          if (addToShoppingPending) removeItemAndAddToShoppingListMutation.mutate({ item: addToShoppingPending, detail });
+        }}
       />
     </SafeAreaView>
   );

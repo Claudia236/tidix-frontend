@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../../src/api/client';
 import { itemsApi } from '../../../src/api/items';
 import { shoppingNotesApi } from '../../../src/api/shoppingNotes';
+import { AddToShoppingListModal } from '../../../src/components/AddToShoppingListModal';
 import { showAlert } from '../../../src/components/AppAlert';
 import { useCategories, findCategoryInfo } from '../../../src/constants/domain';
 import { EmptyState } from '../../../src/components/EmptyState';
@@ -206,19 +207,54 @@ export default function StockScreen() {
   });
 
   const removeAndAddToShoppingListMutation = useMutation({
-    mutationFn: (item: Item) => itemsApi.adjustQuantity(item.id, { delta: -item.quantity, hideFromShoppingList: false }),
-    onMutate: async (item) => {
+    mutationFn: ({ item, detail }: { item: Item; detail: string }) =>
+      itemsApi.adjustQuantity(item.id, { delta: -item.quantity, hideFromShoppingList: false, detail }),
+    onMutate: async ({ item }) => {
       await queryClient.cancelQueries({ queryKey: ['items', 'list'] });
       const previous = queryClient.getQueriesData<Item[]>({ queryKey: ['items', 'list'] });
       queryClient.setQueriesData<Item[]>({ queryKey: ['items', 'list'] }, (old) => old?.filter((i) => i.id !== item.id));
       return { previous };
     },
-    onError: (e, _item, context) => {
+    onError: (e, _vars, context) => {
       context?.previous.forEach(([key, data]) => queryClient.setQueryData(key, data));
       showAlert(t('common.error'), getErrorMessage(e, t));
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+      setPendingShoppingAdd(null);
+    },
   });
+
+  // A differenza di removeAndAddToShoppingListMutation, qui la scorta resta
+  // esattamente com'era (nessuna variazione di quantita'): si aggiunge solo
+  // una nota alla lista della spesa, per un prodotto che sta per finire ma
+  // non e' ancora esaurito.
+  const addToShoppingListMutation = useMutation({
+    mutationFn: ({ item, detail }: { item: Item; detail: string }) =>
+      shoppingNotesApi.create({ text: item.name, detail, category: item.category, supermarketId: item.supermarketId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopping-notes'] });
+      setPendingShoppingAdd(null);
+    },
+    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
+  });
+
+  // Entrambe le azioni "aggiungi a lista spesa" (dall'eliminazione o dal
+  // popup dedicato sotto) passano da qui invece di mutare subito: la modale
+  // AddToShoppingListModal lascia aggiungere una descrizione prima di creare
+  // la nota, invece di doverla aggiungere in un secondo momento.
+  const [pendingShoppingAdd, setPendingShoppingAdd] = useState<{ item: Item; mode: 'removeAndAdd' | 'addNote' } | null>(
+    null
+  );
+
+  function confirmPendingShoppingAdd(detail: string) {
+    if (!pendingShoppingAdd) return;
+    if (pendingShoppingAdd.mode === 'removeAndAdd') {
+      removeAndAddToShoppingListMutation.mutate({ item: pendingShoppingAdd.item, detail });
+    } else {
+      addToShoppingListMutation.mutate({ item: pendingShoppingAdd.item, detail });
+    }
+  }
 
   // Stesso popup a tre opzioni della schermata di dettaglio (item/[id].tsx),
   // raggiungibile qui anche trascinando la card verso sinistra: evita di dover
@@ -226,26 +262,13 @@ export default function StockScreen() {
   function confirmSwipeDelete(item: Item) {
     showAlert(t('item.confirmDeleteTitle'), t('item.confirmDeleteMessage'), [
       { text: t('common.cancel'), style: 'cancel' },
-      { text: t('item.deleteAndAddToShoppingList'), onPress: () => removeAndAddToShoppingListMutation.mutate(item) },
+      { text: t('item.deleteAndAddToShoppingList'), onPress: () => setPendingShoppingAdd({ item, mode: 'removeAndAdd' }) },
       { text: t('item.deleteOnly'), style: 'destructive', onPress: () => removeMutation.mutate(item.id) },
     ]);
   }
 
-  // A differenza di removeAndAddToShoppingListMutation, qui la scorta resta
-  // esattamente com'era (nessuna variazione di quantita'): si aggiunge solo
-  // una nota alla lista della spesa, per un prodotto che sta per finire ma
-  // non e' ancora esaurito.
-  const addToShoppingListMutation = useMutation({
-    mutationFn: (item: Item) => shoppingNotesApi.create({ text: item.name, category: item.category, supermarketId: item.supermarketId }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-notes'] }),
-    onError: (e) => showAlert(t('common.error'), getErrorMessage(e, t)),
-  });
-
   function confirmSwipeAddToShoppingList(item: Item) {
-    showAlert(t('stock.confirmAddToShoppingListTitle'), t('stock.confirmAddToShoppingListMessage', { name: item.name }), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.confirm'), onPress: () => addToShoppingListMutation.mutate(item) },
-    ]);
+    setPendingShoppingAdd({ item, mode: 'addNote' });
   }
 
   function handleAdjust(item: Item, delta: number) {
@@ -456,6 +479,14 @@ export default function StockScreen() {
             });
           }
         }}
+      />
+
+      <AddToShoppingListModal
+        visible={pendingShoppingAdd !== null}
+        itemName={pendingShoppingAdd?.item.name ?? ''}
+        confirming={removeAndAddToShoppingListMutation.isPending || addToShoppingListMutation.isPending}
+        onCancel={() => setPendingShoppingAdd(null)}
+        onConfirm={confirmPendingShoppingAdd}
       />
 
       <Modal visible={filterModalVisible} transparent animationType="fade" onRequestClose={() => setFilterModalVisible(false)}>

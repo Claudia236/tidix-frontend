@@ -4,10 +4,7 @@ import type { TranslateFn } from '../i18n/I18nContext';
 import type { Plant } from '../types';
 import { CHANNEL_ID, cancelByPrefix, ensureChannel, ensureNotificationPermissions, getNotificationsEnabledPref } from './core';
 
-// Al mattino invece che alla sera (20:00, orario usato dai promemoria di
-// Pulizie): annaffiare e' tipicamente un gesto da fare a inizio giornata, e
-// cosi' i due tipi di promemoria non si accumulano nello stesso slot orario.
-const REMINDER_HOUR = 9;
+const REMINDER_HOUR = 18;
 const REMINDER_MINUTE = 0;
 const PREFIX = 'plant-reminder-';
 

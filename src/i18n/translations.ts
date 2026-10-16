@@ -742,6 +742,12 @@ const ENTRIES: Record<string, EntryTriple> = {
   'plants.frequencyLabel': { it: 'Ogni quanto annaffiarla', en: 'How often to water it', es: 'Cada cuánto regarla' },
   'plants.frequencyPlaceholder': { it: 'Es. 7', en: 'e.g. 7', es: 'ej. 7' },
   'plants.unitWeeks': { it: 'Settimane', en: 'Weeks', es: 'Semanas' },
+  'plants.careTipLabel': { it: 'Consiglio di cura', en: 'Care tip', es: 'Consejo de cuidado' },
+  'plants.careTipPlaceholder': {
+    it: 'Es. Ama la luce indiretta e i terricci ben drenati...',
+    en: 'e.g. Loves indirect light and well-drained soil...',
+    es: 'ej. Le encanta la luz indirecta y el suelo bien drenado...',
+  },
   'plants.lastWateredLabel': { it: 'Ultima volta annaffiata', en: 'Last watered', es: 'Última vez regada' },
   'plants.lastWateredPlaceholder': { it: 'Non annaffiata di recente', en: 'Not recently watered', es: 'No regada recientemente' },
   'plants.lastWateredClear': { it: 'Non lo so / rimuovi data', en: "Don't know / remove date", es: 'No lo sé / quitar fecha' },
@@ -971,6 +977,37 @@ const ENTRIES: Record<string, EntryTriple> = {
     es: 'Permiso de cámara denegado. Actívalo desde los ajustes del teléfono para fotografiar el producto.',
   },
   'scanProduct.libraryPermissionDenied': {
+    it: 'Permesso galleria negato. Abilitalo dalle impostazioni del telefono per scegliere una foto.',
+    en: 'Gallery permission denied. Enable it from your phone settings to pick a photo.',
+    es: 'Permiso de galería denegado. Actívalo desde los ajustes del teléfono para elegir una foto.',
+  },
+
+  // Plant scan
+  'scanPlant.title': { it: 'Riconosci pianta', en: 'Recognize plant', es: 'Reconocer planta' },
+  'scanPlant.hint': {
+    it: "Fotografa la pianta: specie, frequenza di annaffiatura e un consiglio di cura verranno compilati automaticamente.",
+    en: 'Photograph the plant: species, watering frequency and a care tip will be filled in automatically.',
+    es: 'Fotografía la planta: especie, frecuencia de riego y un consejo de cuidado se rellenarán automáticamente.',
+  },
+  'scanPlant.pickFromGallery': { it: 'Scegli dalla galleria', en: 'Pick from gallery', es: 'Elegir de la galería' },
+  'scanPlant.analyze': { it: 'Analizza foto', en: 'Analyze photo', es: 'Analizar foto' },
+  'scanPlant.resultTitle': { it: 'Pianta riconosciuta', en: 'Plant recognized', es: 'Planta reconocida' },
+  'scanPlant.resultMessage': {
+    it: 'Nome, frequenza e consiglio di cura compilati: controllali prima di salvare.',
+    en: 'Name, frequency and care tip filled in: check them before saving.',
+    es: 'Nombre, frecuencia y consejo de cuidado rellenados: compruébalos antes de guardar.',
+  },
+  'scanPlant.noDataFound': {
+    it: 'Non sono riuscito a riconoscere la pianta in questa foto. Prova con più luce e inquadrandola meglio.',
+    en: "I couldn't recognize the plant in this photo. Try with more light and a better framing.",
+    es: 'No he podido reconocer la planta en esta foto. Prueba con más luz y un mejor encuadre.',
+  },
+  'scanPlant.cameraPermissionDenied': {
+    it: 'Permesso fotocamera negato. Abilitalo dalle impostazioni del telefono per fotografare la pianta.',
+    en: 'Camera permission denied. Enable it from your phone settings to photograph the plant.',
+    es: 'Permiso de cámara denegado. Actívalo desde los ajustes del teléfono para fotografiar la planta.',
+  },
+  'scanPlant.libraryPermissionDenied': {
     it: 'Permesso galleria negato. Abilitalo dalle impostazioni del telefono per scegliere una foto.',
     en: 'Gallery permission denied. Enable it from your phone settings to pick a photo.',
     es: 'Permiso de galería denegado. Actívalo desde los ajustes del teléfono para elegir una foto.',

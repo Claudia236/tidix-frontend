@@ -185,6 +185,7 @@ export interface Plant {
   name: string;
   location: string | null;
   wateringFrequencyDays: number | null;
+  careTip: string | null;
   lastWateredDate: string | null;
   lastWateredByUserId: string | null;
   daysSinceWatered: number | null;
@@ -195,6 +196,7 @@ export interface PlantInput {
   name: string;
   location?: string | null;
   wateringFrequencyDays?: number | null;
+  careTip?: string | null;
   lastWateredDate?: string | null;
 }
 

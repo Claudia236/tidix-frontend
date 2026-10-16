@@ -19,6 +19,7 @@ export default function MoreScreen() {
 
   const entries: { icon: keyof typeof Ionicons.glyphMap; label: string; subtitle: string; path?: string; onPress?: () => void }[] = [
     { icon: 'sparkles-outline', label: t('more.cleaning.label'), subtitle: t('more.cleaning.subtitle'), path: '/(app)/cleaning' },
+    { icon: 'leaf-outline', label: t('more.plants.label'), subtitle: t('more.plants.subtitle'), path: '/(app)/plants' },
     { icon: 'trash-outline', label: t('more.waste.label'), subtitle: t('more.waste.subtitle'), path: '/(app)/waste' },
     { icon: 'cash-outline', label: t('more.expenses.label'), subtitle: t('more.expenses.subtitle'), path: '/(app)/expenses' },
     { icon: 'bag-check-outline', label: t('more.purchased.label'), subtitle: t('more.purchased.subtitle'), path: '/(app)/shopping-purchased' },

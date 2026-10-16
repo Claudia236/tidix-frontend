@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../../src/api/client';
 import { cleaningApi } from '../../../src/api/cleaning';
 import { itemsApi } from '../../../src/api/items';
+import { plantsApi } from '../../../src/api/plants';
 import { wasteApi } from '../../../src/api/waste';
 import { AddToShoppingListModal } from '../../../src/components/AddToShoppingListModal';
 import { showAlert } from '../../../src/components/AppAlert';
@@ -19,11 +20,12 @@ import { useI18n } from '../../../src/i18n/I18nContext';
 import { cancelCleaningReminder } from '../../../src/notifications/cleaningReminders';
 import { syncExpiryReminders } from '../../../src/notifications/expiryReminders';
 import { syncOpenedReminders } from '../../../src/notifications/openedReminders';
+import { cancelPlantReminder, syncPlantReminders } from '../../../src/notifications/plantReminders';
 import { syncWasteReminders } from '../../../src/notifications/wasteReminders';
 import type { ColorPalette } from '../../../src/theme/colors';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import { webCentered } from '../../../src/theme/responsive';
-import type { CleaningTask, Item, ZoneSummary } from '../../../src/types';
+import type { CleaningTask, Item, Plant, ZoneSummary } from '../../../src/types';
 import { daysUntil, formatShortDate, getExpiryInfo } from '../../../src/utils/expiry';
 
 export default function OverviewScreen() {
@@ -39,6 +41,7 @@ export default function OverviewScreen() {
   const expiringQuery = useQuery({ queryKey: ['items', 'expiring', 3], queryFn: () => itemsApi.expiring(3) });
   const shoppingQuery = useQuery({ queryKey: ['items', 'shopping-list'], queryFn: itemsApi.shoppingList });
   const cleaningQuery = useQuery({ queryKey: ['cleaning-tasks'], queryFn: cleaningApi.list });
+  const plantsQuery = useQuery({ queryKey: ['plants'], queryFn: plantsApi.list });
   // Stesso staleTime lungo applicato in waste.tsx: le date di raccolta
   // cambiano solo per modifica manuale, e quella schermata invalida gia'
   // esplicitamente questa query quando le tocca.
@@ -46,13 +49,13 @@ export default function OverviewScreen() {
   const allItemsQuery = useQuery({ queryKey: ['items', 'list', 'TUTTI', ''], queryFn: () => itemsApi.list({}) });
 
   const [collapsedCards, setCollapsedCards] = useState<Set<string>>(
-    () => new Set(['avanzi', 'opened', 'expiring', 'cleaning'])
+    () => new Set(['avanzi', 'opened', 'expiring', 'cleaning', 'plants'])
   );
   const [recipesVisible, setRecipesVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
-      setCollapsedCards(new Set(['avanzi', 'opened', 'expiring', 'cleaning']));
+      setCollapsedCards(new Set(['avanzi', 'opened', 'expiring', 'cleaning', 'plants']));
     }, [])
   );
 
@@ -80,6 +83,19 @@ export default function OverviewScreen() {
           return b.daysSinceCleaned - a.daysSinceCleaned;
         }),
     [cleaningQuery.data]
+  );
+
+  const overduePlants = useMemo(
+    () =>
+      (plantsQuery.data ?? [])
+        .filter((plant) => plant.overdue)
+        .sort((a, b) => {
+          if (a.daysSinceWatered === null && b.daysSinceWatered === null) return 0;
+          if (a.daysSinceWatered === null) return -1;
+          if (b.daysSinceWatered === null) return 1;
+          return b.daysSinceWatered - a.daysSinceWatered;
+        }),
+    [plantsQuery.data]
   );
 
   const expiringItems = useMemo(() => {
@@ -162,6 +178,12 @@ export default function OverviewScreen() {
     [t]
   );
 
+  useSyncQueue(
+    (data) => syncPlantReminders(data, t),
+    Platform.OS === 'web' ? null : plantsQuery.data,
+    [t]
+  );
+
   // Lo spinner del pull-to-refresh deve restare visibile finche' TUTTE le
   // query che alimentano le card della schermata sono in corso, non solo
   // summaryQuery (che e' una piccola aggregazione di conteggi e risponde
@@ -174,6 +196,7 @@ export default function OverviewScreen() {
     expiringQuery.isFetching ||
     shoppingQuery.isFetching ||
     cleaningQuery.isFetching ||
+    plantsQuery.isFetching ||
     wasteSchedulesQuery.isFetching ||
     allItemsQuery.isFetching;
 
@@ -183,6 +206,7 @@ export default function OverviewScreen() {
     expiringQuery.refetch();
     shoppingQuery.refetch();
     cleaningQuery.refetch();
+    plantsQuery.refetch();
     wasteSchedulesQuery.refetch();
     allItemsQuery.refetch();
   }
@@ -301,6 +325,34 @@ export default function OverviewScreen() {
     showAlert(t('cleaning.confirmMarkCleanedTitle'), t('cleaning.confirmMarkCleanedMessage', { name: taskName }), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.confirm'), onPress: () => markCleanedMutation.mutate(taskId) },
+    ]);
+  }
+
+  const markWateredMutation = useMutation({
+    mutationFn: (id: string) => plantsApi.markWatered(id),
+    // Stesso aggiornamento ottimistico di markCleanedMutation sopra.
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['plants'] });
+      const previous = queryClient.getQueryData<Plant[]>(['plants']);
+      queryClient.setQueryData<Plant[]>(['plants'], (old) =>
+        old?.map((plant) => (plant.id === id ? { ...plant, daysSinceWatered: 0, overdue: false } : plant))
+      );
+      return { previous };
+    },
+    onError: (e, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['plants'], context.previous);
+      showAlert(t('common.error'), getErrorMessage(e, t));
+    },
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['plants'] });
+      cancelPlantReminder(id);
+    },
+  });
+
+  function confirmSwipeMarkWatered(plantId: string, plantName: string) {
+    showAlert(t('plants.confirmMarkWateredTitle'), t('plants.confirmMarkWateredMessage', { name: plantName }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.confirm'), onPress: () => markWateredMutation.mutate(plantId) },
     ]);
   }
 
@@ -505,6 +557,50 @@ export default function OverviewScreen() {
                       {task.daysSinceCleaned === null
                         ? t('overview.cleaningNeverCleaned')
                         : t('overview.cleaningCleanedDaysAgo', { n: task.daysSinceCleaned })}
+                    </Text>
+                  </Pressable>
+                </SwipeableRow>
+              ))}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.detailCard}>
+          <Pressable style={styles.detailCardHeader} onPress={() => toggleCardCollapsed('plants')}>
+            <View style={styles.detailCardHeaderLeft}>
+              <Ionicons
+                name={collapsedCards.has('plants') ? 'chevron-forward' : 'chevron-down'}
+                size={16}
+                color={colors.positive}
+              />
+              <Text style={[styles.detailCardTitle, { color: colors.positive }]}>
+                {t('overview.plantsDueSection')}
+              </Text>
+            </View>
+            <Text style={[styles.detailCardCount, { color: colors.positive }]}>
+              {overduePlants.length}
+            </Text>
+          </Pressable>
+          {collapsedCards.has('plants') ? null : overduePlants.length === 0 ? (
+            <Text style={styles.detailCardEmpty}>{t('overview.plantsCard.allGood')}</Text>
+          ) : (
+            <View style={styles.detailCardList}>
+              {overduePlants.map((plant) => (
+                <SwipeableRow
+                  key={plant.id}
+                  leftAction={{ onTrigger: () => confirmSwipeMarkWatered(plant.id, plant.name), icon: 'checkmark-done', color: colors.positive }}
+                  borderRadius={10}
+                  marginBottom={0}
+                >
+                  <Pressable style={styles.detailRow} onPress={() => router.push('/(app)/plants')}>
+                    <Text style={styles.detailRowText} numberOfLines={1}>
+                      {plant.name}
+                      {plant.location ? ` · ${plant.location}` : ''}
+                    </Text>
+                    <Text style={styles.detailRowMeta}>
+                      {plant.daysSinceWatered === null
+                        ? t('overview.plantsNeverWatered')
+                        : t('overview.plantsWateredDaysAgo', { n: plant.daysSinceWatered })}
                     </Text>
                   </Pressable>
                 </SwipeableRow>

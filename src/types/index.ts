@@ -180,6 +180,24 @@ export interface CleaningTaskInput {
   lastCleanedDate?: string | null;
 }
 
+export interface Plant {
+  id: string;
+  name: string;
+  location: string | null;
+  wateringFrequencyDays: number | null;
+  lastWateredDate: string | null;
+  lastWateredByUserId: string | null;
+  daysSinceWatered: number | null;
+  overdue: boolean;
+}
+
+export interface PlantInput {
+  name: string;
+  location?: string | null;
+  wateringFrequencyDays?: number | null;
+  lastWateredDate?: string | null;
+}
+
 export interface WasteSchedule {
   id: string;
   type: WasteType;

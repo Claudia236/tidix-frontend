@@ -51,6 +51,18 @@ export default function AppLayout() {
         options={{ presentation: 'modal', title: t('appLayout.editCleaningTask'), headerStyle: { backgroundColor: colors.bg } }}
       />
       <Stack.Screen
+        name="plants"
+        options={{ title: t('more.plants.label'), headerStyle: { backgroundColor: colors.bg } }}
+      />
+      <Stack.Screen
+        name="plant/new"
+        options={{ presentation: 'modal', title: t('appLayout.newPlant'), headerStyle: { backgroundColor: colors.bg } }}
+      />
+      <Stack.Screen
+        name="plant/[id]"
+        options={{ presentation: 'modal', title: t('appLayout.editPlant'), headerStyle: { backgroundColor: colors.bg } }}
+      />
+      <Stack.Screen
         name="waste"
         options={{ title: t('more.waste.label'), headerStyle: { backgroundColor: colors.bg } }}
       />

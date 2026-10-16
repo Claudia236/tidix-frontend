@@ -82,6 +82,7 @@ export default function EditPlantScreen() {
           name: plant.name,
           location: plant.location,
           wateringFrequencyDays: plant.wateringFrequencyDays,
+          careTip: plant.careTip,
           lastWateredDate: plant.lastWateredDate,
         }}
         submitLabel={t('common.saveChanges')}
